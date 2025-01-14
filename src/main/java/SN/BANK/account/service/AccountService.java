@@ -53,19 +53,19 @@ public class AccountService {
      *
      * @return accountNumber
      */
-    private String generateAccountNumber() {
+    public String generateAccountNumber() {
 
         // 1. 계좌 번호를 생성하고 AccountRepository 를 통해 고유성을 체크한다.
         //  1-1. 고유하지 않다면, 고유할 때까지 생성기를 돌려서 계좌 번호를 생성한다.
         String accountNumber;
 
         do {
-            accountNumber = UUID.randomUUID().toString().replaceAll("^[0-9]", "").substring(0, 14);
-        } while (accountRepository.existsByAccountNumber(accountNumber));
+            accountNumber = UUID.randomUUID().toString().replaceAll("[^0-9]", "");
+        } while(accountNumber.length() < 14);
+
+        accountNumber = accountNumber.substring(0, 14);
 
         // 2. 생성된 계좌 번호를 반환한다.
         return accountNumber;
     }
-
-
 }
