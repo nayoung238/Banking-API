@@ -27,6 +27,9 @@ public class UsersService {
     }
 
     public UsersResponseDto getUserInformation(Long userId){
+        if(userId==null){
+            throw new CustomException(ErrorCode.NOT_FOUND_USER);
+        }
         Users user = usersRepository.findById(userId).orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND_USER));
         return UsersResponseDto.of(user);
     }
