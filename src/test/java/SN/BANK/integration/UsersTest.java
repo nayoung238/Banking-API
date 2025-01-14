@@ -113,7 +113,7 @@ public class UsersTest {
                 .andDo(print());
     }
     @Test
-    @DisplayName("로그인 실패 테스트 - 틀린 아이디")
+    @DisplayName("로그인 실패 테스트 - 틀린 비밀번호")
     public void loginFailPasswordTest() throws Exception {
         String name = "테스트이름";
         String loginId = "testId";
@@ -150,6 +150,15 @@ public class UsersTest {
                 .andExpect(jsonPath("$.loginId").value(loginId))
                 .andDo(print());
 
+    }
+
+    @Test
+    @DisplayName("유저 정보 호출 실패 테스트 - 존재하지 않는 id")
+    public void getUserFailTest() throws Exception {
+        mockMvc.perform(get("/users").contentType(MediaType.APPLICATION_JSON).session(session))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$").value("존재하지 않는 유저입니다."))
+                .andDo(print());
     }
 
 

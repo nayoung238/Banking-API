@@ -111,6 +111,19 @@ public class UsersServiceTest {
     }
 
     @Test
+    @DisplayName("유저 정보 가져오기 실패 테스트 - 유저 id가 null일 경우")
+    public void getUserFailNullTest(){
+        //given
+        Long userId  = null;
+
+        //when
+        CustomException exception = assertThrows(CustomException.class,()->usersService.getUserInformation(userId));
+
+        //then
+        assertEquals(exception.getErrorCode().getMessage(),"존재하지 않는 유저입니다.");
+    }
+
+    @Test
     @DisplayName("로그인 성공 테스트")
     public void loginTest(){
         //given
