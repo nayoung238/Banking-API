@@ -1,7 +1,10 @@
-package SN.BANK.domain;
+package SN.BANK.account.entity;
 
+import SN.BANK.domain.Users;
 import SN.BANK.domain.enums.Currency;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -11,6 +14,8 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @Getter
+@AllArgsConstructor
+@Builder
 public class Account {
 
     @Id
