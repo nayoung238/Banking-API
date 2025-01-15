@@ -30,5 +30,8 @@ jobs:
         with:
           cache-disabled: true
 
+      - name: Grant execute permission to gradlew
+        run: chmod +x ./gradlew
+
       - name: Test with Gradle
         run: ./gradlew clean test
