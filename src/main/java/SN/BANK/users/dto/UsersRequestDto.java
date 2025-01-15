@@ -1,4 +1,4 @@
-package SN.BANK.dto;
+package SN.BANK.users.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
@@ -7,15 +7,19 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class LoginDto {
+public class UsersRequestDto {
+    @NotBlank
+    private String name;
     @NotBlank
     private String loginId;
     @NotBlank
     private String password;
 
     @Builder
-    public LoginDto(String loginId, String password){
-        this.loginId = loginId;
+    public UsersRequestDto(String name, String loginId, String password){
+        this.name = name;
+        this.loginId= loginId;
         this.password = password;
     }
+
 }

@@ -1,12 +1,12 @@
-package SN.BANK.service;
+package SN.BANK.users.service;
 
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
-import SN.BANK.domain.Users;
-import SN.BANK.dto.LoginDto;
-import SN.BANK.dto.UsersRequestDto;
-import SN.BANK.dto.UsersResponseDto;
-import SN.BANK.repository.UsersRepository;
+import SN.BANK.users.entity.Users;
+import SN.BANK.users.dto.LoginDto;
+import SN.BANK.users.dto.UsersRequestDto;
+import SN.BANK.users.dto.UsersResponseDto;
+import SN.BANK.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;

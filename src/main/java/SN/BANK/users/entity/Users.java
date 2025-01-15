@@ -1,5 +1,6 @@
-package SN.BANK.domain;
+package SN.BANK.users.entity;
 
+import SN.BANK.domain.Account;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

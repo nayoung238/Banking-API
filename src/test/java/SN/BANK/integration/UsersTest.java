@@ -1,10 +1,10 @@
 package SN.BANK.integration;
 
-import SN.BANK.domain.Users;
-import SN.BANK.dto.LoginDto;
-import SN.BANK.dto.UsersRequestDto;
-import SN.BANK.repository.UsersRepository;
-import SN.BANK.service.UsersService;
+import SN.BANK.users.entity.Users;
+import SN.BANK.users.dto.LoginDto;
+import SN.BANK.users.dto.UsersRequestDto;
+import SN.BANK.users.repository.UsersRepository;
+import SN.BANK.users.service.UsersService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -1,9 +1,9 @@
-package SN.BANK.controller;
+package SN.BANK.users.controller;
 
-import SN.BANK.dto.LoginDto;
-import SN.BANK.dto.UsersRequestDto;
-import SN.BANK.dto.UsersResponseDto;
-import SN.BANK.service.UsersService;
+import SN.BANK.users.dto.LoginDto;
+import SN.BANK.users.dto.UsersRequestDto;
+import SN.BANK.users.dto.UsersResponseDto;
+import SN.BANK.users.service.UsersService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

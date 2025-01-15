@@ -2,11 +2,12 @@ package SN.BANK.service;
 
 
 import SN.BANK.common.exception.CustomException;
-import SN.BANK.domain.Users;
-import SN.BANK.dto.LoginDto;
-import SN.BANK.dto.UsersRequestDto;
-import SN.BANK.dto.UsersResponseDto;
-import SN.BANK.repository.UsersRepository;
+import SN.BANK.users.entity.Users;
+import SN.BANK.users.dto.LoginDto;
+import SN.BANK.users.dto.UsersRequestDto;
+import SN.BANK.users.dto.UsersResponseDto;
+import SN.BANK.users.repository.UsersRepository;
+import SN.BANK.users.service.UsersService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

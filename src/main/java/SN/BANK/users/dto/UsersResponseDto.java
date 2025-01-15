@@ -1,6 +1,6 @@
-package SN.BANK.dto;
+package SN.BANK.users.dto;
 
-import SN.BANK.domain.Users;
+import SN.BANK.users.entity.Users;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
