@@ -11,25 +11,25 @@ import SN.BANK.payment.repository.PaymentListRepository;
 import SN.BANK.payment.dto.PaymentRequestDto;
 import SN.BANK.payment.dto.PaymentResponseDto;
 import SN.BANK.payment.tempRepository.TempAccountRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+
 public class PaymentService {
 
     private final ExchangeRateService exchangeRateService;
     private final TempAccountRepository tempAccountRepository;
     private final PaymentListRepository paymentListRepository;
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public PaymentResponseDto makePayment(PaymentRequestDto request) {
 
         // 출금 계좌 확인
@@ -47,10 +47,10 @@ public class PaymentService {
         // 입금 계좌 확인
         Account depositAccount = tempAccountRepository.findById(request.getDepositId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
-        // 환율 계산
+        // 환율 가져오기
          BigDecimal exchangeRate = exchangeRateService.getExchangeRate(withdrawAccount.getCurrency(), depositAccount.getCurrency());
         // 출금 처리
-        withdrawAccount.withdraw((request.getAmount().multiply(exchangeRate)).setScale(0, RoundingMode.DOWN)); //원화는 소수점 버리고 출금
+        withdrawAccount.withdraw((request.getAmount().multiply(exchangeRate)));
         // 입금 처리
         depositAccount.deposit((request.getAmount()));
         // 결제내역 생성
@@ -69,11 +69,16 @@ public class PaymentService {
 
         return new PaymentResponseDto(payment.getId());
     }
-
+    @Transactional(rollbackFor = Exception.class)
     public void refundPayment(Long paymentId) {
         // 결제 내역 조회
         PaymentList paymentList = paymentListRepository.findById(paymentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+
+        // 이미 결제 취소된 상태인지 확인
+        if (paymentList.getPaymentStatus() == PaymentStatus.결제취소) {
+            throw new CustomException(ErrorCode.PAYMENT_ALREADY_CANCELLED);
+        }
 
         // 출금 계좌와 입금 계좌 조회
         Account withdrawAccount = tempAccountRepository.findById(paymentList.getWithdrawId())
@@ -87,7 +92,7 @@ public class PaymentService {
         }
         // 계좌 업데이트
         depositAccount.withdraw(paymentList.getAmount()); // 입금 계좌에서 원래 금액 차감
-        withdrawAccount.deposit( (paymentList.getAmount().multiply(paymentList.getExchangeRate()).setScale(0,RoundingMode.DOWN))); // 출금 계좌에 환불 금액 추가
+        withdrawAccount.deposit( (paymentList.getAmount().multiply(paymentList.getExchangeRate()))); // 출금 계좌에 환불 금액 추가
 
         // 결제 상태 변경
         paymentList.setPaymentStatus(PaymentStatus.결제취소);

@@ -19,23 +19,27 @@ public class PaymentListResponseDto {
     private PaymentTag paymentTag;
     private Long depositId;
     private Long withdrawId;
-    private BigDecimal amount;
-    private BigDecimal exchangeRate;
+    private String amount;
+    private String exchangeRate;
     private Currency currency;
     private PaymentStatus paymentStatus;
 
     public static PaymentListResponseDto of(PaymentList paymentList){
+
         return new PaymentListResponseDto(
                 paymentList.getId(),
                 paymentList.getPaidAt(),
                 paymentList.getPaymentTag(),
                 paymentList.getDepositId(),
                 paymentList.getWithdrawId(),
-                paymentList.getAmount(),
-                paymentList.getExchangeRate(),
+                formatBigDecimal(paymentList.getAmount()),
+                formatBigDecimal(paymentList.getExchangeRate()),
                 paymentList.getCurrency(),
                 paymentList.getPaymentStatus()
         );
+    }
 
+    private static String formatBigDecimal(BigDecimal value) {
+        return value.stripTrailingZeros().toPlainString();
     }
 }

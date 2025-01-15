@@ -56,6 +56,4 @@ public class PaymentController {
         List<PaymentListResponseDto> paymentHistory = paymentService.getUserPaymentHistory(userId);
         return ResponseEntity.ok(paymentHistory);
     }
-
-
 }

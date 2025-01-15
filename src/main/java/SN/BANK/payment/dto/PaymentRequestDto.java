@@ -14,10 +14,11 @@ import java.math.BigDecimal;
 @Builder
 public class PaymentRequestDto {
 
-    @NotNull
-    private Long depositId;
+
     @NotNull
     private Long withdrawId;
+    @NotNull
+    private Long depositId;
     @NotNull
     @Positive(message = "금액은 0보다 커야 합니다.")
     private BigDecimal amount;
