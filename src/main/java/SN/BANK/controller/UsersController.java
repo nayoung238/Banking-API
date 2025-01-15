@@ -35,4 +35,10 @@ public class UsersController {
         Long userId = (Long) session.getAttribute("user");
         return ResponseEntity.ok(usersService.getUserInformation(userId));
     }
+
+    @GetMapping("/logout")
+    public ResponseEntity<String> logout(HttpSession session){
+        session.invalidate();
+        return ResponseEntity.ok("로그아웃 성공");
+    }
 }
