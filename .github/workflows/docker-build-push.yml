@@ -12,6 +12,7 @@ on:
 
 jobs:
   build:
+    if: ${{ success() }}
     steps:
       - name: Build with Gradle
         run: ./gradlew clean build
