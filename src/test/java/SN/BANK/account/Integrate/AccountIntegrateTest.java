@@ -1,10 +1,14 @@
 package SN.BANK.account.Integrate;
 
 import SN.BANK.account.dto.request.CreateAccountRequest;
+import SN.BANK.account.entity.Account;
+import SN.BANK.account.service.AccountService;
 import SN.BANK.domain.Users;
 import SN.BANK.domain.enums.Currency;
 import SN.BANK.user.repository.UsersRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -31,9 +36,18 @@ class AccountIntegrateTest {
     MockMvc mockMvc;
 
     @Autowired
+    AccountService accountService;
+
+    @Autowired
     UsersRepository usersRepository;
 
     ObjectMapper objectMapper = new ObjectMapper();
+    MockHttpSession session;
+
+    @BeforeEach
+    void setUp() {
+        session = new MockHttpSession();
+    }
 
     @Test
     @DisplayName("계좌 개설 통합 테스트")
@@ -54,7 +68,6 @@ class AccountIntegrateTest {
                 .currency(Currency.KRW)
                 .build();
 
-        MockHttpSession session = new MockHttpSession();
         session.setAttribute("user", savedUser.getId());
 
         // when
@@ -72,4 +85,77 @@ class AccountIntegrateTest {
 
     }
 
+    @Test
+    @DisplayName("전체 계좌 조회 테스트")
+    void findAllAccount() throws Exception {
+
+        // given
+        Users user = Users.builder()
+                .name("테스트이름")
+                .loginId("test1234")
+                .password("test1234")
+                .build();
+
+        Users savedUser = usersRepository.save(user);
+
+        CreateAccountRequest createAccountRequest1 = CreateAccountRequest.builder()
+                .accountName("Test Account")
+                .password("1234")
+                .currency(Currency.KRW)
+                .build();
+
+        CreateAccountRequest createAccountRequest2 = CreateAccountRequest.builder()
+                .accountName("Test Account")
+                .password("1234")
+                .currency(Currency.KRW)
+                .build();
+
+        Account account1 = accountService.createAccount(savedUser.getId(), createAccountRequest1);
+        Account account2 = accountService.createAccount(savedUser.getId(), createAccountRequest2);
+
+        session.setAttribute("user", savedUser.getId());
+
+        // when
+        mockMvc.perform(get("/accounts")
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_JSON))
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("계좌 단일 조회 테스트")
+    void findAccount() throws Exception {
+
+        // given
+        Users user = Users.builder()
+                .name("테스트이름")
+                .loginId("test1234")
+                .password("test1234")
+                .build();
+
+        Users savedUser = usersRepository.save(user);
+
+        CreateAccountRequest createAccountRequest = CreateAccountRequest.builder()
+                .accountName("Test Account")
+                .password("1234")
+                .currency(Currency.KRW)
+                .build();
+
+        Account account = accountService.createAccount(savedUser.getId(), createAccountRequest);
+
+        session.setAttribute("user", savedUser.getId());
+
+        // when
+        mockMvc.perform(get("/accounts/{id}", account.getId())
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_JSON))
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountNumber").value(Matchers.hasLength(14)))
+                .andExpect(jsonPath("$.accountName").value("Test Account"))
+                .andDo(print());
+    }
 }
