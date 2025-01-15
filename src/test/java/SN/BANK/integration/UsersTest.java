@@ -161,5 +161,38 @@ public class UsersTest {
                 .andDo(print());
     }
 
+    @Test
+    @DisplayName("로그아웃 테스트")
+    public void logoutTest() throws Exception {
+        String name = "테스트이름";
+        String loginId = "testId";
+        String password = "testPassword";
+        UsersRequestDto usersRequestDto = UsersRequestDto.builder().name(name).loginId(loginId).password(password).build();
+        Long userId = usersService.join(usersRequestDto);
+        LoginDto loginDto = LoginDto.builder().loginId(loginId).password(password).build();
+        String body = objectMapper.writeValueAsString(loginDto);
+        mockMvc.perform(post("/users/login").content(body).contentType(MediaType.APPLICATION_JSON).session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value("로그인 성공"))
+                .andDo(print());
+
+        mockMvc.perform(get("/users").contentType(MediaType.APPLICATION_JSON).session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.name").value(name))
+                .andExpect(jsonPath("$.loginId").value(loginId))
+                .andDo(print());
+
+        mockMvc.perform(get("/users/logout").content(body).contentType(MediaType.APPLICATION_JSON).session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value("로그아웃 성공"))
+                .andDo(print());
+
+        mockMvc.perform(get("/users").contentType(MediaType.APPLICATION_JSON).session(session))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$").value("존재하지 않는 유저입니다."))
+                .andDo(print());
+    }
+
 
 }
