@@ -2,6 +2,7 @@ package SN.BANK.account.entity;
 
 import SN.BANK.domain.Users;
 import SN.BANK.domain.enums.Currency;
+import SN.BANK.users.entity.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
