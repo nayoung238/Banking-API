@@ -3,6 +3,7 @@ package SN.BANK.payment.service;
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
 import SN.BANK.domain.Account;
+import SN.BANK.domain.enums.PaymentStatus;
 import SN.BANK.payment.entity.PaymentList;
 import SN.BANK.domain.enums.PaymentTag;
 import SN.BANK.payment.dto.PaymentListResponseDto;
@@ -61,12 +62,11 @@ public class PaymentService {
                 .amount(request.getAmount()) //입금계좌 기준 금액
                 .exchangeRate(exchangeRate)
                 .currency(depositAccount.getCurrency())
+                .paymentStatus(PaymentStatus.결제완료)
                 .build();
 
         paymentListRepository.save(payment);
 
-
-        // 응답 반환
         return new PaymentResponseDto(payment.getId());
     }
 
@@ -89,9 +89,8 @@ public class PaymentService {
         depositAccount.withdraw(paymentList.getAmount()); // 입금 계좌에서 원래 금액 차감
         withdrawAccount.deposit( (paymentList.getAmount().multiply(paymentList.getExchangeRate()).setScale(0,RoundingMode.DOWN))); // 출금 계좌에 환불 금액 추가
 
-
-        // 결제 내역 삭제
-        paymentListRepository.delete(paymentList);
+        // 결제 상태 변경
+        paymentList.setPaymentStatus(PaymentStatus.결제취소);
 
     }
 

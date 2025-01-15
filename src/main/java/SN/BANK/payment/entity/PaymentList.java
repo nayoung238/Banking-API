@@ -1,6 +1,5 @@
 package SN.BANK.payment.entity;
 
-
 import SN.BANK.account.enums.Currency;
 import SN.BANK.payment.enums.PaymentStatus;
 import jakarta.persistence.*;

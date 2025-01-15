@@ -1,5 +1,6 @@
 package SN.BANK.payment.dto;
 
+import SN.BANK.domain.enums.PaymentStatus;
 import SN.BANK.payment.entity.PaymentList;
 import SN.BANK.domain.enums.Currency;
 import SN.BANK.domain.enums.PaymentTag;
@@ -21,6 +22,7 @@ public class PaymentListResponseDto {
     private BigDecimal amount;
     private BigDecimal exchangeRate;
     private Currency currency;
+    private PaymentStatus paymentStatus;
 
     public static PaymentListResponseDto of(PaymentList paymentList){
         return new PaymentListResponseDto(
@@ -31,7 +33,8 @@ public class PaymentListResponseDto {
                 paymentList.getWithdrawId(),
                 paymentList.getAmount(),
                 paymentList.getExchangeRate(),
-                paymentList.getCurrency()
+                paymentList.getCurrency(),
+                paymentList.getPaymentStatus()
         );
 
     }
