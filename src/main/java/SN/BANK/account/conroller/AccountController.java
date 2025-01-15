@@ -1,6 +1,7 @@
 package SN.BANK.account.conroller;
 
 import SN.BANK.account.dto.request.CreateAccountRequest;
+import SN.BANK.account.dto.response.AccountResponse;
 import SN.BANK.account.dto.response.CreateAccountResponse;
 import SN.BANK.account.service.AccountService;
 import SN.BANK.account.entity.Account;
@@ -9,9 +10,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,6 +30,31 @@ public class AccountController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(createAccountResponse);
+    }
+
+    @GetMapping("/accounts")
+    public ResponseEntity<List<AccountResponse>> findAllAccounts(HttpSession session) {
+        Long userId = (Long) session.getAttribute("user");
+
+        List<Account> accounts = accountService.findAllAccounts(userId);
+        List<AccountResponse> response = accounts.stream()
+                .map(AccountResponse::of)
+                .toList();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);
+    }
+
+    @GetMapping("/accounts/{id}")
+    public ResponseEntity<AccountResponse> findAccount(HttpSession session,
+                                                       @PathVariable(name = "id") Long accountId) {
+        Long userId = (Long) session.getAttribute("user");
+
+        Account account = accountService.findAccount(userId, accountId);
+        AccountResponse response = AccountResponse.of(account);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);
     }
 
 }

@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -39,12 +41,37 @@ public class AccountService {
                 .user(user)
                 .password(request.getPassword())
                 .accountNumber(accountNumber)
-                .money(0L)
+                .money(BigDecimal.valueOf(0))
                 .accountName(accountName)
                 .currency(request.getCurrency())
                 .build();
 
         return accountRepository.save(account);
+    }
+
+    public Account findAccount(Long userId, Long accountId) {
+        // 1. 유효한 사용자인지 검증
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+
+        // 2. 유효한 계좌인지 검증
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+
+        // 3. 해당 계좌가 사용자의 계좌인지 검증
+        if (!account.getUser().equals(user)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
+        }
+
+        return account;
+    }
+
+    public List<Account> findAllAccounts(Long userId) {
+        // 1. 유효한 사용자인지 검증
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+
+        return accountRepository.findByUser(user);
     }
 
     /**
