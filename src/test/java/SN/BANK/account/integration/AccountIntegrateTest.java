@@ -1,11 +1,12 @@
-package SN.BANK.account.Integrate;
+package SN.BANK.account.integration;
 
 import SN.BANK.account.dto.request.CreateAccountRequest;
 import SN.BANK.account.entity.Account;
+import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.account.service.AccountService;
-import SN.BANK.domain.Users;
 import SN.BANK.domain.enums.Currency;
-import SN.BANK.user.repository.UsersRepository;
+import SN.BANK.users.entity.Users;
+import SN.BANK.users.repository.UsersRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,8 +28,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@Transactional
 @AutoConfigureMockMvc
+@Transactional
 @ActiveProfiles("test")
 class AccountIntegrateTest {
 
@@ -37,6 +38,9 @@ class AccountIntegrateTest {
 
     @Autowired
     AccountService accountService;
+
+    @Autowired
+    AccountRepository accountRepository;
 
     @Autowired
     UsersRepository usersRepository;
@@ -77,7 +81,7 @@ class AccountIntegrateTest {
                         .content(objectMapper.writeValueAsString(createAccountRequest)))
                 // then
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.accountId").value(1L))
+                .andExpect(jsonPath("$.accountId").isNotEmpty())
                 .andExpect(jsonPath("$.accountNumber").isNotEmpty())
                 .andExpect(jsonPath("$.currency").value(Currency.KRW.name()))
                 .andExpect(jsonPath("$.createdAt").exists())

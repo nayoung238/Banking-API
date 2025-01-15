@@ -5,15 +5,14 @@ import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.account.entity.Account;
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
-import SN.BANK.domain.Users;
 import SN.BANK.domain.enums.Currency;
-import SN.BANK.user.repository.UsersRepository;
+import SN.BANK.users.entity.Users;
+import SN.BANK.users.repository.UsersRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
