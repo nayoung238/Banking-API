@@ -81,6 +81,22 @@ public class UsersTest {
                 .andDo(print());
     }
 
+
+    @Test
+    @DisplayName("회원 가입 실패 테스트 - 유효성검사 실패")
+    public void joinFailValidTest() throws Exception {
+        String name = null;
+        String loginId = "testId";
+        String password = "testPassword";
+        UsersRequestDto usersRequestDto = UsersRequestDto.builder().name(name).loginId(loginId).password(password).build();
+        String body = objectMapper.writeValueAsString(usersRequestDto);
+        usersRepository.save(Users.builder().loginId(loginId).build());
+        mockMvc.perform(post("/users").content(body).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$").value("must not be blank"))
+                .andDo(print());
+    }
+
     @Test
     @DisplayName("로그인 성공 테스트")
     public void loginTest() throws Exception {
