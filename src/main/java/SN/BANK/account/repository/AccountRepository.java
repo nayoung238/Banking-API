@@ -1,7 +1,7 @@
 package SN.BANK.account.repository;
 
 import SN.BANK.account.entity.Account;
-import SN.BANK.domain.Users;
+import SN.BANK.users.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
