@@ -6,9 +6,9 @@ on:
     types:
       - completed
 
-  pull_request:
-    types:
-      - closed
+  #//pull_request:
+    #types:
+      #- closed
 
 jobs:
   build:

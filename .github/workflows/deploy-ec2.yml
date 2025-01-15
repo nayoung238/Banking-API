@@ -6,13 +6,13 @@ on:
     types:
       - completed
 
-  pull_request:
-    types:
-      - closed
+  #pull_request:
+    #types:
+      #- closed
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true
+   # if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to EC2
