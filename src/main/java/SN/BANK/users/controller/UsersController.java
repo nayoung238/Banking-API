@@ -3,12 +3,14 @@ package SN.BANK.users.controller;
 import SN.BANK.users.dto.LoginDto;
 import SN.BANK.users.dto.UsersRequestDto;
 import SN.BANK.users.dto.UsersResponseDto;
+import SN.BANK.users.entity.CustomUserDetails;
 import SN.BANK.users.service.UsersService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,9 +33,8 @@ public class UsersController {
     }
 
     @GetMapping("")
-    public ResponseEntity<UsersResponseDto> getUser(HttpSession session){
-        Long userId = (Long) session.getAttribute("user");
-        return ResponseEntity.ok(usersService.getUserInformation(userId));
+    public ResponseEntity<UsersResponseDto> getUser(@AuthenticationPrincipal CustomUserDetails customUserDetails){;
+        return ResponseEntity.ok(usersService.getUserInformation(customUserDetails.getUsers().getId()));
     }
 
     @GetMapping("/logout")
