@@ -10,7 +10,7 @@ import SN.BANK.payment.dto.PaymentListResponseDto;
 import SN.BANK.payment.repository.PaymentListRepository;
 import SN.BANK.payment.dto.PaymentRequestDto;
 import SN.BANK.payment.dto.PaymentResponseDto;
-import SN.BANK.payment.tempRepository.TempAccountRepository;
+import SN.BANK.account.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,14 +26,14 @@ import java.util.stream.Collectors;
 public class PaymentService {
 
     private final ExchangeRateService exchangeRateService;
-    private final TempAccountRepository tempAccountRepository;
+    private final AccountRepository accountRepository;
     private final PaymentListRepository paymentListRepository;
 
     @Transactional(rollbackFor = Exception.class)
     public PaymentResponseDto makePayment(PaymentRequestDto request) {
 
         // 출금 계좌 확인
-        Account withdrawAccount = tempAccountRepository.findById(request.getWithdrawId())
+        Account withdrawAccount = accountRepository.findById(request.getWithdrawId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
         // 계좌 비밀번호 확인
@@ -45,7 +45,7 @@ public class PaymentService {
             throw new CustomException(ErrorCode.INSUFFICIENT_BALANCE);
         }
         // 입금 계좌 확인
-        Account depositAccount = tempAccountRepository.findById(request.getDepositId())
+        Account depositAccount = accountRepository.findById(request.getDepositId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
         // 환율 가져오기
          BigDecimal exchangeRate = exchangeRateService.getExchangeRate(withdrawAccount.getCurrency(), depositAccount.getCurrency());
@@ -81,9 +81,9 @@ public class PaymentService {
         }
 
         // 출금 계좌와 입금 계좌 조회
-        Account withdrawAccount = tempAccountRepository.findById(paymentList.getWithdrawId())
+        Account withdrawAccount = accountRepository.findById(paymentList.getWithdrawId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
-        Account depositAccount = tempAccountRepository.findById(paymentList.getDepositId())
+        Account depositAccount = accountRepository.findById(paymentList.getDepositId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
         // 잔액 확인
@@ -105,7 +105,7 @@ public class PaymentService {
             throw new CustomException(ErrorCode.NOT_FOUND_USER);
         }
         // 유저의 계좌 ID 목록 조회
-        List<Long> userAccountIds = tempAccountRepository.findAllByUser_Id(userId)
+        List<Long> userAccountIds = accountRepository.findAllByUser_Id(userId)
                 .stream()
                 .map(Account::getId)
                 .collect(Collectors.toList());
