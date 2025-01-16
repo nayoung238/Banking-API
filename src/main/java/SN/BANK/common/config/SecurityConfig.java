@@ -3,6 +3,7 @@ package SN.BANK.common.config;
 import SN.BANK.common.exception.CustomAccessDeniedHandler;
 import SN.BANK.common.exception.CustomAuthenticationEntryPoint;
 import SN.BANK.users.service.CustomUserDetailsService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
@@ -27,14 +29,14 @@ public class SecurityConfig {
                 .sessionManagement(session->session.maximumSessions(1));
         httpSecurity
                 .authorizeHttpRequests(auth->auth
-                                .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
-                                .requestMatchers(HttpMethod.GET,"/users").hasAnyRole("USER","ADMIN")
-                                .requestMatchers("/**").permitAll()
-                        );
+                        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/users").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/**").permitAll()
+                );
         httpSecurity
-                .addFilterBefore(new SessionAuthenticationFilter(customUserDetailsService), UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exception->exception.accessDeniedHandler(new CustomAccessDeniedHandler())
-                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint()));
+                .addFilterBefore(new SessionAuthenticationFilter(customUserDetailsService,objectMapper), UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exception->exception.accessDeniedHandler(new CustomAccessDeniedHandler(objectMapper))
+                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint(objectMapper)));
         return httpSecurity.build();
     }
 
