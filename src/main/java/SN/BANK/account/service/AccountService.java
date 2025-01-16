@@ -95,6 +95,15 @@ public class AccountService {
         return accountNumber;
     }
 
+    public boolean isAccountOwner(Account account, Long userId) {
+        // 1. 유효한 사용자인지 검증
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+
+        // 2. 계좌가 사용자의 것인지 검증
+        return account.getUser().equals(user);
+    }
+
     public Account findValidAccount(Long accountId) {
         return accountRepository.findById(accountId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
