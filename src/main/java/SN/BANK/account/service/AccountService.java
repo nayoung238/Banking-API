@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -76,7 +76,7 @@ public class AccountService {
 
     /**
      * 계좌 번호 생성기
-     * UUID 방식으로 생성
+     * Random 방식으로 생성
      *
      * @return accountNumber
      */
@@ -84,15 +84,24 @@ public class AccountService {
 
         // 1. 계좌 번호를 생성하고 AccountRepository 를 통해 고유성을 체크한다.
         //  1-1. 고유하지 않다면, 고유할 때까지 생성기를 돌려서 계좌 번호를 생성한다.
+
         String accountNumber;
-
         do {
-            accountNumber = UUID.randomUUID().toString().replaceAll("[^0-9]", "");
-        } while(accountNumber.length() < 14);
-
-        accountNumber = accountNumber.substring(0, 14);
+            accountNumber = generateNumber();
+        } while (accountRepository.existsByAccountNumber(accountNumber));
 
         // 2. 생성된 계좌 번호를 반환한다.
         return accountNumber;
+    }
+
+    private String generateNumber() {
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < 14; i++) {
+            sb.append(random.nextInt(10));
+        }
+
+        return sb.toString();
     }
 }
