@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @Builder
 public class TransactionResponse {
 
+    private Long transactionId;
+
     private Long senderAccountId;
 
     private Long receiverAccountId;
@@ -26,6 +28,7 @@ public class TransactionResponse {
 
     public static TransactionResponse of(TransactionEntity tx) {
         return TransactionResponse.builder()
+                .transactionId(tx.getId())
                 .senderAccountId(tx.getSenderAccountId())
                 .receiverAccountId(tx.getReceiverAccountId())
                 .transactionType(tx.getType())
