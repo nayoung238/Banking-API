@@ -7,6 +7,7 @@ import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
 import SN.BANK.users.entity.Users;
 import SN.BANK.users.repository.UsersRepository;
+import SN.BANK.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,14 +21,13 @@ import java.util.UUID;
 public class AccountService {
 
     private final AccountRepository accountRepository;
-    private final UsersRepository userRepository;
+    private final UsersService usersService;
 
     @Transactional
     public Account createAccount(Long userId, CreateAccountRequest request) {
 
         // username 을 통한 사용자 조회 및 검증 (+ exception) ✅
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+        Users user = usersService.validateUser(userId);
 
         // CreateAccountRequest 데이터 복호화 과정 필요 ❎
 
@@ -51,8 +51,7 @@ public class AccountService {
 
     public Account findAccount(Long userId, Long accountId) {
         // 1. 유효한 사용자인지 검증
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+        Users user = usersService.validateUser(userId);
 
         // 2. 유효한 계좌인지 검증
         Account account = findValidAccount(accountId);
@@ -67,9 +66,7 @@ public class AccountService {
 
     public List<Account> findAllAccounts(Long userId) {
         // 1. 유효한 사용자인지 검증
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
-
+        Users user = usersService.validateUser(userId);
         return accountRepository.findByUser(user);
     }
 
@@ -97,8 +94,7 @@ public class AccountService {
 
     public boolean isAccountOwner(Account account, Long userId) {
         // 1. 유효한 사용자인지 검증
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+        Users user = usersService.validateUser(userId);
 
         // 2. 계좌가 사용자의 것인지 검증
         return account.getUser().equals(user);

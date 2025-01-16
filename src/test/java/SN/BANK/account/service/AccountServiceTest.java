@@ -7,7 +7,7 @@ import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
 import SN.BANK.account.enums.Currency;
 import SN.BANK.users.entity.Users;
-import SN.BANK.users.repository.UsersRepository;
+import SN.BANK.users.service.UsersService;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,7 +19,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -29,7 +28,7 @@ class AccountServiceTest {
     AccountRepository accountRepository;
 
     @Mock
-    UsersRepository usersRepository;
+    UsersService usersService;
 
     @InjectMocks
     AccountService accountService;
@@ -47,19 +46,21 @@ class AccountServiceTest {
     void createAccount() {
 
         // given
+        Long userId = 1L;
+
         CreateAccountRequest createAccountRequest =
                 CreateAccountRequest.builder()
                         .password("1234")
                         .currency(Currency.KRW)
                         .build();
 
-        when(usersRepository.findById(eq(1L))).thenReturn(Optional.of(user));
+        when(usersService.validateUser(userId)).thenReturn(user);
         when(accountRepository.existsByAccountNumber(any(String.class))).thenReturn(false);
         // save 메서드 호출 시 전달된 객체를 그대로 반환하도록.
         when(accountRepository.save(any(Account.class))).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
         // when
-        Account createdAccount = accountService.createAccount(1L, createAccountRequest);
+        Account createdAccount = accountService.createAccount(userId, createAccountRequest);
 
         // then
         assertNotNull(createdAccount);
@@ -88,7 +89,7 @@ class AccountServiceTest {
 
         List<Account> accounts = List.of(account1, account2);
 
-        when(usersRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(usersService.validateUser(userId)).thenReturn(user);
         when(accountRepository.findByUser(user)).thenReturn(accounts);
 
         // when
@@ -112,7 +113,7 @@ class AccountServiceTest {
                 .user(user)
                 .build();
 
-        when(usersRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(usersService.validateUser(userId)).thenReturn(user);
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
 
         // when
@@ -141,7 +142,7 @@ class AccountServiceTest {
                 .user(anotherUser)
                 .build();
 
-        when(usersRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(usersService.validateUser(userId)).thenReturn(user);
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
 
         // when
@@ -160,7 +161,7 @@ class AccountServiceTest {
         Long userId = 1L;
         Long accountId = 123L;
 
-        when(usersRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(usersService.validateUser(userId)).thenReturn(user);
         when(accountRepository.findById(accountId)).thenReturn(Optional.empty());
 
         // when

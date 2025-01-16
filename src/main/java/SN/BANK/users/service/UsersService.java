@@ -17,8 +17,8 @@ public class UsersService {
     private final UsersRepository usersRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public Long join(UsersRequestDto usersRequestDto){
-        if(usersRepository.existsByLoginId(usersRequestDto.getLoginId())){
+    public Long join(UsersRequestDto usersRequestDto) {
+        if (usersRepository.existsByLoginId(usersRequestDto.getLoginId())) {
             throw new CustomException(ErrorCode.DUPLICATE_LOGIN_ID);
         }
         String encodedPassword = bCryptPasswordEncoder.encode(usersRequestDto.getPassword());
@@ -26,19 +26,24 @@ public class UsersService {
         return user.getId();
     }
 
-    public UsersResponseDto getUserInformation(Long userId){
-        if(userId==null){
+    public UsersResponseDto getUserInformation(Long userId) {
+        if (userId == null) {
             throw new CustomException(ErrorCode.NOT_FOUND_USER);
         }
-        Users user = usersRepository.findById(userId).orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND_USER));
+        Users user = validateUser(userId);
         return UsersResponseDto.of(user);
     }
 
-    public Long checkLogin(LoginDto loginDto){
-        Users user = usersRepository.findByLoginId(loginDto.getLoginId()).orElseThrow(()->new CustomException(ErrorCode.LOGIN_FAIL));
-        if(!bCryptPasswordEncoder.matches(loginDto.getPassword(),user.getPassword())){
+    public Long checkLogin(LoginDto loginDto) {
+        Users user = usersRepository.findByLoginId(loginDto.getLoginId()).orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAIL));
+        if (!bCryptPasswordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
             throw new CustomException(ErrorCode.LOGIN_FAIL);
         }
         return user.getId();
+    }
+
+    public Users validateUser(Long userId) {
+        return usersRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
 }
