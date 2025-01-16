@@ -4,23 +4,31 @@ import SN.BANK.account.entity.Account;
 import SN.BANK.account.service.AccountService;
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
+import SN.BANK.transaction.dto.request.TransactionFindDetailRequest;
 import SN.BANK.transaction.dto.request.TransactionRequest;
+import SN.BANK.transaction.dto.response.TransactionFindDetailResponse;
+import SN.BANK.transaction.dto.response.TransactionFindResponse;
 import SN.BANK.transaction.dto.response.TransactionResponse;
 import SN.BANK.transaction.entity.TransactionEntity;
 import SN.BANK.transaction.enums.TransactionType;
 import SN.BANK.transaction.repository.TransactionRepository;
+import SN.BANK.users.entity.Users;
+import SN.BANK.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
 
+    private final UsersService usersService;
     private final AccountService accountService;
     private final TransactionRepository transactionRepository;
 //    private final ExchangeRateService exchangeRateService;
@@ -116,6 +124,50 @@ public class TransactionService {
         transactionRepository.save(receiverTx);
 
         return TransactionResponse.of(senderTx);
+    }
+
+    /**
+     * 전체 이체 내역 조회
+     */
+    public List<TransactionFindResponse> findAllTransaction(Long userId, Long accountId) {
+
+        // 유효한 사용자인지 검증
+        Users user = usersService.validateUser(userId);
+
+        // 유효한 계좌인지 검증
+        Account account = accountService.findValidAccount(accountId);
+
+        // 해당 계좌가 사용자의 계좌인지 검증
+        accountService.validAccountOwner(account, user.getId());
+
+        List<TransactionEntity> txFindResponse = new ArrayList<>();
+        txFindResponse.addAll(transactionRepository.findBySenderAccountIdAndType(accountId, TransactionType.WITHDRAWAL));
+        txFindResponse.addAll(transactionRepository.findByReceiverAccountIdAndType(accountId, TransactionType.WITHDRAWAL));
+
+        return txFindResponse.stream()
+                .map(tx -> TransactionFindResponse.of(tx, account.getAccountNumber()))
+                .toList();
+    }
+
+    /**
+     * 이체 내역 단건 조회
+     */
+    public TransactionFindDetailResponse findTransaction(Long userId, TransactionFindDetailRequest request) {
+
+        // 유효한 사용자인지 검증
+        Users user = usersService.validateUser(userId);
+
+        // 유효한 계좌인지 검증
+        Account account = accountService.findValidAccount(request.getAccountId());
+
+        // 해당 계좌가 사용자의 계좌인지 검증
+        accountService.validAccountOwner(account, user.getId());
+
+        // 유효한 거래 내역인지 검증
+        TransactionEntity tx = transactionRepository.findById(request.getTransactionId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRANSACTION));
+
+        return TransactionFindDetailResponse.of(tx);
     }
 
     private String generateTransactionGroupId() {

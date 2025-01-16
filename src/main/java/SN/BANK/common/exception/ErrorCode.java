@@ -20,7 +20,8 @@ public enum ErrorCode {
 
     // Transfer
     INSUFFICIENT_MONEY(HttpStatus.BAD_REQUEST, "계좌의 잔액이 부족합니다."),
-    INVALID_TRANSFER(HttpStatus.BAD_REQUEST, "같은 계좌 간 이체는 불가합니다.");
+    INVALID_TRANSFER(HttpStatus.BAD_REQUEST, "같은 계좌 간 이체는 불가합니다."),
+    NOT_FOUND_TRANSACTION(HttpStatus.NOT_FOUND, "존재하지 않는 거래내역입니다.");
 
     private final HttpStatus status;
     private final String message;

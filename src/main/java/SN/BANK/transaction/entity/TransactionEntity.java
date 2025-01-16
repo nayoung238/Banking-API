@@ -42,10 +42,13 @@ public class TransactionEntity {
     @Column(name = "transaction_group_id", nullable = false)
     private String groupId;
 
+    private String description;
+
     @Builder
     public TransactionEntity(Long senderAccountId, Long receiverAccountId,
                              TransactionType type, LocalDateTime transactedAt, BigDecimal amount,
-                             Currency currency, BigDecimal exchangeRate, BigDecimal balance, String groupId) {
+                             Currency currency, BigDecimal exchangeRate, BigDecimal balance, String groupId,
+                             String description) {
         this.senderAccountId = senderAccountId;
         this.receiverAccountId = receiverAccountId;
         this.type = type;
@@ -55,5 +58,6 @@ public class TransactionEntity {
         this.exchangeRate = exchangeRate;
         this.balance = balance;
         this.groupId = groupId;
+        this.description = description;
     }
 }
