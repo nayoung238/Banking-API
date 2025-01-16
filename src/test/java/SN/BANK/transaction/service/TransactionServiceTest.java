@@ -10,6 +10,7 @@ import SN.BANK.transaction.dto.response.TransactionResponse;
 import SN.BANK.transaction.enums.TransactionType;
 import SN.BANK.transaction.repository.TransactionRepository;
 import SN.BANK.users.entity.Users;
+import SN.BANK.users.service.UsersService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,9 @@ class TransactionServiceTest {
 
     @Mock
     AccountService accountService;
+
+    @Mock
+    UsersService usersService;
 
     @InjectMocks
     TransactionService transactionService;
@@ -96,7 +100,7 @@ class TransactionServiceTest {
 
         when(accountService.findValidAccount(1L)).thenReturn(senderAccount);
         when(accountService.findValidAccount(2L)).thenReturn(receiverAccount);
-        when(accountService.isAccountOwner(senderAccount, userId)).thenReturn(true);
+        when(usersService.validateUser(userId)).thenReturn(sender);
         when(transactionRepository.existsByGroupId(any())).thenReturn(false);
 
         // when
@@ -126,7 +130,7 @@ class TransactionServiceTest {
 
         when(accountService.findValidAccount(1L)).thenReturn(senderAccount);
         when(accountService.findValidAccount(2L)).thenReturn(receiverAccount);
-        when(accountService.isAccountOwner(senderAccount, userId)).thenReturn(true);
+        when(usersService.validateUser(userId)).thenReturn(sender);
 
         // when
         CustomException customException =
@@ -152,7 +156,7 @@ class TransactionServiceTest {
 
         when(accountService.findValidAccount(1L)).thenReturn(senderAccount);
         when(accountService.findValidAccount(2L)).thenReturn(receiverAccount);
-        when(accountService.isAccountOwner(senderAccount, userId)).thenReturn(true);
+        when(usersService.validateUser(userId)).thenReturn(sender);
 
         // when
         CustomException customException =
@@ -177,7 +181,7 @@ class TransactionServiceTest {
                 .build();
 
         when(accountService.findValidAccount(1L)).thenReturn(senderAccount);
-        when(accountService.isAccountOwner(senderAccount, userId)).thenReturn(true);
+        when(usersService.validateUser(userId)).thenReturn(sender);
 
         // when
         CustomException customException =

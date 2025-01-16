@@ -6,7 +6,6 @@ import SN.BANK.account.entity.Account;
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
 import SN.BANK.users.entity.Users;
-import SN.BANK.users.repository.UsersRepository;
 import SN.BANK.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -92,12 +91,13 @@ public class AccountService {
         return accountNumber;
     }
 
-    public boolean isAccountOwner(Account account, Long userId) {
+    public void validAccountOwner(Account account, Long userId) {
         // 1. 유효한 사용자인지 검증
         Users user = usersService.validateUser(userId);
 
         // 2. 계좌가 사용자의 것인지 검증
-        return account.getUser().equals(user);
+        if (!account.getUser().equals(user))
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
     }
 
     public Account findValidAccount(Long accountId) {

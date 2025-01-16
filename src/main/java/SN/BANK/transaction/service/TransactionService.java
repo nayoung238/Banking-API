@@ -40,9 +40,7 @@ public class TransactionService {
         // 1-4. 잔액이 보내려는 금액보다 크거나 같은지
         Account senderAccount = accountService.findValidAccount(transactionRequest.getSenderAccountId());
 
-        if (!accountService.isAccountOwner(senderAccount, userId)) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
-        }
+        accountService.validAccountOwner(senderAccount, userId);
 
         if (!senderAccount.getPassword().equals(transactionRequest.getAccountPassword())) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
