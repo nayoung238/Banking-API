@@ -1,4 +1,4 @@
-package SN.BANK.domain.enums;
+package SN.BANK.account.enums;
 
 import lombok.RequiredArgsConstructor;
 

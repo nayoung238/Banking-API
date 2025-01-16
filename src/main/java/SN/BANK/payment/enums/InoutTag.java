@@ -1,4 +1,4 @@
-package SN.BANK.domain.enums;
+package SN.BANK.payment.enums;
 
 public enum InoutTag {
 

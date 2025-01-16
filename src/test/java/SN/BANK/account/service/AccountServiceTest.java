@@ -5,7 +5,7 @@ import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.account.entity.Account;
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
-import SN.BANK.domain.enums.Currency;
+import SN.BANK.account.enums.Currency;
 import SN.BANK.users.entity.Users;
 import SN.BANK.users.repository.UsersRepository;
 import org.junit.jupiter.api.*;

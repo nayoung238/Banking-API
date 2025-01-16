@@ -1,7 +1,7 @@
 package SN.BANK.account.dto.response;
 
 import SN.BANK.account.entity.Account;
-import SN.BANK.domain.enums.Currency;
+import SN.BANK.account.enums.Currency;
 import lombok.Builder;
 import lombok.Data;
 

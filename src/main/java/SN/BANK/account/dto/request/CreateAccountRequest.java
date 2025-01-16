@@ -1,6 +1,6 @@
 package SN.BANK.account.dto.request;
 
-import SN.BANK.domain.enums.Currency;
+import SN.BANK.account.enums.Currency;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;

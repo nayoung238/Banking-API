@@ -4,7 +4,7 @@ import SN.BANK.account.dto.request.CreateAccountRequest;
 import SN.BANK.account.entity.Account;
 import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.account.service.AccountService;
-import SN.BANK.domain.enums.Currency;
+import SN.BANK.account.enums.Currency;
 import SN.BANK.users.entity.Users;
 import SN.BANK.users.repository.UsersRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
