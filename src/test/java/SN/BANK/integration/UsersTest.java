@@ -169,11 +169,11 @@ public class UsersTest {
     }
 
     @Test
-    @DisplayName("유저 정보 호출 실패 테스트 - 존재하지 않는 id")
+    @DisplayName("유저 정보 호출 실패 테스트 - 인증 실패")
     public void getUserFailTest() throws Exception {
         mockMvc.perform(get("/users").contentType(MediaType.APPLICATION_JSON).session(session))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$").value("존재하지 않는 유저입니다."))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$").value("인증이 실패하였습니다."))
                 .andDo(print());
     }
 
@@ -205,8 +205,8 @@ public class UsersTest {
                 .andDo(print());
 
         mockMvc.perform(get("/users").contentType(MediaType.APPLICATION_JSON).session(session))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$").value("존재하지 않는 유저입니다."))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$").value("인증이 실패하였습니다."))
                 .andDo(print());
     }
 
