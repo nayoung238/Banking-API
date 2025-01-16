@@ -30,12 +30,20 @@ public class PaymentService {
     private final PaymentListRepository paymentListRepository;
 
     @Transactional(rollbackFor = Exception.class)
-    public PaymentResponseDto makePayment(PaymentRequestDto request) {
+    public PaymentResponseDto makePayment(PaymentRequestDto request,Long userId) {
+        // 유저 확인
+        if(userId==null){
+            throw new CustomException(ErrorCode.NOT_FOUND_USER);
+        }
 
         // 출금 계좌 확인
         Account withdrawAccount = accountRepository.findById(request.getWithdrawId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
+        // 출금 계좌 소유자 검증
+        if (!withdrawAccount.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.INVALID_USER_ACCESS);
+        }
         // 계좌 비밀번호 확인
         if (!withdrawAccount.getPassword().equals(request.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
@@ -70,21 +78,32 @@ public class PaymentService {
         return new PaymentResponseDto(payment.getId());
     }
     @Transactional(rollbackFor = Exception.class)
-    public void refundPayment(Long paymentId) {
+    public void refundPayment(Long paymentId, Long userId) {
+
+        // 유저 확인
+        if(userId==null){
+            throw new CustomException(ErrorCode.NOT_FOUND_USER);
+        }
+
         // 결제 내역 조회
         PaymentList paymentList = paymentListRepository.findById(paymentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
-
-        // 이미 결제 취소된 상태인지 확인
-        if (paymentList.getPaymentStatus() == PaymentStatus.결제취소) {
-            throw new CustomException(ErrorCode.PAYMENT_ALREADY_CANCELLED);
-        }
 
         // 출금 계좌와 입금 계좌 조회
         Account withdrawAccount = accountRepository.findById(paymentList.getWithdrawId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
         Account depositAccount = accountRepository.findById(paymentList.getDepositId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+
+        // 출금 계좌 소유자 검증
+        if (!withdrawAccount.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.INVALID_USER_ACCESS);
+        }
+
+        // 이미 결제 취소된 상태인지 확인
+        if (paymentList.getPaymentStatus() == PaymentStatus.결제취소) {
+            throw new CustomException(ErrorCode.PAYMENT_ALREADY_CANCELLED);
+        }
 
         // 잔액 확인
         if (depositAccount.getMoney().compareTo(paymentList.getAmount()) < 0 ) {
@@ -101,6 +120,7 @@ public class PaymentService {
 
 
     public List<PaymentListResponseDto> getUserPaymentHistory(Long userId) {
+        //유저 확인
         if(userId==null){
             throw new CustomException(ErrorCode.NOT_FOUND_USER);
         }
