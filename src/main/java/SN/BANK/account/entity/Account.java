@@ -1,6 +1,6 @@
 package SN.BANK.account.entity;
 
-import SN.BANK.domain.enums.Currency;
+import SN.BANK.account.enums.Currency;
 import SN.BANK.users.entity.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -47,5 +47,9 @@ public class Account {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Currency currency;
+
+    public void changeMoney(BigDecimal money) {
+        this.money = money;
+    }
 
 }

@@ -55,8 +55,7 @@ public class AccountService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
         // 2. 유효한 계좌인지 검증
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+        Account account = findValidAccount(accountId);
 
         // 3. 해당 계좌가 사용자의 계좌인지 검증
         if (!account.getUser().equals(user)) {
@@ -94,5 +93,10 @@ public class AccountService {
 
         // 2. 생성된 계좌 번호를 반환한다.
         return accountNumber;
+    }
+
+    public Account findValidAccount(Long accountId) {
+        return accountRepository.findById(accountId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
     }
 }
