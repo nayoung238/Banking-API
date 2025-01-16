@@ -1,7 +1,6 @@
 package SN.BANK.transfer.service;
 
 import SN.BANK.account.entity.Account;
-import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.account.service.AccountService;
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
@@ -23,7 +22,6 @@ import java.math.BigDecimal;
 public class TransferService {
 
     private final AccountService accountService;
-    private final AccountRepository accountRepository;
     private final PaymentListRepository paymentListRepository;
 //    private final ExchangeRateService exchangeRateService;
 
@@ -79,9 +77,6 @@ public class TransferService {
 
         BigDecimal addedMoney = toAccount.getMoney().add(convertedAmount);
         toAccount.changeMoney(addedMoney);
-
-        accountRepository.save(fromAccount);
-        accountRepository.save(toAccount);
 
         // 5. 거래 내역 생성
         // 5-1. 입출금 내역이 들어갈 거래 내역
