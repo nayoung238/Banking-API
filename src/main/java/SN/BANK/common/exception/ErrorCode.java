@@ -15,7 +15,7 @@ public enum ErrorCode {
 
     // Account
     NOT_FOUND_ACCOUNT(HttpStatus.NOT_FOUND, "존재하지 않는 계좌입니다."),
-    UNAUTHORIZED_ACCOUNT_ACCESS(HttpStatus.UNAUTHORIZED, "해당 계좌에 대한 접근 권한이 없습니다."),
+    UNAUTHORIZED_ACCOUNT_ACCESS(HttpStatus.FORBIDDEN, "해당 계좌에 대한 접근 권한이 없습니다."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
 
     // Transfer
