@@ -10,13 +10,16 @@ import SN.BANK.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UsersService {
     private final UsersRepository usersRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Transactional
     public Long join(UsersRequestDto usersRequestDto){
         if(usersRepository.existsByLoginId(usersRequestDto.getLoginId())){
             throw new CustomException(ErrorCode.DUPLICATE_LOGIN_ID);

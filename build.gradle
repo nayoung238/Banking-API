@@ -35,6 +35,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.session:spring-session-core'
 	runtimeOnly 'com.h2database:h2'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3'
 }
 
 tasks.named('test') {
