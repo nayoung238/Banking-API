@@ -3,12 +3,12 @@ package SN.BANK.transaction.dto.response;
 import SN.BANK.transaction.entity.TransactionEntity;
 import SN.BANK.transaction.enums.TransactionType;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
 @Builder
 public class TransactionFindDetailResponse {
 

@@ -3,11 +3,11 @@ package SN.BANK.account.dto.response;
 import SN.BANK.account.entity.Account;
 import SN.BANK.account.enums.Currency;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
 @Builder
 public class CreateAccountResponse {
 

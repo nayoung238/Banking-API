@@ -2,9 +2,9 @@ package SN.BANK.transaction.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 @Builder
 public class TransactionFindDetailRequest {
 
