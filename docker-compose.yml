@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  mysql-container:
+    image: "mysql:5.7"
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: "1234"
+      MYSQL_DATABASE: "bankDB"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - my-network
+    command: --default-authentication-plugin=mysql_native_password --bind-address=0.0.0.0
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+
+
+  application:
+    build: .
+    container_name: application-container
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-container:3306/bankDB?useSSL=false
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "1234"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      mysql-container:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - my-network
+volumes:
+  mysql-data:
+
+networks:
+  my-network:
+    name: my-network
+    driver: bridge
