@@ -14,6 +14,8 @@ public class TransactionFindResponse {
 
     private Long transactionId;
 
+    private String transactionName;
+
     private String accountNumber;
 
     private TransactionType transactionType;

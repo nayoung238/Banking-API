@@ -20,6 +20,8 @@ public class TransactionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String transactionName;
+
     private Long senderAccountId;
 
     private Long receiverAccountId;
@@ -45,10 +47,11 @@ public class TransactionEntity {
     private String description;
 
     @Builder
-    public TransactionEntity(Long senderAccountId, Long receiverAccountId,
+    public TransactionEntity(String transactionName, Long senderAccountId, Long receiverAccountId,
                              TransactionType type, LocalDateTime transactedAt, BigDecimal amount,
                              Currency currency, BigDecimal exchangeRate, BigDecimal balance, String groupId,
                              String description) {
+        this.transactionName = transactionName;
         this.senderAccountId = senderAccountId;
         this.receiverAccountId = receiverAccountId;
         this.type = type;
