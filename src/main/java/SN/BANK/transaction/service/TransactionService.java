@@ -142,7 +142,7 @@ public class TransactionService {
 
         List<TransactionEntity> txFindResponse = new ArrayList<>();
         txFindResponse.addAll(transactionRepository.findBySenderAccountIdAndType(accountId, TransactionType.WITHDRAWAL));
-        txFindResponse.addAll(transactionRepository.findByReceiverAccountIdAndType(accountId, TransactionType.WITHDRAWAL));
+        txFindResponse.addAll(transactionRepository.findByReceiverAccountIdAndType(accountId, TransactionType.DEPOSIT));
 
         return txFindResponse.stream()
                 .map(tx -> TransactionFindResponse.of(tx, account.getAccountNumber()))
