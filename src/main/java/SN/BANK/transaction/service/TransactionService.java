@@ -101,7 +101,7 @@ public class TransactionService {
         transactionRepository.save(senderTx);
         transactionRepository.save(receiverTx);
 
-        return TransactionResponse.of(senderTx);
+        return new TransactionResponse(senderTx);
     }
 
     /**
@@ -123,7 +123,7 @@ public class TransactionService {
         txFindResponse.addAll(transactionRepository.findByReceiverAccountIdAndType(accountId, TransactionType.DEPOSIT));
 
         return txFindResponse.stream()
-                .map(tx -> TransactionFindResponse.of(tx, account.getAccountNumber()))
+                .map(tx -> new TransactionFindResponse(tx, account.getAccountNumber()))
                 .toList();
     }
 
@@ -158,7 +158,7 @@ public class TransactionService {
 
         String othersAccountNumber = receiverAccount.getAccountNumber();
 
-        return TransactionFindDetailResponse.of(tx, othersAccountNumber);
+        return new TransactionFindDetailResponse(tx, othersAccountNumber);
     }
 
     /**

@@ -48,7 +48,7 @@ public class AccountService {
                 .build();
 
         Account savedAccount = accountRepository.save(account);
-        return CreateAccountResponse.of(savedAccount);
+        return new CreateAccountResponse(savedAccount);
     }
 
     public AccountResponse findAccount(Long userId, Long accountId) {
@@ -63,7 +63,7 @@ public class AccountService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
         }
 
-        return AccountResponse.of(account);
+        return new AccountResponse(account);
     }
 
     public List<AccountResponse> findAllAccounts(Long userId) {
@@ -72,7 +72,7 @@ public class AccountService {
 
         List<Account> accounts = accountRepository.findByUser(user);
         return accounts.stream()
-                .map(AccountResponse::of)
+                .map(AccountResponse::new)
                 .toList();
     }
 

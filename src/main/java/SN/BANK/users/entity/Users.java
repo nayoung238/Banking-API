@@ -18,17 +18,20 @@ public class Users {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "id")
     private List<Account> accounts;
 
     private String name;
     private String loginId;
     private String password;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Builder
     public Users(String name, String loginId,String password){
         this.name = name;
         this.loginId = loginId;
         this.password = password;
+        this.role = Role.ROLE_USER;
     }
 }

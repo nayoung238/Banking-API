@@ -2,18 +2,21 @@ package SN.BANK.transaction.dto.response;
 
 import SN.BANK.transaction.entity.TransactionEntity;
 import SN.BANK.transaction.enums.TransactionType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
-@Builder
+@NoArgsConstructor
 public class TransactionFindDetailResponse {
 
     private TransactionType transactionType;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd HH:mm")
     private LocalDateTime transactedAt;
 
     private String othersAccountNumber;
@@ -24,14 +27,13 @@ public class TransactionFindDetailResponse {
 
     private String description;
 
-    public static TransactionFindDetailResponse of(TransactionEntity tx, String othersAccountNumber) {
-        return TransactionFindDetailResponse.builder()
-                .transactionType(tx.getType())
-                .transactedAt(tx.getTransactedAt())
-                .othersAccountNumber(othersAccountNumber)
-                .amount(tx.getAmount())
-                .balance(tx.getBalance())
-                .description(tx.getDescription())
-                .build();
+    @Builder
+    public TransactionFindDetailResponse(TransactionEntity tx, String othersAccountNumber) {
+        this.transactionType = tx.getType();
+        this.transactedAt = tx.getTransactedAt();
+        this.othersAccountNumber = othersAccountNumber;
+        this.amount = tx.getAmount();
+        this.balance = tx.getBalance();
+        this.description = tx.getDescription();
     }
 }

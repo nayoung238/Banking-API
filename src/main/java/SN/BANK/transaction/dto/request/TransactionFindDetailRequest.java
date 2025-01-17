@@ -3,9 +3,10 @@ package SN.BANK.transaction.dto.request;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
+@NoArgsConstructor
 public class TransactionFindDetailRequest {
 
     @NotNull
@@ -13,4 +14,9 @@ public class TransactionFindDetailRequest {
     @NotNull
     private Long transactionId;
 
+    @Builder
+    public TransactionFindDetailRequest(Long accountId, Long transactionId) {
+        this.accountId = accountId;
+        this.transactionId = transactionId;
+    }
 }

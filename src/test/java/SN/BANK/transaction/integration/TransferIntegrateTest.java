@@ -53,7 +53,9 @@ class TransferIntegrateTest {
     @Autowired
     TransactionService transactionService;
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    ObjectMapper objectMapper;
+
     MockHttpSession session;
 
     Users user1;

@@ -2,8 +2,6 @@ package SN.BANK.account.integration;
 
 import SN.BANK.account.dto.request.CreateAccountRequest;
 import SN.BANK.account.dto.response.CreateAccountResponse;
-import SN.BANK.account.entity.Account;
-import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.account.service.AccountService;
 import SN.BANK.account.enums.Currency;
 import SN.BANK.users.entity.Users;
@@ -41,12 +39,11 @@ class AccountIntegrateTest {
     AccountService accountService;
 
     @Autowired
-    AccountRepository accountRepository;
-
-    @Autowired
     UsersRepository usersRepository;
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    ObjectMapper objectMapper;
+
     MockHttpSession session;
 
     @BeforeEach
@@ -68,9 +65,9 @@ class AccountIntegrateTest {
         Users savedUser = usersRepository.save(user);
 
         CreateAccountRequest createAccountRequest = CreateAccountRequest.builder()
-                .accountName("Test Account")
                 .password("1234")
                 .currency(Currency.KRW)
+                .accountName("Test Account")
                 .build();
 
         session.setAttribute("user", savedUser.getId());
