@@ -1,6 +1,8 @@
 package SN.BANK.account.service;
 
 import SN.BANK.account.dto.request.CreateAccountRequest;
+import SN.BANK.account.dto.response.AccountResponse;
+import SN.BANK.account.dto.response.CreateAccountResponse;
 import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.account.entity.Account;
 import SN.BANK.common.exception.CustomException;
@@ -23,7 +25,7 @@ public class AccountService {
     private final UsersService usersService;
 
     @Transactional
-    public Account createAccount(Long userId, CreateAccountRequest request) {
+    public CreateAccountResponse createAccount(Long userId, CreateAccountRequest request) {
 
         // username 을 통한 사용자 조회 및 검증 (+ exception) ✅
         Users user = usersService.validateUser(userId);
@@ -45,10 +47,11 @@ public class AccountService {
                 .currency(request.getCurrency())
                 .build();
 
-        return accountRepository.save(account);
+        Account savedAccount = accountRepository.save(account);
+        return CreateAccountResponse.of(savedAccount);
     }
 
-    public Account findAccount(Long userId, Long accountId) {
+    public AccountResponse findAccount(Long userId, Long accountId) {
         // 1. 유효한 사용자인지 검증
         Users user = usersService.validateUser(userId);
 
@@ -60,13 +63,17 @@ public class AccountService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
         }
 
-        return account;
+        return AccountResponse.of(account);
     }
 
-    public List<Account> findAllAccounts(Long userId) {
+    public List<AccountResponse> findAllAccounts(Long userId) {
         // 1. 유효한 사용자인지 검증
         Users user = usersService.validateUser(userId);
-        return accountRepository.findByUser(user);
+
+        List<Account> accounts = accountRepository.findByUser(user);
+        return accounts.stream()
+                .map(AccountResponse::of)
+                .toList();
     }
 
     /**

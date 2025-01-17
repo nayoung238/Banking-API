@@ -1,6 +1,7 @@
 package SN.BANK.account.integration;
 
 import SN.BANK.account.dto.request.CreateAccountRequest;
+import SN.BANK.account.dto.response.CreateAccountResponse;
 import SN.BANK.account.entity.Account;
 import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.account.service.AccountService;
@@ -114,8 +115,8 @@ class AccountIntegrateTest {
                 .currency(Currency.KRW)
                 .build();
 
-        Account account1 = accountService.createAccount(savedUser.getId(), createAccountRequest1);
-        Account account2 = accountService.createAccount(savedUser.getId(), createAccountRequest2);
+        CreateAccountResponse account1 = accountService.createAccount(savedUser.getId(), createAccountRequest1);
+        CreateAccountResponse account2 = accountService.createAccount(savedUser.getId(), createAccountRequest2);
 
         session.setAttribute("user", savedUser.getId());
 
@@ -148,12 +149,12 @@ class AccountIntegrateTest {
                 .currency(Currency.KRW)
                 .build();
 
-        Account account = accountService.createAccount(savedUser.getId(), createAccountRequest);
+        CreateAccountResponse account = accountService.createAccount(savedUser.getId(), createAccountRequest);
 
         session.setAttribute("user", savedUser.getId());
 
         // when
-        mockMvc.perform(get("/accounts/{id}", account.getId())
+        mockMvc.perform(get("/accounts/{id}", account.getAccountId())
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON))
                 // then

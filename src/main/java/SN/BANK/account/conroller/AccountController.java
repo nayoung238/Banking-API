@@ -4,7 +4,6 @@ import SN.BANK.account.dto.request.CreateAccountRequest;
 import SN.BANK.account.dto.response.AccountResponse;
 import SN.BANK.account.dto.response.CreateAccountResponse;
 import SN.BANK.account.service.AccountService;
-import SN.BANK.account.entity.Account;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,8 +23,7 @@ public class AccountController {
     public ResponseEntity<CreateAccountResponse> createAccount(HttpSession session,
                                                                @RequestBody @Valid CreateAccountRequest request) {
         Long userId = (Long) session.getAttribute("user");
-        Account account = accountService.createAccount(userId, request);
-        CreateAccountResponse createAccountResponse = CreateAccountResponse.of(account);
+        CreateAccountResponse createAccountResponse = accountService.createAccount(userId, request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(createAccountResponse);
@@ -36,10 +33,7 @@ public class AccountController {
     public ResponseEntity<List<AccountResponse>> findAllAccounts(HttpSession session) {
         Long userId = (Long) session.getAttribute("user");
 
-        List<Account> accounts = accountService.findAllAccounts(userId);
-        List<AccountResponse> response = accounts.stream()
-                .map(AccountResponse::of)
-                .toList();
+        List<AccountResponse> response = accountService.findAllAccounts(userId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(response);
@@ -50,8 +44,7 @@ public class AccountController {
                                                        @PathVariable(name = "id") Long accountId) {
         Long userId = (Long) session.getAttribute("user");
 
-        Account account = accountService.findAccount(userId, accountId);
-        AccountResponse response = AccountResponse.of(account);
+        AccountResponse response = accountService.findAccount(userId, accountId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(response);

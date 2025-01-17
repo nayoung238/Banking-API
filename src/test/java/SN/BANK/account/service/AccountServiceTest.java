@@ -1,6 +1,8 @@
 package SN.BANK.account.service;
 
 import SN.BANK.account.dto.request.CreateAccountRequest;
+import SN.BANK.account.dto.response.AccountResponse;
+import SN.BANK.account.dto.response.CreateAccountResponse;
 import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.account.entity.Account;
 import SN.BANK.common.exception.CustomException;
@@ -14,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,14 +63,14 @@ class AccountServiceTest {
         when(accountRepository.save(any(Account.class))).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
         // when
-        Account createdAccount = accountService.createAccount(userId, createAccountRequest);
+        CreateAccountResponse createdAccount = accountService.createAccount(userId, createAccountRequest);
 
         // then
         assertNotNull(createdAccount);
         assertAll(
                 () -> assertEquals("SN은행-계좌", createdAccount.getAccountName()),
-                () -> assertEquals("test1234", createdAccount.getUser().getLoginId()),
-                () -> assertEquals(14, createdAccount.getAccountNumber().length())
+                () -> assertEquals(14, createdAccount.getAccountNumber().length()),
+                () -> assertEquals(Currency.KRW, createdAccount.getCurrency())
         );
     }
 
@@ -93,12 +96,11 @@ class AccountServiceTest {
         when(accountRepository.findByUser(user)).thenReturn(accounts);
 
         // when
-        List<Account> findAccounts = accountService.findAllAccounts(userId);
+        List<AccountResponse> findAccounts = accountService.findAllAccounts(userId);
 
         // then
         assertNotNull(findAccounts);
         assertEquals(2, findAccounts.size());
-        assertEquals(accounts, findAccounts);
     }
 
     @Test
@@ -108,20 +110,22 @@ class AccountServiceTest {
         // given
         Long userId = 1L;
         Long accountId = 123L;
+        BigDecimal balance = BigDecimal.valueOf(5000);
 
         Account account = Account.builder()
                 .user(user)
+                .money(balance)
                 .build();
 
         when(usersService.validateUser(userId)).thenReturn(user);
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
 
         // when
-        Account findAccount = accountService.findAccount(userId, accountId);
+        AccountResponse findAccount = accountService.findAccount(userId, accountId);
 
         // then
         assertNotNull(findAccount);
-        assertEquals(account, findAccount);
+        assertEquals(account.getMoney(), findAccount.getMoney());
     }
 
     @Test
