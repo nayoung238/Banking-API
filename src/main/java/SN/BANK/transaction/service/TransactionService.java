@@ -41,32 +41,11 @@ public class TransactionService {
 
         BigDecimal amount = transactionRequest.getAmount();
 
-        // 1. from 계좌 검증
-        // 1-1. 유효한 계좌인지
-        // 1-2. 해당 계좌가 현재 로그인한 유저(본인)의 계좌가 맞는지
-        // 1-3. 계좌 비밀번호가 맞는지 (+ 데이터 암복호화 기능 추가해야 함)
-        // 1-4. 잔액이 보내려는 금액보다 크거나 같은지
-        Account senderAccount = accountService.findValidAccount(transactionRequest.getSenderAccountId());
+        // 1. 계좌 검증
+        Account senderAccount = validateSenderAccount(userId, transactionRequest);
+        Account receiverAccount = validateReceiverAccount(transactionRequest, senderAccount);
 
-        accountService.validAccountOwner(senderAccount, userId);
-
-        if (!senderAccount.getPassword().equals(transactionRequest.getAccountPassword())) {
-            throw new CustomException(ErrorCode.INVALID_PASSWORD);
-        }
-
-        if (!isGreaterThanAmount(senderAccount, amount)) {
-            throw new CustomException(ErrorCode.INSUFFICIENT_MONEY);
-        }
-
-        // 2. to 계좌 검증
-        // 2-1. 유효한 계좌인지
-        // 2-2. to 계좌가 from 계좌와 같은지
-        Account receiverAccount = accountService.findValidAccount(transactionRequest.getReceiverAccountId());
-        if (receiverAccount.equals(senderAccount)) {
-            throw new CustomException(ErrorCode.INVALID_TRANSFER);
-        }
-
-        // 3. 환율 계산 (외부 API 이용)
+        // 2. 환율 계산 (외부 API 이용)
         BigDecimal exchangeRate = BigDecimal.ONE;
         BigDecimal convertedAmount = amount;
 
@@ -82,17 +61,16 @@ public class TransactionService {
 //            convertedAmount = amount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP); // HALF_UP: 반올림
         }
 
-        // 4. 금액 변경
+        // 3. 잔액 업데이트
         BigDecimal restMoney = senderAccount.getMoney().subtract(amount);
         senderAccount.changeMoney(restMoney);
 
         BigDecimal addedMoney = receiverAccount.getMoney().add(convertedAmount);
         receiverAccount.changeMoney(addedMoney);
 
-        // 5. 거래 내역 생성
-        // 5-1. 송신(주체) 계좌 거래 내역 생성
-        // 5-2. 수신 계좌 거래 내역 생성
-
+        // 4. 거래 내역 생성
+        // 4-1. 송신(주체) 계좌 거래 내역 생성
+        // 4-2. 수신 계좌 거래 내역 생성
         LocalDateTime transactedAt = LocalDateTime.now();
         String txGroupId = generateTransactionGroupId();
 
@@ -167,7 +145,69 @@ public class TransactionService {
         TransactionEntity tx = transactionRepository.findById(request.getTransactionId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRANSACTION));
 
-        return TransactionFindDetailResponse.of(tx);
+        // 해당 거래 내역(tx)의 sender 가 사용자 account 면, receiver 는 상대방.
+        // 반대로 receiver 가 사용자 account 면, sender 가 상대방.
+        Account receiverAccount;
+
+        if (tx.getSenderAccountId().equals(account.getId())) {
+            receiverAccount = accountService.findValidAccount(tx.getReceiverAccountId());
+        }
+        else {
+            receiverAccount = accountService.findValidAccount(tx.getSenderAccountId());
+        }
+
+        String othersAccountNumber = receiverAccount.getAccountNumber();
+
+        return TransactionFindDetailResponse.of(tx, othersAccountNumber);
+    }
+
+    /**
+     * 1. from 계좌 검증
+     * 1-1. 유효한 계좌인지
+     * 1-2. 해당 계좌가 현재 로그인한 유저(본인)의 계좌가 맞는지
+     * 1-3. 계좌 비밀번호가 맞는지 (+ 데이터 암복호화 기능 추가해야 함)
+     * 1-4. 잔액이 보내려는 금액보다 크거나 같은지
+     * @param userId
+     * @param transactionRequest
+     * @return
+     */
+    private Account validateSenderAccount(Long userId, TransactionRequest transactionRequest) {
+
+        Account senderAccount = accountService.findValidAccount(transactionRequest.getSenderAccountId());
+
+        accountService.validAccountOwner(senderAccount, userId);
+
+        if (!senderAccount.getPassword().equals(transactionRequest.getAccountPassword())) { // 복호화 및 규칙 추가 예정
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        if (!isGreaterThanAmount(senderAccount, transactionRequest.getAmount())) {
+            throw new CustomException(ErrorCode.INSUFFICIENT_MONEY);
+        }
+
+        return senderAccount;
+    }
+
+    /**
+     * 1. to 계좌 검증
+     * 1-1. 유효한 계좌인지
+     * 1-2. to 계좌가 from 계좌와 같은지
+     * @param transactionRequest
+     * @param senderAccount
+     * @return
+     */
+    private Account validateReceiverAccount(TransactionRequest transactionRequest, Account senderAccount) {
+        Account receiverAccount = accountService.findValidAccount(transactionRequest.getReceiverAccountId());
+
+        if (receiverAccount.equals(senderAccount)) {
+            throw new CustomException(ErrorCode.INVALID_TRANSFER);
+        }
+
+        return receiverAccount;
+    }
+
+    public boolean isGreaterThanAmount(Account account, BigDecimal amount) {
+        return account.getMoney().compareTo(amount) >= 0;
     }
 
     private String generateTransactionGroupId() {
@@ -180,9 +220,4 @@ public class TransactionService {
 
         return groupId;
     }
-
-    public boolean isGreaterThanAmount(Account account, BigDecimal amount) {
-        return account.getMoney().compareTo(amount) >= 0;
-    }
-
 }
