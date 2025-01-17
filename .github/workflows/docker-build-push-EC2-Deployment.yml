@@ -47,17 +47,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # MySQL 컨테이너 실행
-            docker pull mysql:5.7
-            docker stop mysql-container || true
-            docker rm mysql-container || true
-            docker run -d \
-              --name mysql-container \
-              -e MYSQL_ROOT_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
-              -e MYSQL_DATABASE=bankDB \
-              -p 3306:3306 \
-              mysql:5.7
-
             # 애플리케이션 컨테이너 실행
             docker pull ${{ secrets.DOCKER_USERNAME }}/your-app:${{ github.sha }}
             docker stop my-app || true
