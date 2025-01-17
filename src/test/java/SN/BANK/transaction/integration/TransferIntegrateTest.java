@@ -192,7 +192,7 @@ class TransferIntegrateTest {
         TransactionResponse tx = transactionService.createTransaction(user1.getId(), transactionRequest);
 
         TransactionFindDetailRequest txFindDetailRequest = TransactionFindDetailRequest.builder()
-                .accountId(user1.getId())
+                .accountId(account1.getId())
                 .transactionId(tx.getTransactionId())
                 .build();
 
