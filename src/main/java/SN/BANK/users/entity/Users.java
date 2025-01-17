@@ -1,6 +1,6 @@
 package SN.BANK.users.entity;
 
-import SN.BANK.account.entity.Account;
+import SN.BANK.domain.Account;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -18,7 +18,7 @@ public class Users {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "id")
     private List<Account> accounts;
 
     private String name;
