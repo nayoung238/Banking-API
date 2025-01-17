@@ -202,6 +202,7 @@ class TransferIntegrateTest {
                         .content(objectMapper.writeValueAsString(txFindDetailRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.transactionType").value(TransactionType.WITHDRAWAL.name()))
+                .andExpect(jsonPath("$.othersAccountNumber").value("22222222222222"))
                 .andExpect(jsonPath("$.amount").value(amount))
                 .andExpect(jsonPath("$.balance").value(balance))
                 .andDo(print());
