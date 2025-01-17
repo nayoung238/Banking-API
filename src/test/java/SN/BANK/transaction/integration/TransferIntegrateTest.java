@@ -22,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -197,19 +196,15 @@ class TransferIntegrateTest {
                 .transactionId(tx.getTransactionId())
                 .build();
 
-        MvcResult mvcResult = mockMvc.perform(get("/transfer/history/detail")
+        mockMvc.perform(get("/transfer/history/detail")
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
                         .content(objectMapper.writeValueAsString(txFindDetailRequest)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.transactionType").value(TransactionType.WITHDRAWAL.name()))
-//                .andExpect(jsonPath("$.amount").value(amount))
-//                .andExpect(jsonPath("$.balance").value(balance))
-//                .andDo(print());
-                .andReturn();
-
-        System.out.println("Response status: " + mvcResult.getResponse().getStatus());
-        System.out.println("Response body: " + mvcResult.getResponse().getContentAsString());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.transactionType").value(TransactionType.WITHDRAWAL.name()))
+                .andExpect(jsonPath("$.amount").value(amount))
+                .andExpect(jsonPath("$.balance").value(balance))
+                .andDo(print());
     }
 
 
