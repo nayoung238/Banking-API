@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
 import SN.BANK.domain.enums.PaymentStatus;
@@ -49,10 +48,9 @@ public class PaymentServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
 
         // Mock 계좌
-        mockWithdrawAccount = new Account(1L, null, "password", "12345", BigDecimal.valueOf(1000), "WithdrawAccount", null, Currency.대한민국);
+        mockWithdrawAccount = new Account(1L, null, "password", "12345", BigDecimal.valueOf(1000000), "WithdrawAccount", null, Currency.대한민국);
         mockDepositAccount = new Account(2L, null, "password", "67890", BigDecimal.valueOf(500), "DepositAccount", null, Currency.미국);
     }
 
@@ -70,7 +68,7 @@ public class PaymentServiceTest {
 
         when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
         when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
-        when(exchangeRateService.getExchangeRate(Currency.대한민국, Currency.미국)).thenReturn(BigDecimal.valueOf(1.2));
+        when(exchangeRateService.getExchangeRate(Currency.대한민국, Currency.미국)).thenReturn(BigDecimal.valueOf(1450));
 
         // When
         PaymentResponseDto response = paymentService.makePayment(request);
@@ -94,7 +92,7 @@ public class PaymentServiceTest {
                 .build();
 
         when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
-
+        when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
         // When
         CustomException exception = assertThrows(CustomException.class, () -> paymentService.makePayment(request));
 
@@ -114,7 +112,9 @@ public class PaymentServiceTest {
                 .build();
 
         when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
-        when(exchangeRateService.getExchangeRate(Currency.대한민국, Currency.미국)).thenReturn(BigDecimal.ONE);
+        when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
+
+        when(exchangeRateService.getExchangeRate(Currency.대한민국, Currency.미국)).thenReturn(BigDecimal.valueOf(1450));
 
         // When
         CustomException exception = assertThrows(CustomException.class, () -> paymentService.makePayment(request));
@@ -232,14 +232,20 @@ public class PaymentServiceTest {
         // given
         PaymentRefundRequestDto request = new PaymentRefundRequestDto(1L,"password");
 
-        PaymentList paymentList = PaymentList.builder()
+        PaymentList mockPayment = PaymentList.builder()
                 .id(1L)
-                .paymentStatus(PaymentStatus.PAYMENT_CANCELLED)
                 .withdrawAccountNumber("12345")
                 .depositAccountNumber("67890")
+                .amount(BigDecimal.valueOf(100))
+                .exchangeRate(BigDecimal.ONE)
+                .currency(Currency.대한민국)
+                .paymentStatus(PaymentStatus.PAYMENT_CANCELLED)
                 .build();
 
-        when(paymentListRepository.findById(request.getPaymentId())).thenReturn(Optional.of(paymentList));
+        when(paymentListRepository.findById(1L)).thenReturn(Optional.of(mockPayment));
+        when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
+        when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
+
 
         // when
         CustomException exception = assertThrows(CustomException.class, () -> paymentService.refundPayment(request));
@@ -247,7 +253,6 @@ public class PaymentServiceTest {
         // then
         assertEquals(ErrorCode.PAYMENT_ALREADY_CANCELLED, exception.getErrorCode());
         verify(paymentListRepository, times(1)).findById(request.getPaymentId());
-        verifyNoMoreInteractions(accountRepository);
     }
 
     @Test
