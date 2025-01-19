@@ -1,4 +1,4 @@
-package SN.BANK.payment.dto;
+package SN.BANK.exchangeRate;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

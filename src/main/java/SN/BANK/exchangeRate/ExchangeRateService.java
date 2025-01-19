@@ -1,9 +1,8 @@
-package SN.BANK.payment.service;
+package SN.BANK.exchangeRate;
 
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
 import SN.BANK.domain.enums.Currency;
-import SN.BANK.payment.dto.ExchangeRateResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;

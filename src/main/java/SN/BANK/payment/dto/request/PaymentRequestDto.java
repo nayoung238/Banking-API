@@ -1,4 +1,4 @@
-package SN.BANK.payment.dto;
+package SN.BANK.payment.dto.request;
 
 
 import jakarta.validation.constraints.NotBlank;

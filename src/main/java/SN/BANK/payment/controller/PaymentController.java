@@ -1,16 +1,14 @@
 package SN.BANK.payment.controller;
 
-import SN.BANK.payment.dto.PaymentListResponseDto;
-import SN.BANK.payment.dto.PaymentRefundRequestDto;
-import SN.BANK.payment.dto.PaymentRequestDto;
-import SN.BANK.payment.dto.PaymentResponseDto;
+import SN.BANK.payment.dto.response.PaymentListResponseDto;
+import SN.BANK.payment.dto.request.PaymentRefundRequestDto;
+import SN.BANK.payment.dto.request.PaymentRequestDto;
+import SN.BANK.payment.dto.response.PaymentResponseDto;
 import SN.BANK.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/payment")

@@ -1,4 +1,4 @@
-package SN.BANK.payment.dto;
+package SN.BANK.payment.dto.response;
 
 import SN.BANK.domain.enums.PaymentStatus;
 import SN.BANK.payment.entity.PaymentList;
