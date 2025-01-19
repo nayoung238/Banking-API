@@ -10,6 +10,9 @@ import lombok.Getter;
 public class PaymentRefundRequestDto {
 
     @NotNull
-    private Long depositId;
+    private Long paymentId;
+
+    @NotNull
+    private String password;
 
 }
