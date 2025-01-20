@@ -62,11 +62,7 @@ public class TransactionService {
         }
 
         // 3. 잔액 업데이트
-        BigDecimal restMoney = senderAccount.getMoney().subtract(amount);
-        senderAccount.changeMoney(restMoney);
-
-        BigDecimal addedMoney = receiverAccount.getMoney().add(convertedAmount);
-        receiverAccount.changeMoney(addedMoney);
+        updateAccountBalance(senderAccount, receiverAccount, amount, convertedAmount);
 
         // 4. 거래 내역 생성
         // 4-1. 송신(주체) 계좌 거래 내역 생성
@@ -74,29 +70,11 @@ public class TransactionService {
         LocalDateTime transactedAt = LocalDateTime.now();
         String txGroupId = generateTransactionGroupId();
 
-        TransactionEntity senderTx = TransactionEntity.builder()
-                .senderAccountId(senderAccount.getId())
-                .receiverAccountId(receiverAccount.getId())
-                .type(TransactionType.WITHDRAWAL) // 출금
-                .transactedAt(transactedAt)
-                .amount(amount)
-                .currency(senderAccount.getCurrency())
-                .exchangeRate(exchangeRate)
-                .balance(restMoney)
-                .groupId(txGroupId)
-                .build();
+        TransactionEntity senderTx = getSenderTransactionEntity(senderAccount, receiverAccount, transactedAt,
+                amount, exchangeRate, txGroupId);
 
-        TransactionEntity receiverTx = TransactionEntity.builder()
-                .senderAccountId(senderAccount.getId())
-                .receiverAccountId(receiverAccount.getId())
-                .type(TransactionType.DEPOSIT) // 입금
-                .transactedAt(transactedAt)
-                .amount(convertedAmount)
-                .currency(senderAccount.getCurrency())
-                .exchangeRate(exchangeRate)
-                .balance(addedMoney)
-                .groupId(txGroupId)
-                .build();
+        TransactionEntity receiverTx = getReceiverTransactionEntity(senderAccount, receiverAccount, transactedAt,
+                convertedAmount, exchangeRate, txGroupId);
 
         transactionRepository.save(senderTx);
         transactionRepository.save(receiverTx);
@@ -153,8 +131,7 @@ public class TransactionService {
 
         if (tx.getSenderAccountId().equals(account.getId())) {
             receiverAccount = accountService.findValidAccount(tx.getReceiverAccountId());
-        }
-        else {
+        } else {
             receiverAccount = accountService.findValidAccount(tx.getSenderAccountId());
         }
 
@@ -169,6 +146,7 @@ public class TransactionService {
      * 1-2. 해당 계좌가 현재 로그인한 유저(본인)의 계좌가 맞는지
      * 1-3. 계좌 비밀번호가 맞는지 (+ 데이터 암복호화 기능 추가해야 함)
      * 1-4. 잔액이 보내려는 금액보다 크거나 같은지
+     *
      * @param userId
      * @param transactionRequest
      * @return
@@ -194,6 +172,7 @@ public class TransactionService {
      * 1. to 계좌 검증
      * 1-1. 유효한 계좌인지
      * 1-2. to 계좌가 from 계좌와 같은지
+     *
      * @param transactionRequest
      * @param senderAccount
      * @return
@@ -206,6 +185,47 @@ public class TransactionService {
         }
 
         return receiverAccount;
+    }
+
+    private void updateAccountBalance(Account senderAccount, Account receiverAccount,
+                                      BigDecimal amount, BigDecimal convertedAmount) {
+        BigDecimal restMoney = senderAccount.getMoney().subtract(amount);
+        senderAccount.changeMoney(restMoney);
+
+        BigDecimal addedMoney = receiverAccount.getMoney().add(convertedAmount);
+        receiverAccount.changeMoney(addedMoney);
+    }
+
+    private TransactionEntity getSenderTransactionEntity(Account senderAccount, Account receiverAccount,
+                                                         LocalDateTime transactedAt, BigDecimal amount,
+                                                         BigDecimal exchangeRate, String txGroupId) {
+        return TransactionEntity.builder()
+                .senderAccountId(senderAccount.getId())
+                .receiverAccountId(receiverAccount.getId())
+                .type(TransactionType.WITHDRAWAL) // 출금
+                .transactedAt(transactedAt)
+                .amount(amount)
+                .currency(senderAccount.getCurrency())
+                .exchangeRate(exchangeRate)
+                .balance(senderAccount.getMoney())
+                .groupId(txGroupId)
+                .build();
+    }
+
+    private TransactionEntity getReceiverTransactionEntity(Account senderAccount, Account receiverAccount,
+                                                           LocalDateTime transactedAt, BigDecimal amount,
+                                                           BigDecimal exchangeRate, String txGroupId) {
+        return TransactionEntity.builder()
+                .senderAccountId(senderAccount.getId())
+                .receiverAccountId(receiverAccount.getId())
+                .type(TransactionType.DEPOSIT) // 출금
+                .transactedAt(transactedAt)
+                .amount(amount)
+                .currency(receiverAccount.getCurrency())
+                .exchangeRate(exchangeRate)
+                .balance(receiverAccount.getMoney())
+                .groupId(txGroupId)
+                .build();
     }
 
     public boolean isGreaterThanAmount(Account account, BigDecimal amount) {
