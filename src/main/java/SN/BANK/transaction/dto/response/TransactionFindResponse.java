@@ -16,7 +16,7 @@ public class TransactionFindResponse {
 
     private Long transactionId;
 
-    private String transactionName;
+    private String othersName;
 
     private String accountNumber;
 
@@ -30,9 +30,9 @@ public class TransactionFindResponse {
     private BigDecimal balance; // 이체(입금) 후 잔액
 
     @Builder
-    public TransactionFindResponse(TransactionEntity tx, String accountNumber) {
+    public TransactionFindResponse(TransactionEntity tx, String othersName, String accountNumber) {
         this.transactionId = tx.getId();
-        this.transactionName = tx.getTransactionName();
+        this.othersName = othersName;
         this.accountNumber = accountNumber;
         this.transactionType = tx.getType();
         this.transactedAt = tx.getTransactedAt();

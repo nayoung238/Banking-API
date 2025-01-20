@@ -67,13 +67,13 @@ class TransferIntegrateTest {
     void setUp() {
 
         user1 = Users.builder()
-                .name("테스트1")
+                .name("테스터1")
                 .loginId("test1234")
                 .password("test1234")
                 .build();
 
         user2 = Users.builder()
-                .name("테스트2")
+                .name("테스터2")
                 .loginId("test4321")
                 .password("test4321")
                 .build();
@@ -204,6 +204,7 @@ class TransferIntegrateTest {
                         .content(objectMapper.writeValueAsString(txFindDetailRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.transactionType").value(TransactionType.WITHDRAWAL.name()))
+                .andExpect(jsonPath("$.othersName").value("테스터2"))
                 .andExpect(jsonPath("$.othersAccountNumber").value("22222222222222"))
                 .andExpect(jsonPath("$.amount").value(amount))
                 .andExpect(jsonPath("$.balance").value(balance))

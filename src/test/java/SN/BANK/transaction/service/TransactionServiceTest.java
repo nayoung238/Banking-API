@@ -50,13 +50,13 @@ class TransactionServiceTest {
     void setUp() {
 
         sender = Users.builder()
-                .name("테스트이름")
+                .name("테스터1")
                 .loginId("test1234")
                 .password("test1234")
                 .build();
 
         receiver = Users.builder()
-                .name("테스터")
+                .name("테스터2")
                 .loginId("test4321")
                 .password("test4321")
                 .build();
@@ -111,6 +111,8 @@ class TransactionServiceTest {
         assertEquals(1L, response.getSenderAccountId());
         assertEquals(2L, response.getReceiverAccountId());
         assertEquals(TransactionType.WITHDRAWAL, response.getTransactionType());
+        assertEquals(response.getSenderName(), "테스터1");
+        assertEquals(response.getReceiverName(), "테스터2");
         assertEquals(BigDecimal.valueOf(2970), response.getAmount());
         assertEquals(BigDecimal.valueOf(7030), response.getBalance());
     }

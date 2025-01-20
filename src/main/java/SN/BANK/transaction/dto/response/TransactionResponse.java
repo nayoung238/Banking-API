@@ -20,6 +20,10 @@ public class TransactionResponse {
 
     private Long receiverAccountId;
 
+    private String senderName;
+
+    private String receiverName;
+
     private TransactionType transactionType;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd HH:mm")
@@ -30,7 +34,7 @@ public class TransactionResponse {
     private BigDecimal balance; // 이체(입금) 후 잔액
 
     @Builder
-    public TransactionResponse(TransactionEntity tx) {
+    public TransactionResponse(TransactionEntity tx, String senderName, String receiverName) {
         this.transactionId = tx.getId();
         this.senderAccountId = tx.getSenderAccountId();
         this.receiverAccountId = tx.getReceiverAccountId();
@@ -38,5 +42,7 @@ public class TransactionResponse {
         this.transactedAt = tx.getTransactedAt();
         this.amount = tx.getAmount();
         this.balance = tx.getBalance();
+        this.senderName = senderName;
+        this.receiverName = receiverName;
     }
 }

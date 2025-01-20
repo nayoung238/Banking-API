@@ -19,6 +19,8 @@ public class TransactionFindDetailResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd HH:mm")
     private LocalDateTime transactedAt;
 
+    private String othersName;
+
     private String othersAccountNumber;
 
     private BigDecimal amount;
@@ -28,9 +30,10 @@ public class TransactionFindDetailResponse {
     private String description;
 
     @Builder
-    public TransactionFindDetailResponse(TransactionEntity tx, String othersAccountNumber) {
+    public TransactionFindDetailResponse(TransactionEntity tx, String othersName, String othersAccountNumber) {
         this.transactionType = tx.getType();
         this.transactedAt = tx.getTransactedAt();
+        this.othersName = othersName;
         this.othersAccountNumber = othersAccountNumber;
         this.amount = tx.getAmount();
         this.balance = tx.getBalance();
