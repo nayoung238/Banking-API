@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,12 +77,37 @@ public class TransactionService {
         TransactionEntity receiverTx = getReceiverTransactionEntity(senderAccount, receiverAccount, transactedAt,
                 convertedAmount, exchangeRate, txGroupId);
 
-        transactionRepository.save(senderTx);
-        transactionRepository.save(receiverTx);
-
         return new TransactionResponse(senderTx,
                 senderAccount.getUser().getName(),
                 receiverAccount.getUser().getName());
+    }
+
+    /**
+     * 결제 시
+     * 사용되는 거래내역 생성 메서드
+     */
+    @Transactional
+    public void createTransactionForPayment(Account senderAccount, Account receiverAccount,
+                                                           BigDecimal amount, BigDecimal exchangeRate) {
+
+        BigDecimal convertedAmount = amount;
+
+        // 같은 통화가 아닌 경우
+        if (!exchangeRate.equals(BigDecimal.ONE)) {
+            convertedAmount = amount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP); // HALF_UP: 반올림
+        }
+
+        updateAccountBalance(senderAccount, receiverAccount, amount, convertedAmount);
+
+        // 거래내역 생성
+        LocalDateTime transactedAt = LocalDateTime.now();
+        String txGroupId = generateTransactionGroupId();
+
+        getSenderTransactionEntity(senderAccount, receiverAccount, transactedAt,
+                amount, exchangeRate, txGroupId);
+
+        getReceiverTransactionEntity(senderAccount, receiverAccount, transactedAt,
+                convertedAmount, exchangeRate, txGroupId);
     }
 
     /**
@@ -199,7 +225,8 @@ public class TransactionService {
     private TransactionEntity getSenderTransactionEntity(Account senderAccount, Account receiverAccount,
                                                          LocalDateTime transactedAt, BigDecimal amount,
                                                          BigDecimal exchangeRate, String txGroupId) {
-        return TransactionEntity.builder()
+
+        TransactionEntity senderTx = TransactionEntity.builder()
                 .senderAccountId(senderAccount.getId())
                 .receiverAccountId(receiverAccount.getId())
                 .type(TransactionType.WITHDRAWAL) // 출금
@@ -210,12 +237,14 @@ public class TransactionService {
                 .balance(senderAccount.getMoney())
                 .groupId(txGroupId)
                 .build();
+
+        return transactionRepository.save(senderTx);
     }
 
     private TransactionEntity getReceiverTransactionEntity(Account senderAccount, Account receiverAccount,
                                                            LocalDateTime transactedAt, BigDecimal amount,
                                                            BigDecimal exchangeRate, String txGroupId) {
-        return TransactionEntity.builder()
+        TransactionEntity receiverTx = TransactionEntity.builder()
                 .senderAccountId(senderAccount.getId())
                 .receiverAccountId(receiverAccount.getId())
                 .type(TransactionType.DEPOSIT) // 출금
@@ -226,6 +255,8 @@ public class TransactionService {
                 .balance(receiverAccount.getMoney())
                 .groupId(txGroupId)
                 .build();
+
+        return transactionRepository.save(receiverTx);
     }
 
     public boolean isGreaterThanAmount(Account account, BigDecimal amount) {
