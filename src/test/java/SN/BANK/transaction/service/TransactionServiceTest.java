@@ -7,6 +7,7 @@ import SN.BANK.common.exception.ErrorCode;
 import SN.BANK.account.enums.Currency;
 import SN.BANK.transaction.dto.request.TransactionRequest;
 import SN.BANK.transaction.dto.response.TransactionResponse;
+import SN.BANK.transaction.entity.TransactionEntity;
 import SN.BANK.transaction.enums.TransactionType;
 import SN.BANK.transaction.repository.TransactionRepository;
 import SN.BANK.users.entity.Users;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -102,6 +104,12 @@ class TransactionServiceTest {
         when(accountService.findValidAccount(2L)).thenReturn(receiverAccount);
         when(usersService.validateUser(userId)).thenReturn(sender);
         when(transactionRepository.existsByGroupId(any())).thenReturn(false);
+        when(transactionRepository.save(any(TransactionEntity.class)))
+                .thenAnswer(invocation -> {
+                    TransactionEntity entity = invocation.getArgument(0);
+                    ReflectionTestUtils.setField(entity, "id", 1L);
+                    return entity;
+                });
 
         // when
         TransactionResponse response = transactionService.createTransaction(userId, transactionRequest);
