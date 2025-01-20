@@ -1,17 +1,18 @@
 package SN.BANK.payment.service;
 
+import SN.BANK.account.entity.Account;
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
-import SN.BANK.domain.Account;
-import SN.BANK.domain.enums.PaymentStatus;
 import SN.BANK.exchangeRate.ExchangeRateService;
 import SN.BANK.payment.dto.request.PaymentRefundRequestDto;
 import SN.BANK.payment.entity.PaymentList;
 import SN.BANK.payment.dto.response.PaymentListResponseDto;
+import SN.BANK.payment.enums.PaymentStatus;
 import SN.BANK.payment.repository.PaymentListRepository;
 import SN.BANK.payment.dto.request.PaymentRequestDto;
 import SN.BANK.payment.dto.response.PaymentResponseDto;
 import SN.BANK.account.repository.AccountRepository;
+import SN.BANK.transaction.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +27,7 @@ public class PaymentService {
     private final ExchangeRateService exchangeRateService;
     private final AccountRepository accountRepository;
     private final PaymentListRepository paymentListRepository;
-//    private final TransactionService transactionService;
+    private final TransactionService transactionService;
 
     @Transactional(rollbackFor = Exception.class)
     public PaymentResponseDto makePayment(PaymentRequestDto request) {
@@ -50,7 +51,7 @@ public class PaymentService {
         validateAccountBalance(withdrawAccount,request.getAmount().multiply(exchangeRate));
 
         // 입출금 처리 및 거래내역 생성
-        // transactionService.입출금메서드(withdrawAccount,depositAccount,request.getAmount(),exchangeRate);
+        transactionService.createTransactionForPayment(withdrawAccount,depositAccount, request.getAmount().multiply(exchangeRate),BigDecimal.ONE.divide(exchangeRate, 20, BigDecimal.ROUND_HALF_UP));
 
         // 결제내역 생성 및 저장
         PaymentList payment = createPaymentList(request, withdrawAccount, depositAccount, exchangeRate);
@@ -85,7 +86,7 @@ public class PaymentService {
         BigDecimal exchangeRate = paymentList.getExchangeRate();
 
         // 입출금 처리 및 거래내역 생성
-        // transactionService.입출금메서드(depositAccount,withdrawAccount,request.getAmount(),exchangeRate);
+        transactionService.createTransactionForPayment(depositAccount,withdrawAccount,paymentList.getAmount(),exchangeRate);
 
         // 결제 상태 변경
         paymentList.setPaymentStatus(PaymentStatus.PAYMENT_CANCELLED);
@@ -119,10 +120,9 @@ public class PaymentService {
     //잔액 검증
     private void validateAccountBalance(Account account, BigDecimal amount) {
         if (account.getMoney().compareTo(amount) < 0) {
-                throw new CustomException(ErrorCode.INSUFFICIENT_BALANCE);
-            }
+            throw new CustomException(ErrorCode.INSUFFICIENT_BALANCE);
         }
-
+    }
 
     // 결제 ID로 결제 내역 조회
     private PaymentList getPaymentById(Long paymentId) {
@@ -142,8 +142,4 @@ public class PaymentService {
                 .paymentStatus(PaymentStatus.PAYMENT_COMPLETED)
                 .build();
     }
-
 }
-
-
-

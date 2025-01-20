@@ -50,7 +50,7 @@ public class PaymentController {
      */
     @GetMapping("/history/{paymentId}")
     public ResponseEntity<PaymentListResponseDto> getPaymentDetail(
-            @PathVariable Long paymentId) {
+            @PathVariable("paymentId") Long paymentId) {
         PaymentListResponseDto paymentListResponseDto = paymentService.getPaymentListById(paymentId);
         return ResponseEntity.ok(paymentListResponseDto);
     }

@@ -1,8 +1,8 @@
 package SN.BANK.exchangeRate;
 
+import SN.BANK.account.enums.Currency;
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
-import SN.BANK.domain.enums.Currency;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -24,9 +24,9 @@ public class ExchangeRateService {
         Currency baseCurrency;
         boolean isInverse = false; // 역수 계산 여부 플래그
 
-        if (fromCurrency.equals(Currency.대한민국)) {
+        if (fromCurrency.equals(Currency.KRW)) {
             baseCurrency = toCurrency; // 원화 -> 외화
-        } else if (toCurrency.equals(Currency.대한민국)) {
+        } else if (toCurrency.equals(Currency.KRW)) {
             baseCurrency = fromCurrency; // 외화 -> 원화
             isInverse = true; // 역수 계산 필요
         } else {
@@ -44,7 +44,7 @@ public class ExchangeRateService {
                 .queryParam("where", "m")
                 .queryParam("u1", "keb")
                 .queryParam("u2", 1)
-                .queryParam("u3", baseCurrency.getCurrency()) // 기준 통화
+                .queryParam("u3", baseCurrency) // 기준 통화
                 .queryParam("u4", "KRW")  //변환 통화
                 .queryParam("u6", "standardUnit")
                 .queryParam("u7", "0")
@@ -57,7 +57,7 @@ public class ExchangeRateService {
 
             if (response != null && response.getCountry().size() == 2) {
                 BigDecimal exchangeRate = new BigDecimal(response.getCountry().get(1).getValue().replace(",", ""));
-                return isInverse ? BigDecimal.ONE.divide(exchangeRate, 10, BigDecimal.ROUND_HALF_UP) : exchangeRate;
+                return isInverse ? BigDecimal.ONE.divide(exchangeRate, 20, BigDecimal.ROUND_HALF_UP) : exchangeRate;
             } else {
                 throw new CustomException(ErrorCode.EXCHANGE_RATE_FETCH_FAIL);
             }

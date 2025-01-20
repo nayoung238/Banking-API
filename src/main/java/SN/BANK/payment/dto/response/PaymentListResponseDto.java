@@ -1,8 +1,8 @@
 package SN.BANK.payment.dto.response;
 
-import SN.BANK.domain.enums.PaymentStatus;
+import SN.BANK.account.enums.Currency;
 import SN.BANK.payment.entity.PaymentList;
-import SN.BANK.domain.enums.Currency;
+import SN.BANK.payment.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
