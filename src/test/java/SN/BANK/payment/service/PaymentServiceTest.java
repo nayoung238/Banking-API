@@ -1,13 +1,15 @@
 package SN.BANK.payment.service;
 
+import SN.BANK.account.entity.Account;
+import SN.BANK.account.enums.Currency;
 import SN.BANK.account.repository.AccountRepository;
-import SN.BANK.domain.Account;
-import SN.BANK.domain.enums.Currency;
 import SN.BANK.exchangeRate.ExchangeRateService;
 import SN.BANK.payment.dto.request.PaymentRequestDto;
 import SN.BANK.payment.dto.response.PaymentListResponseDto;
 import SN.BANK.payment.dto.response.PaymentResponseDto;
+import SN.BANK.payment.enums.PaymentStatus;
 import SN.BANK.payment.repository.PaymentListRepository;
+import SN.BANK.transaction.service.TransactionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +18,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
-import SN.BANK.domain.enums.PaymentStatus;
 import SN.BANK.payment.dto.request.PaymentRefundRequestDto;
 import SN.BANK.payment.entity.PaymentList;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -43,6 +44,9 @@ public class PaymentServiceTest {
     @Mock
     private ExchangeRateService exchangeRateService;
 
+    @Mock
+    private TransactionService transactionService;
+
     private Account mockWithdrawAccount;
     private Account mockDepositAccount;
 
@@ -50,8 +54,8 @@ public class PaymentServiceTest {
     void setUp() {
 
         // Mock 계좌
-        mockWithdrawAccount = new Account(1L, null, "password", "12345", BigDecimal.valueOf(1000000), "WithdrawAccount", null, Currency.대한민국);
-        mockDepositAccount = new Account(2L, null, "password", "67890", BigDecimal.valueOf(500), "DepositAccount", null, Currency.미국);
+        mockWithdrawAccount = new Account(1L, null, "password", "12345", BigDecimal.valueOf(1000000), "WithdrawAccount", null, Currency.KRW);
+        mockDepositAccount = new Account(2L, null, "password", "67890", BigDecimal.valueOf(500), "DepositAccount", null, Currency.USD);
     }
 
     @Test
@@ -68,7 +72,7 @@ public class PaymentServiceTest {
 
         when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
         when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
-        when(exchangeRateService.getExchangeRate(Currency.대한민국, Currency.미국)).thenReturn(BigDecimal.valueOf(1450));
+        when(exchangeRateService.getExchangeRate(Currency.KRW, Currency.USD)).thenReturn(BigDecimal.valueOf(1450));
 
         // When
         PaymentResponseDto response = paymentService.makePayment(request);
@@ -76,7 +80,7 @@ public class PaymentServiceTest {
         // Then
         assertNotNull(response);
         verify(accountRepository, times(2)).findByAccountNumber(anyString());
-        verify(exchangeRateService, times(1)).getExchangeRate(Currency.대한민국, Currency.미국);
+        verify(exchangeRateService, times(1)).getExchangeRate(Currency.KRW, Currency.USD);
         verify(paymentListRepository, times(1)).save(any(PaymentList.class));
     }
 
@@ -114,7 +118,7 @@ public class PaymentServiceTest {
         when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
         when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
 
-        when(exchangeRateService.getExchangeRate(Currency.대한민국, Currency.미국)).thenReturn(BigDecimal.valueOf(1450));
+        when(exchangeRateService.getExchangeRate(Currency.KRW, Currency.USD)).thenReturn(BigDecimal.valueOf(1450));
 
         // When
         CustomException exception = assertThrows(CustomException.class, () -> paymentService.makePayment(request));
@@ -172,7 +176,7 @@ public class PaymentServiceTest {
                 .build();
         when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
         when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
-        when(exchangeRateService.getExchangeRate(Currency.대한민국, Currency.미국))
+        when(exchangeRateService.getExchangeRate(Currency.KRW, Currency.USD))
                 .thenThrow(new CustomException(ErrorCode.EXCHANGE_RATE_FETCH_FAIL));
 
         // When
@@ -193,7 +197,7 @@ public class PaymentServiceTest {
                 .depositAccountNumber("67890")
                 .amount(BigDecimal.valueOf(100))
                 .exchangeRate(BigDecimal.ONE)
-                .currency(Currency.대한민국)
+                .currency(Currency.KRW)
                 .paymentStatus(PaymentStatus.PAYMENT_COMPLETED)
                 .build();
 
@@ -238,7 +242,7 @@ public class PaymentServiceTest {
                 .depositAccountNumber("67890")
                 .amount(BigDecimal.valueOf(100))
                 .exchangeRate(BigDecimal.ONE)
-                .currency(Currency.대한민국)
+                .currency(Currency.KRW)
                 .paymentStatus(PaymentStatus.PAYMENT_CANCELLED)
                 .build();
 
@@ -266,7 +270,7 @@ public class PaymentServiceTest {
                 .withdrawAccountNumber("12345")
                 .depositAccountNumber("67890")
                 .amount(BigDecimal.valueOf(100))
-                .currency(Currency.대한민국)
+                .currency(Currency.KRW)
                 .exchangeRate(BigDecimal.valueOf(1.12))
                 .paymentStatus(PaymentStatus.PAYMENT_COMPLETED)
                 .paidAt(LocalDateTime.now())
