@@ -1,6 +1,8 @@
 package SN.BANK.exchangeRate.naver;
 
 import SN.BANK.account.enums.Currency;
+import SN.BANK.common.exception.CustomException;
+import SN.BANK.common.exception.ErrorCode;
 import SN.BANK.exchangeRate.ExchangeRateOpenApiInterface;
 import SN.BANK.exchangeRate.naver.dto.ExchangeRateNaverResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +46,10 @@ public class ExchangeRateNaverService implements ExchangeRateOpenApiInterface {
 
 	@Override
 	public BigDecimal getExchangeRate(Currency baseCurrency, Currency quoteCurrency) {
+		if(!quoteCurrency.equals(Currency.KRW)) {
+			throw new CustomException(ErrorCode.INVALID_QUOTE_CURRENCY_ERROR);
+		}
+
 		ExchangeRateNaverResponseDto result = exchangeRateNaverClient.getExchangeRate(
 			key,
 			pkid,

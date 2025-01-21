@@ -26,6 +26,7 @@ public enum ErrorCode {
 
     // ExchangeRate
     EXCHANGE_RATE_FETCH_FAIL(HttpStatus.SERVICE_UNAVAILABLE, "환율 데이터를 가져올 수 없습니다."),
+    INVALID_QUOTE_CURRENCY_ERROR(HttpStatus.BAD_REQUEST, "Quote Currency는 한국 원화(KRW) 단위여야 합니다."),
 
     // Payment
     PAYMENT_ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "이미 결제 취소된 내역입니다."),
