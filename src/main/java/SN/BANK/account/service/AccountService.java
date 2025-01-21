@@ -11,6 +11,7 @@ import SN.BANK.users.entity.Users;
 import SN.BANK.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -103,12 +104,23 @@ public class AccountService {
         Users user = usersService.validateUser(userId);
 
         // 2. 계좌가 사용자의 것인지 검증
-        if (!account.getUser().equals(user))
+        if (!account.getUser().getId().equals(userId))
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
     }
 
     public Account findValidAccount(Long accountId) {
         return accountRepository.findById(accountId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+    }
+
+    /**
+     * 이체 시 사용
+     * @param accountId
+     * @return
+     */
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public Account getAccountWithLock(Long accountId) {
+        return accountRepository.findByIdWithLock(accountId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
     }
 }
