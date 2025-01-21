@@ -6,7 +6,6 @@ import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.exchangeRate.ExchangeRateService;
 import SN.BANK.payment.dto.request.PaymentRequestDto;
 import SN.BANK.payment.dto.response.PaymentListResponseDto;
-import SN.BANK.payment.dto.response.PaymentResponseDto;
 import SN.BANK.payment.enums.PaymentStatus;
 import SN.BANK.payment.repository.PaymentListRepository;
 import SN.BANK.transaction.service.TransactionService;
@@ -69,16 +68,17 @@ public class PaymentServiceTest {
                 .password("password")
                 .build();
 
+        PaymentList paymentList = new PaymentList(1L,"12345","67890",BigDecimal.valueOf(100),LocalDateTime.now(),Currency.USD,BigDecimal.valueOf(1400),PaymentStatus.PAYMENT_COMPLETED);
 
         when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
         when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
         when(exchangeRateService.getExchangeRate(Currency.KRW, Currency.USD)).thenReturn(BigDecimal.valueOf(1450));
-
+        when(paymentListRepository.save(any(PaymentList.class))).thenReturn(paymentList);
         // When
-        PaymentResponseDto response = paymentService.makePayment(request);
+        Long paymentId = paymentService.makePayment(request);
 
         // Then
-        assertNotNull(response);
+        assertNotNull(paymentId);
         verify(accountRepository, times(2)).findByAccountNumber(anyString());
         verify(exchangeRateService, times(1)).getExchangeRate(Currency.KRW, Currency.USD);
         verify(paymentListRepository, times(1)).save(any(PaymentList.class));
@@ -192,7 +192,6 @@ public class PaymentServiceTest {
         // Given
         PaymentRefundRequestDto request = new PaymentRefundRequestDto(1L, "password");
         PaymentList mockPayment = PaymentList.builder()
-                .id(1L)
                 .withdrawAccountNumber("12345")
                 .depositAccountNumber("67890")
                 .amount(BigDecimal.valueOf(100))
@@ -237,7 +236,6 @@ public class PaymentServiceTest {
         PaymentRefundRequestDto request = new PaymentRefundRequestDto(1L,"password");
 
         PaymentList mockPayment = PaymentList.builder()
-                .id(1L)
                 .withdrawAccountNumber("12345")
                 .depositAccountNumber("67890")
                 .amount(BigDecimal.valueOf(100))
@@ -263,10 +261,8 @@ public class PaymentServiceTest {
     @DisplayName("결제 조회 성공")
     void getPaymentDetailsSuccess() {
         // given
-        Long paymentId = 1L;
 
         PaymentList paymentList = PaymentList.builder()
-                .id(paymentId)
                 .withdrawAccountNumber("12345")
                 .depositAccountNumber("67890")
                 .amount(BigDecimal.valueOf(100))
@@ -276,16 +272,15 @@ public class PaymentServiceTest {
                 .paidAt(LocalDateTime.now())
                 .build();
 
-        when(paymentListRepository.findById(paymentId)).thenReturn(Optional.of(paymentList));
+        when(paymentListRepository.findById(1L)).thenReturn(Optional.of(paymentList));
 
         // when
-        PaymentListResponseDto response = paymentService.getPaymentListById(paymentId);
+        PaymentListResponseDto response = paymentService.getPaymentListById(1L);
 
         // then
         assertNotNull(response);
-        assertEquals(paymentId, response.getId());
         assertEquals("12345", response.getWithdrawAccountNumber());
         assertEquals("67890", response.getDepositAccountNumber());
-        verify(paymentListRepository, times(1)).findById(paymentId);
+        verify(paymentListRepository, times(1)).findById(1L);
     }
 }

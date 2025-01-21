@@ -103,12 +103,18 @@ class PaymentIntegrationTest {
                 .amount(BigDecimal.valueOf(3000))
                 .password("1234")
                 .build();
+
         // When
         mockMvc.perform(post("/payment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.paymentId").isNotEmpty())
+                .andExpect(result -> {
+                    // Convert response content to Long and verify
+                    String responseContent = result.getResponse().getContentAsString();
+                    Long paymentId = Long.valueOf(responseContent);
+                    assertThat(paymentId).isNotNull();
+                })
                 .andDo(print());
 
         // Then

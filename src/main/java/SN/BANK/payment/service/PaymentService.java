@@ -10,7 +10,6 @@ import SN.BANK.payment.dto.response.PaymentListResponseDto;
 import SN.BANK.payment.enums.PaymentStatus;
 import SN.BANK.payment.repository.PaymentListRepository;
 import SN.BANK.payment.dto.request.PaymentRequestDto;
-import SN.BANK.payment.dto.response.PaymentResponseDto;
 import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.transaction.service.TransactionService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,7 @@ public class PaymentService {
     private final TransactionService transactionService;
 
     @Transactional(rollbackFor = Exception.class)
-    public PaymentResponseDto makePayment(PaymentRequestDto request) {
+    public Long makePayment(PaymentRequestDto request) {
 
         //출금계좌와 입금 계좌가 동일한지 확인
         validateDifferentAccounts(request.getWithdrawAccountNumber(), request.getDepositAccountNumber());
@@ -55,9 +54,9 @@ public class PaymentService {
 
         // 결제내역 생성 및 저장
         PaymentList payment = createPaymentList(request, withdrawAccount, depositAccount, exchangeRate);
-        paymentListRepository.save(payment);
+        PaymentList savedPaymentList = paymentListRepository.save(payment);
 
-        return new PaymentResponseDto(payment.getId());
+        return savedPaymentList.getId();
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -89,7 +88,7 @@ public class PaymentService {
         transactionService.createTransactionForPayment(depositAccount,withdrawAccount,paymentList.getAmount(),exchangeRate);
 
         // 결제 상태 변경
-        paymentList.setPaymentStatus(PaymentStatus.PAYMENT_CANCELLED);
+        paymentList.updatePaymentStatus(PaymentStatus.PAYMENT_CANCELLED);
     }
 
     public PaymentListResponseDto getPaymentListById(Long paymentId) {
