@@ -1,6 +1,7 @@
 package SN.BANK.exchangeRate.google;
 
 import SN.BANK.account.enums.Currency;
+import SN.BANK.exchangeRate.ExchangeRateOpenApiInterface;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -13,10 +14,11 @@ import java.math.RoundingMode;
 
 @Component
 @Slf4j
-public class ExchangeRateGoogleFinanceScraper {
+public class ExchangeRateGoogleFinanceScraper implements ExchangeRateOpenApiInterface {
 
-	public BigDecimal getExchangeRate(Currency fromCurrency, Currency toCurrency){
-		String url = "https://www.google.com/finance/quote/" + fromCurrency + "-" + toCurrency;
+	@Override
+	public BigDecimal getExchangeRate(Currency baseCurrency, Currency quoteCurrency) {
+		String url = "https://www.google.com/finance/quote/" + baseCurrency + "-" + quoteCurrency;
 
 		try {
 			Document doc = Jsoup.connect(url)
@@ -26,11 +28,11 @@ public class ExchangeRateGoogleFinanceScraper {
 
 			Element titleElement = doc.selectFirst("div.YMlKec.fxKbKc");
 			if (titleElement != null) {
-				log.info("Successfully received exchange rate information: {} to {} is {}", fromCurrency, toCurrency, titleElement.text());
+				log.info("Successfully received exchange rate information: {} to {} is {}", baseCurrency, quoteCurrency, titleElement.text());
 				return convertToBigDecimal(titleElement.text());
 			} else {
-				log.warn("No exchange rate information found for: {} to {}", fromCurrency, toCurrency);
-				throw new IllegalArgumentException("No exchange rate information found for: " + fromCurrency + " to " + toCurrency);
+				log.warn("No exchange rate information found for: {} to {}", baseCurrency, quoteCurrency);
+				throw new IllegalArgumentException("No exchange rate information found for: " + baseCurrency + " to " + quoteCurrency);
 			}
 		} catch (IOException e) {
 			log.error("IO exception occurred: ", e);

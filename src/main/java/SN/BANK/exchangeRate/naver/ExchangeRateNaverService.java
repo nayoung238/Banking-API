@@ -1,6 +1,7 @@
 package SN.BANK.exchangeRate.naver;
 
 import SN.BANK.account.enums.Currency;
+import SN.BANK.exchangeRate.ExchangeRateOpenApiInterface;
 import SN.BANK.exchangeRate.naver.dto.ExchangeRateNaverResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +11,7 @@ import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
-public class ExchangeRateNaverService {
+public class ExchangeRateNaverService implements ExchangeRateOpenApiInterface {
 
 	private final ExchangeRateNaverClient exchangeRateNaverClient;
 
@@ -41,7 +42,8 @@ public class ExchangeRateNaverService {
 	@Value("${exchange-rate.naver.request-param.u2}")
 	private String u2;
 
-	public BigDecimal getExchangeRate(Currency fromCurrency, Currency toCurrency) {
+	@Override
+	public BigDecimal getExchangeRate(Currency baseCurrency, Currency quoteCurrency) {
 		ExchangeRateNaverResponseDto result = exchangeRateNaverClient.getExchangeRate(
 			key,
 			pkid,
@@ -50,8 +52,8 @@ public class ExchangeRateNaverService {
 			u1,
 			u6,
 			u7,
-			fromCurrency,
-			toCurrency,
+			baseCurrency,
+			quoteCurrency,
 			u8,
 			u2
 		);
