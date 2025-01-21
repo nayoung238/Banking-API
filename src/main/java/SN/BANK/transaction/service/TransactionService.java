@@ -16,7 +16,6 @@ import SN.BANK.users.entity.Users;
 import SN.BANK.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -29,14 +28,12 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final UsersService usersService;
     private final AccountService accountService;
-    private final AccountBalanceService accountBalanceService;
-    private final AccountValidationService accountValidationService;
-    private final TransactionHistoryService transactionHistoryService;
+    private final WithdrawService withdrawService;
+    private final DepositService depositService;
 
     /**
      * 이체 기능
      */
-    @Transactional
     public TransactionResponse createTransaction(Long userId, TransactionRequest transactionRequest) {
 
         BigDecimal amount = transactionRequest.getAmount();
@@ -45,17 +42,42 @@ public class TransactionService {
         BigDecimal exchangeRate = BigDecimal.ONE;
         BigDecimal convertedAmount = amount;
 
-        // 1. 계좌 검증 및 락 설정
-        Account senderAccount = accountValidationService.validateSenderAccount(userId, transactionRequest);
-        Account receiverAccount = accountValidationService.validateReceiverAccount(senderAccount, transactionRequest);
+        // 1. 보낸(송금) 사람 계좌 조회 (송금 계좌 Lock 획득)
+        // 1-1. 보낸 사람 돈 감소
+        Account senderAccount = withdrawService.sendTo(userId, transactionRequest);
 
-        // 2. 잔액 갱신
-        accountBalanceService.updateAccountBalances(senderAccount, receiverAccount, amount);
 
-        // 3. 거래 내역 생성
-        return transactionHistoryService.createTransactionRecords(senderAccount, receiverAccount,
-                exchangeRate, amount, convertedAmount);
+        // 2. 받는(수취) 사람 계좌 조회 (수취 계좌 Lock 획득)
+        // 2-1. 받는 사람 돈 증가
+        // 2-1-1. 성공 시, 거래 내역(transaction) 생성
+        // 2-1-2. 실패 시, 보낸(송금) 사람 계좌에 다시 감소된 돈 만큼 증가
+        return depositService.receiveFrom(transactionRequest, senderAccount, exchangeRate, convertedAmount);
     }
+
+    /*
+    public void createTransactionForPayment(Account senderAccount, Account receiverAccount,
+                                            BigDecimal amount, BigDecimal exchangeRate) {
+
+        BigDecimal convertedAmount = amount;
+
+        // 같은 통화가 아닌 경우
+//        if (!exchangeRate.equals(BigDecimal.ONE)) {
+//            convertedAmount = amount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP); // HALF_UP: 반올림
+//        }
+
+        updateAccountBalance(senderAccount, receiverAccount, amount, convertedAmount);
+
+        // 거래내역 생성
+        LocalDateTime transactedAt = LocalDateTime.now();
+        String txGroupId = generateTransactionGroupId();
+
+        getSenderTransactionEntity(senderAccount, receiverAccount, transactedAt,
+                amount, exchangeRate, txGroupId);
+
+        getReceiverTransactionEntity(senderAccount, receiverAccount, transactedAt,
+                convertedAmount, exchangeRate, txGroupId);
+    }
+    */
 
     /**
      * 전체 이체 내역 조회
@@ -66,10 +88,10 @@ public class TransactionService {
         Users user = usersService.validateUser(userId);
 
         // 유효한 계좌인지 검증
-        Account account = accountService.findValidAccount(accountId);
+        Account account = accountService.getAccount(accountId);
 
         // 해당 계좌가 사용자의 계좌인지 검증
-        accountService.validAccountOwner(account, user.getId());
+        accountService.validAccountOwner(user.getId(), account);
 
         List<TransactionEntity> txFindResponse = new ArrayList<>();
         txFindResponse.addAll(transactionRepository.findBySenderAccountIdAndType(accountId, TransactionType.WITHDRAWAL));
@@ -89,10 +111,10 @@ public class TransactionService {
         Users user = usersService.validateUser(userId);
 
         // 유효한 계좌인지 검증
-        Account account = accountService.findValidAccount(request.getAccountId());
+        Account account = accountService.getAccount(request.getAccountId());
 
         // 해당 계좌가 사용자의 계좌인지 검증
-        accountService.validAccountOwner(account, user.getId());
+        accountService.validAccountOwner(user.getId(), account);
 
         // 유효한 거래 내역인지 검증
         TransactionEntity tx = transactionRepository.findById(request.getTransactionId())
@@ -103,9 +125,9 @@ public class TransactionService {
         Account receiverAccount;
 
         if (tx.getSenderAccountId().equals(account.getId())) {
-            receiverAccount = accountService.findValidAccount(tx.getReceiverAccountId());
+            receiverAccount = accountService.getAccount(tx.getReceiverAccountId());
         } else {
-            receiverAccount = accountService.findValidAccount(tx.getSenderAccountId());
+            receiverAccount = accountService.getAccount(tx.getSenderAccountId());
         }
 
         String othersAccountNumber = receiverAccount.getAccountNumber();

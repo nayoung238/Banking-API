@@ -16,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -88,8 +89,8 @@ class ConcurrentControlTest {
     @DisplayName("동시성 제어 테스트")
     void testConcurrentTransfer() throws InterruptedException {
         // 동시 실행할 스레드 개수
-        int threadCount = 100;
-        BigDecimal transferAmount = BigDecimal.valueOf(1000);
+        int threadCount = 1000;
+        BigDecimal transferAmount = BigDecimal.valueOf(1000.00);
 
         // 스레드 풀 생성
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
@@ -121,8 +122,10 @@ class ConcurrentControlTest {
         Account updatedSenderAccount = accountRepository.findById(sender.getId()).orElseThrow();
         Account updatedReceiverAccount = accountRepository.findById(receiver.getId()).orElseThrow();
 
-        BigDecimal expectedSenderBalance = sender.getMoney().subtract(transferAmount.multiply(BigDecimal.valueOf(threadCount))).setScale(2);
-        BigDecimal expectedReceiverBalance = receiver.getMoney().add(transferAmount.multiply(BigDecimal.valueOf(threadCount))).setScale(2);
+        BigDecimal expectedSenderBalance = sender.getMoney().subtract(transferAmount.multiply(BigDecimal.valueOf(threadCount)))
+                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal expectedReceiverBalance = receiver.getMoney().add(transferAmount.multiply(BigDecimal.valueOf(threadCount)))
+                .setScale(2, RoundingMode.HALF_UP);
 
         assertEquals(expectedSenderBalance, updatedSenderAccount.getMoney(), "송신 계좌 잔액 검증");
         assertEquals(expectedReceiverBalance, updatedReceiverAccount.getMoney(), "수신 계좌 잔액 검증");

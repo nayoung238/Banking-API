@@ -2,6 +2,10 @@ package SN.BANK.transaction.service;
 
 import SN.BANK.account.entity.Account;
 import SN.BANK.account.enums.Currency;
+import SN.BANK.account.service.AccountService;
+import SN.BANK.transaction.dto.request.TransactionRequest;
+import SN.BANK.transaction.dto.response.TransactionResponse;
+import SN.BANK.transaction.repository.TransactionRepository;
 import SN.BANK.users.entity.Users;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,12 +19,22 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-class TransactionServiceTest {
+public class DepositServiceTest {
+
+    @Mock
+    AccountService accountService;
+
+    @Mock
+    TransactionRecoverService recoverService;
+
+    @Mock
+    TransactionRepository transactionRepository;
 
     @InjectMocks
-    TransactionService transactionService;
+    DepositService depositService;
 
     Users sender;
     Users receiver;
@@ -66,10 +80,31 @@ class TransactionServiceTest {
     }
 
     @Test
-    @DisplayName("입금액은 계좌 잔액보다 많을 수 없다.")
-    void isGreaterThanAmount() {
-        assertTrue(transactionService.isGreaterThanAmount(senderAccount, BigDecimal.valueOf(10000.00)));
-        assertFalse(transactionService.isGreaterThanAmount(senderAccount, BigDecimal.valueOf(10001.00)));
+    @DisplayName("정상적으로 돈을 수취하고 거래 내역을 생성한다.")
+    void receiveSuccessTest() {
+
+        // given
+        BigDecimal amount = BigDecimal.valueOf(1000.00);
+        BigDecimal expectedBalance = receiverAccount.getMoney().add(amount);
+
+        TransactionRequest txRequest = TransactionRequest.builder()
+                .accountPassword("1234")
+                .senderAccountId(senderAccount.getId())
+                .receiverAccountId(receiverAccount.getId())
+                .amount(amount)
+                .build();
+
+        when(accountService.getAccountWithLock(receiverAccount.getId())).thenReturn(receiverAccount);
+
+        // when
+        TransactionResponse response = depositService.receiveFrom(txRequest, senderAccount,
+                BigDecimal.ONE, amount);
+
+        // then
+        assertNotNull(response);
+        assertEquals(expectedBalance, receiverAccount.getMoney());
+        assertEquals(sender.getName(), response.getSenderName());
+        assertEquals(receiver.getName(), response.getReceiverName());
     }
 
 }

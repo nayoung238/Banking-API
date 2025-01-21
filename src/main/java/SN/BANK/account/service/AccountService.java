@@ -43,7 +43,7 @@ public class AccountService {
                 .user(user)
                 .password(request.getPassword())
                 .accountNumber(accountNumber)
-                .money(BigDecimal.valueOf(0))
+                .money(BigDecimal.valueOf(0, 2))
                 .accountName(accountName)
                 .currency(request.getCurrency())
                 .build();
@@ -57,7 +57,7 @@ public class AccountService {
         Users user = usersService.validateUser(userId);
 
         // 2. 유효한 계좌인지 검증
-        Account account = findValidAccount(accountId);
+        Account account = getAccount(accountId);
 
         // 3. 해당 계좌가 사용자의 계좌인지 검증
         if (!account.getUser().equals(user)) {
@@ -99,7 +99,7 @@ public class AccountService {
         return accountNumber;
     }
 
-    public void validAccountOwner(Account account, Long userId) {
+    public void validAccountOwner(Long userId, Account account) {
         // 1. 유효한 사용자인지 검증
         Users user = usersService.validateUser(userId);
 
@@ -108,7 +108,14 @@ public class AccountService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
     }
 
-    public Account findValidAccount(Long accountId) {
+    public void validAccountBalance(Account account, BigDecimal amount) {
+        // balance < amount, throw error
+        if (amount.compareTo(account.getMoney()) > 0) {
+            throw new CustomException(ErrorCode.INSUFFICIENT_MONEY);
+        }
+    }
+
+    public Account getAccount(Long accountId) {
         return accountRepository.findById(accountId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
     }
@@ -118,7 +125,7 @@ public class AccountService {
      * @param accountId
      * @return
      */
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+//    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public Account getAccountWithLock(Long accountId) {
         return accountRepository.findByIdWithLock(accountId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
