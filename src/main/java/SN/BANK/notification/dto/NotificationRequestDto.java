@@ -2,6 +2,7 @@ package SN.BANK.notification.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Getter;
 
 @Schema(description = "알림 요청 dto")
@@ -19,4 +20,12 @@ public class NotificationRequestDto {
     @NotBlank
     @Schema(description = "토큰")
     String token;
+
+    @Builder
+    private NotificationRequestDto(String title, String message, String token)
+    {
+        this.title = title;
+        this.message = message;
+        this.token = token;
+    }
 }

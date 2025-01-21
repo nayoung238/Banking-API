@@ -25,7 +25,7 @@ public class NotificationService {
     private final FCMTokenRepository fcmTokenRepository;
     private final UsersService usersService;
     public String sendNotification(NotificationRequestDto notificationRequestDto) {
-        String token=notificationRequestDto.getToken();
+
 
         Notification notification = Notification.builder()
                 .setTitle(notificationRequestDto.getTitle())
@@ -34,7 +34,7 @@ public class NotificationService {
 
         Message message = Message.builder()
                 .setNotification(notification)
-                .setToken(token)
+                .setToken(notificationRequestDto.getToken())
                 .build();
 
         try {
@@ -42,12 +42,14 @@ public class NotificationService {
         } catch (FirebaseMessagingException e) {
             String errorCode = String.valueOf(e.getErrorCode());
 
-            if ("UNREGISTERED".equals(errorCode) || "INVALID_ARGUMENT".equals(errorCode)) {
+            if (errorCode.matches("UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND")) {
+                // 잘못된 토큰, 등록되지 않은 토큰, 또는 찾을 수 없는 리소스
                 throw new NotificationException(ErrorCode.INVALID_TOKEN);
-            } else if ("MESSAGING_SERVICE_NOT_AVAILABLE".equals(errorCode) || "QUOTA_EXCEEDED".equals(errorCode)) {
-                // 네트워크/서비스 문제
+            } else if (errorCode.matches("RESOURCE_EXHAUSTED|UNAVAILABLE")) {
+                // FCM 서비스 사용 불가, 할당량 초과
                 throw new NotificationException(ErrorCode.FCM_SERVICE_UNAVAILABLE);
             } else {
+                // 기타 알 수 없는 오류
                 throw new NotificationException(ErrorCode.FCM_UNKNOWN_ERROR);
             }
         }
@@ -59,8 +61,10 @@ public class NotificationService {
         {
             throw new CustomException(ErrorCode.NOT_FOUND_USER);
         }
+        if(fcmTokenRepository.existsByToken(tokenRequest.getToken()))
+            throw new NotificationException(ErrorCode.DUPLICATE_TOKEN);
         FCMToken fcmToken=FCMToken.builder().token(tokenRequest.getToken()).userId(tokenRequest.getUserId()).build();
-        fcmTokenRepository.save(fcmToken);
-        return fcmToken.getToken();
+
+        return fcmTokenRepository.save(fcmToken).getToken();
     }
 }
