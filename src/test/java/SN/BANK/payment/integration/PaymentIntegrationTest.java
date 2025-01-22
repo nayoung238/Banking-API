@@ -1,5 +1,6 @@
 package SN.BANK.payment.integration;
 
+import SN.BANK.common.data.EncryptionFacade;
 import SN.BANK.payment.dto.request.PaymentRefundRequestDto;
 import SN.BANK.payment.dto.request.PaymentRequestDto;
 import SN.BANK.payment.entity.PaymentList;
@@ -51,7 +52,8 @@ class PaymentIntegrationTest {
     @Autowired
     PaymentListRepository paymentListRepository;
 
-
+    @Autowired
+    EncryptionFacade encryptionFacade;
 
     Users user;
     Account withdrawAccount;
@@ -97,11 +99,15 @@ class PaymentIntegrationTest {
     @DisplayName("결제 성공 테스트")
     void makePayment() throws Exception {
         // Given
+        String encryptedWithdrawAccountNumber = encryptionFacade.encrypt(withdrawAccount.getAccountNumber());
+        String encryptedDepositAccountNumber = encryptionFacade.encrypt(depositAccount.getAccountNumber());
+        String encryptedPassword = encryptionFacade.encrypt("1234");
+
         PaymentRequestDto request = PaymentRequestDto.builder()
-                .withdrawAccountNumber(withdrawAccount.getAccountNumber())
-                .depositAccountNumber(depositAccount.getAccountNumber())
+                .withdrawAccountNumber(encryptedWithdrawAccountNumber)
+                .depositAccountNumber(encryptedDepositAccountNumber)
                 .amount(BigDecimal.valueOf(3000))
-                .password("1234")
+                .password(encryptedPassword)
                 .build();
 
         // When
@@ -138,7 +144,8 @@ class PaymentIntegrationTest {
                 .build();
         paymentListRepository.save(payment);
 
-        PaymentRefundRequestDto request = new PaymentRefundRequestDto(payment.getId(), "1234");
+        String encryptedPassword = encryptionFacade.encrypt("1234");
+        PaymentRefundRequestDto request = new PaymentRefundRequestDto(payment.getId(), encryptedPassword);
         // When
         mockMvc.perform(post("/payment/cancel")
                         .contentType(MediaType.APPLICATION_JSON)
