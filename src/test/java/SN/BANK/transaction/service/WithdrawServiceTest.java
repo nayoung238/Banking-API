@@ -120,7 +120,7 @@ public class WithdrawServiceTest {
                 .build();
 
         when(accountService.getAccountWithLock(senderAccount.getId())).thenReturn(senderAccount);
-        doThrow(new CustomException(ErrorCode.INSUFFICIENT_MONEY))
+        doThrow(new CustomException(ErrorCode.INSUFFICIENT_BALANCE))
                 .when(accountService).validAccountBalance(senderAccount, amount);
 
         // when
@@ -129,7 +129,7 @@ public class WithdrawServiceTest {
         });
 
         // then
-        assertEquals(ErrorCode.INSUFFICIENT_MONEY, exception.getErrorCode());
+        assertEquals(ErrorCode.INSUFFICIENT_BALANCE, exception.getErrorCode());
 
         // 호출 검증
         verify(accountService).getAccountWithLock(senderAccount.getId());

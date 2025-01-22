@@ -111,7 +111,7 @@ public class AccountService {
     public void validAccountBalance(Account account, BigDecimal amount) {
         // balance < amount, throw error
         if (amount.compareTo(account.getMoney()) > 0) {
-            throw new CustomException(ErrorCode.INSUFFICIENT_MONEY);
+            throw new CustomException(ErrorCode.INSUFFICIENT_BALANCE);
         }
     }
 

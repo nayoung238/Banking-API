@@ -169,7 +169,7 @@ class TransferIntegrateTest {
                         .session(session)
                         .content(objectMapper.writeValueAsString(transactionRequest)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("계좌의 잔액이 부족합니다.")))
+                .andExpect(content().string(containsString("잔액이 부족합니다.")))
                 .andDo(print());
     }
 
