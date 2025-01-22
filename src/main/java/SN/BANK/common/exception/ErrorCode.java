@@ -22,15 +22,18 @@ public enum ErrorCode {
     // Transfer
     INVALID_TRANSFER(HttpStatus.BAD_REQUEST, "같은 계좌 간 이체는 불가합니다."),
     NOT_FOUND_TRANSACTION(HttpStatus.NOT_FOUND, "존재하지 않는 거래내역입니다."),
+    
+    // ExchangeRate
+    EXCHANGE_RATE_FETCH_FAIL(HttpStatus.SERVICE_UNAVAILABLE, "환율 데이터를 가져올 수 없습니다."),
+    INVALID_QUOTE_CURRENCY_ERROR(HttpStatus.BAD_REQUEST, "Quote Currency는 한국 원화(KRW) 단위여야 합니다."),
+    INVALID_EXCHANGE_RATE(HttpStatus.INTERNAL_SERVER_ERROR, "환율 값은 0보다 커야 합니다."),
 
     // Payment
     PAYMENT_ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "이미 결제 취소된 내역입니다."),
     NOT_FOUND_PAYMENT_LIST(HttpStatus.BAD_REQUEST,"결제내역이 존재하지 않습니다."),
 
-    // ExchangeRate
-    EXCHANGE_RATE_FETCH_FAIL(HttpStatus.SERVICE_UNAVAILABLE, "환율 데이터를 가져올 수 없습니다."),
-    INVALID_QUOTE_CURRENCY_ERROR(HttpStatus.BAD_REQUEST, "Quote Currency는 한국 원화(KRW) 단위여야 합니다."),
-    INVALID_EXCHANGE_RATE(HttpStatus.INTERNAL_SERVER_ERROR, "환율 값은 0보다 커야 합니다."),
+    // Data
+    DECRYPTION_FAIL(HttpStatus.BAD_REQUEST, "복호화에 실패했습니다. 올바른 암호화 키를 사용하고 있는지 확인해주세요."),
 
     // Notification
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED,"잘못된 토큰입니다."),
