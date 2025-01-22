@@ -22,3 +22,20 @@ server:
 
 data:
   secret-key: dtj8WL8jwm49LhXyXnscpXTv5uc5VhWm+WWN5pkDejo=
+
+exchange-rate:
+  naver:
+    host: https://m.search.naver.com
+    url: /p/csearch/content/qapirender.nhn
+    request-param:
+      key: calculator
+      pkid: 141
+      q: "%ED%99%98%EC%9C%A8"
+      where: m
+      u1: keb
+      u6: standardUnit
+      u7: 0
+      u3: USD
+      u4: KRW
+      u8: down
+      u2: 1
