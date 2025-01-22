@@ -1,5 +1,6 @@
 package SN.BANK.payment.controller;
 
+import SN.BANK.common.aop.Decrypt;
 import SN.BANK.payment.dto.response.PaymentListResponseDto;
 import SN.BANK.payment.dto.request.PaymentRefundRequestDto;
 import SN.BANK.payment.dto.request.PaymentRequestDto;
@@ -23,6 +24,7 @@ public class PaymentController {
      * @return paymentId
      */
     @PostMapping
+    @Decrypt
     public ResponseEntity<Long> makePayment(@Valid @RequestBody PaymentRequestDto request) {
         Long paymentId = paymentService.makePayment(request);
         return ResponseEntity.ok(paymentId);
@@ -35,6 +37,7 @@ public class PaymentController {
      * @return 환불 결과 DTO
      */
     @PostMapping("/cancel")
+    @Decrypt
     public ResponseEntity<String> refundPayment(@Valid @RequestBody PaymentRefundRequestDto request) {
 
         paymentService.refundPayment(request);
