@@ -32,17 +32,28 @@ public class PaymentService {
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public Long makePayment(PaymentRequestDto request) {
 
+
         //출금계좌와 입금 계좌가 동일한지 확인
         validateDifferentAccounts(request.getWithdrawAccountNumber(), request.getDepositAccountNumber());
 
-        // 출금 계좌 확인
-        Account withdrawAccount = getAccountByNumberWithLock(request.getWithdrawAccountNumber());
+        // 출금 계좌
+        Account withdrawAccount;
+        // 입금 계좌
+        Account depositAccount;
+
+        // 계좌 번호가 사전 순서상 앞에있는것부터 조회 (데드락 방지)
+        if(request.getWithdrawAccountNumber().compareTo(request.getDepositAccountNumber()) < 0){
+            withdrawAccount = getAccountByNumberWithLock(request.getWithdrawAccountNumber());
+            depositAccount = getAccountByNumberWithLock(request.getDepositAccountNumber());
+        }
+        else {
+            depositAccount = getAccountByNumberWithLock(request.getDepositAccountNumber());
+            withdrawAccount = getAccountByNumberWithLock(request.getWithdrawAccountNumber());
+        }
 
         // 계좌 비밀번호 확인
         validateAccountPassword(withdrawAccount, request.getPassword());
 
-        // 입금 계좌 확인
-        Account depositAccount = getAccountByNumberWithLock(request.getDepositAccountNumber());
 
         // 환율 가져오기
         BigDecimal exchangeRate = exchangeRateService.getExchangeRate(withdrawAccount.getCurrency(), depositAccount.getCurrency());
@@ -61,19 +72,27 @@ public class PaymentService {
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public void refundPayment(PaymentRefundRequestDto requestDto) {
+    public void refundPayment(PaymentRefundRequestDto request) {
         // 결제 내역 조회
-        PaymentList paymentList = getPaymentListByIdWithLock(requestDto.getPaymentId());
+        PaymentList paymentList = getPaymentListByIdWithLock(request.getPaymentId());
 
-        // 출금 계좌 확인
-        Account withdrawAccount = getAccountByNumberWithLock(paymentList.getWithdrawAccountNumber());
+        // 출금 계좌
+        Account withdrawAccount;
+        // 입금 계좌
+        Account depositAccount;
+
+        // 계좌 번호가 사전 순서상 앞에있는것부터 조회 (데드락 방지)
+        if(paymentList.getWithdrawAccountNumber().compareTo(paymentList.getDepositAccountNumber()) < 0){
+            withdrawAccount = getAccountByNumberWithLock(paymentList.getWithdrawAccountNumber());
+            depositAccount = getAccountByNumberWithLock(paymentList.getDepositAccountNumber());
+        }
+        else {
+            depositAccount = getAccountByNumberWithLock(paymentList.getDepositAccountNumber());
+            withdrawAccount = getAccountByNumberWithLock(paymentList.getWithdrawAccountNumber());
+        }
 
         // 계좌 비밀번호 확인
-        validateAccountPassword(withdrawAccount, requestDto.getPassword());
-
-        // 입금 계좌 확인
-        Account depositAccount = getAccountByNumberWithLock(paymentList.getDepositAccountNumber());
-
+        validateAccountPassword(withdrawAccount, request.getPassword());
         // 이미 결제 취소된 상태인지 확인
         validatePaymentStatus(paymentList, PaymentStatus.PAYMENT_CANCELLED, ErrorCode.PAYMENT_ALREADY_CANCELLED);
 
