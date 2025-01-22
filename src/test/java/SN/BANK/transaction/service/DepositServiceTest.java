@@ -28,9 +28,6 @@ public class DepositServiceTest {
     AccountService accountService;
 
     @Mock
-    TransactionRecoverService recoverService;
-
-    @Mock
     TransactionRepository transactionRepository;
 
     @InjectMocks
@@ -85,6 +82,7 @@ public class DepositServiceTest {
 
         // given
         BigDecimal amount = BigDecimal.valueOf(1000.00);
+        BigDecimal convertedAmount = amount;
         BigDecimal expectedBalance = receiverAccount.getMoney().add(amount);
 
         TransactionRequest txRequest = TransactionRequest.builder()
@@ -97,14 +95,11 @@ public class DepositServiceTest {
         when(accountService.getAccountWithLock(receiverAccount.getId())).thenReturn(receiverAccount);
 
         // when
-        TransactionResponse response = depositService.receiveFrom(txRequest, senderAccount,
-                BigDecimal.ONE, amount);
+        Account updatedReceiverAccount = depositService.receiveFrom(txRequest, convertedAmount);
 
         // then
-        assertNotNull(response);
-        assertEquals(expectedBalance, receiverAccount.getMoney());
-        assertEquals(sender.getName(), response.getSenderName());
-        assertEquals(receiver.getName(), response.getReceiverName());
+        assertNotNull(updatedReceiverAccount);
+        assertEquals(expectedBalance, updatedReceiverAccount.getMoney());
     }
 
 }

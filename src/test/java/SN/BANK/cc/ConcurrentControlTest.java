@@ -7,13 +7,13 @@ import SN.BANK.transaction.dto.request.TransactionRequest;
 import SN.BANK.transaction.service.TransactionService;
 import SN.BANK.users.entity.Users;
 import SN.BANK.users.repository.UsersRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -63,7 +63,7 @@ class ConcurrentControlTest {
                 .user(user1)
                 .password("1234")
                 .accountNumber("11111111111111")
-                .money(BigDecimal.valueOf(1000000))
+                .money(BigDecimal.valueOf(1000000000.00))
                 .accountName("test account1")
                 .createdAt(LocalDateTime.now())
                 .currency(Currency.KRW)
@@ -73,7 +73,7 @@ class ConcurrentControlTest {
                 .user(user2)
                 .password("4321")
                 .accountNumber("22222222222222")
-                .money(BigDecimal.valueOf(0))
+                .money(BigDecimal.valueOf(0.00))
                 .accountName("test account2")
                 .createdAt(LocalDateTime.now())
                 .currency(Currency.KRW)
@@ -89,7 +89,7 @@ class ConcurrentControlTest {
     @DisplayName("동시성 제어 테스트")
     void testConcurrentTransfer() throws InterruptedException {
         // 동시 실행할 스레드 개수
-        int threadCount = 1000;
+        int threadCount = 5000;
         BigDecimal transferAmount = BigDecimal.valueOf(1000.00);
 
         // 스레드 풀 생성

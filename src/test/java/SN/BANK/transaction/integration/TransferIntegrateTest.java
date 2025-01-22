@@ -8,7 +8,6 @@ import SN.BANK.transaction.dto.request.TransactionRequest;
 import SN.BANK.transaction.dto.response.TransactionResponse;
 import SN.BANK.transaction.enums.TransactionType;
 import SN.BANK.transaction.service.DepositService;
-import SN.BANK.transaction.service.TransactionRecoverService;
 import SN.BANK.transaction.service.TransactionService;
 import SN.BANK.transaction.service.WithdrawService;
 import SN.BANK.users.entity.Users;
@@ -31,14 +30,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import static org.hamcrest.Matchers.everyItem;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -63,9 +60,6 @@ class TransferIntegrateTest {
 
     @Autowired
     WithdrawService withdrawService;
-
-    @Autowired
-    TransactionRecoverService recoverService;
 
     @Autowired
     TransactionTemplate transactionTemplate;
@@ -155,40 +149,28 @@ class TransferIntegrateTest {
     }
 
     @Test
-    @DisplayName("receiveFrom 호출 시 예외 발생 - 송금 계좌 잔액 롤백 검증")
-    void testRollbackOnReceiveFromError() {
+    @DisplayName("이체 실패 테스트 - 잔액 부족")
+    void transfer_INSUFFICIENT_MONEY() throws Exception {
 
-        // Given
-        BigDecimal amount = BigDecimal.valueOf(5000.00);
-        BigDecimal originalBalance = senderAccount.getMoney();
+        session.setAttribute("user", sender.getId());
 
-        TransactionRequest txRequest = TransactionRequest.builder()
-                .accountPassword("1234")
-                .senderAccountId(senderAccount.getId())
-                .receiverAccountId(receiverAccount.getId())
-                .amount(amount)
-                .build();
+        BigDecimal amount = BigDecimal.valueOf(15000.00);
 
+        TransactionRequest transactionRequest =
+                TransactionRequest.builder()
+                        .accountPassword("1234")
+                        .senderAccountId(senderAccount.getId())
+                        .receiverAccountId(receiverAccount.getId())
+                        .amount(amount)
+                        .build();
 
-        // When
-        // 송금 처리
-        Account updatedSenderAccount = withdrawService.sendTo(sender.getId(), txRequest);
-
-        try {
-            transactionTemplate.execute(status -> {
-                // 수신 처리
-                depositService.receiveFrom(txRequest, updatedSenderAccount, BigDecimal.ONE, amount);
-
-                // 의도적으로 예외 발생 -> 롤백 트리거
-                throw new RuntimeException("Fail Transaction");
-            });
-        } catch (RuntimeException e) {
-            recoverService.rollbackSenderAccount(txRequest);
-        }
-
-        // Then
-        // 데이터가 원래 상태로 롤백되었는지 검증
-        assertEquals(originalBalance, senderAccount.getMoney());
+        mockMvc.perform(post("/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .session(session)
+                        .content(objectMapper.writeValueAsString(transactionRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("계좌의 잔액이 부족합니다.")))
+                .andDo(print());
     }
 
     @Test

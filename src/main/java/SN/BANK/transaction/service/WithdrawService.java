@@ -5,7 +5,8 @@ import SN.BANK.account.service.AccountService;
 import SN.BANK.transaction.dto.request.TransactionRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +21,6 @@ public class WithdrawService {
      * @param transactionRequest
      * @return
      */
-    @Transactional
     public Account sendTo(Long userId, TransactionRequest transactionRequest) {
 
         // 송금 계좌 및 사용자 검증
@@ -30,5 +30,21 @@ public class WithdrawService {
 
         senderAccount.decreaseMoney(transactionRequest.getAmount());
         return senderAccount;
+    }
+
+    /**
+     * 결제 시에만 사용
+     * @param senderAccount
+     * @param amount
+     * @return
+     */
+    public Account sendTo(Account senderAccount, BigDecimal amount) {
+
+        // 송금 계좌 검증
+        Account senderAccountWithLock = accountService.getAccountWithLock(senderAccount.getId());
+        accountService.validAccountBalance(senderAccount, amount);
+
+        senderAccountWithLock.decreaseMoney(amount);
+        return senderAccountWithLock;
     }
 }
