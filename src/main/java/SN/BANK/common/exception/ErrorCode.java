@@ -30,6 +30,7 @@ public enum ErrorCode {
     // ExchangeRate
     EXCHANGE_RATE_FETCH_FAIL(HttpStatus.SERVICE_UNAVAILABLE, "환율 데이터를 가져올 수 없습니다."),
     INVALID_QUOTE_CURRENCY_ERROR(HttpStatus.BAD_REQUEST, "Quote Currency는 한국 원화(KRW) 단위여야 합니다."),
+    INVALID_EXCHANGE_RATE(HttpStatus.INTERNAL_SERVER_ERROR, "환율 값은 0보다 커야 합니다."),
 
     // Notification
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED,"잘못된 토큰입니다."),

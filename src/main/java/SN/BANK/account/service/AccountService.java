@@ -11,7 +11,6 @@ import SN.BANK.users.entity.Users;
 import SN.BANK.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -53,17 +52,9 @@ public class AccountService {
     }
 
     public AccountResponse findAccount(Long userId, Long accountId) {
-        // 1. 유효한 사용자인지 검증
-        Users user = usersService.validateUser(userId);
-
-        // 2. 유효한 계좌인지 검증
+        // 유효한 계좌인지 검증 (+ 사용자 유효성, 계좌-사용자 소유 검증)
         Account account = getAccount(accountId);
-
-        // 3. 해당 계좌가 사용자의 계좌인지 검증
-        if (!account.getUser().equals(user)) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
-        }
-
+        validateAccountOwner(userId, account);
         return new AccountResponse(account);
     }
 
@@ -99,20 +90,14 @@ public class AccountService {
         return accountNumber;
     }
 
-    public void validAccountOwner(Long userId, Account account) {
-        // 1. 유효한 사용자인지 검증
-        Users user = usersService.validateUser(userId);
-
-        // 2. 계좌가 사용자의 것인지 검증
-        if (!account.getUser().getId().equals(userId))
-            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
-    }
-
-    public void validAccountBalance(Account account, BigDecimal amount) {
-        // balance < amount, throw error
-        if (amount.compareTo(account.getMoney()) > 0) {
-            throw new CustomException(ErrorCode.INSUFFICIENT_BALANCE);
-        }
+    /**
+     * Lock 사용
+     * @param accountId
+     * @return
+     */
+    public Account getAccountWithLock(Long accountId) {
+        return accountRepository.findByIdWithLock(accountId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
     }
 
     public Account getAccount(Long accountId) {
@@ -120,14 +105,32 @@ public class AccountService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
     }
 
-    /**
-     * 이체 시 사용
-     * @param accountId
-     * @return
-     */
-//    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public Account getAccountWithLock(Long accountId) {
-        return accountRepository.findByIdWithLock(accountId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+    public void validateAccountOwner(Long userId, Account account) {
+        // 1. 유효한 사용자인지 검증
+        usersService.validateUser(userId);
+
+        // 2. 계좌가 사용자의 것인지 검증
+        if (!account.isAccountOwner(userId))
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
+    }
+
+    public void validateAccountBalance(Account account, BigDecimal amount) {
+        // balance < amount, throw error
+        if (account.isGreaterThanBalance(amount)) {
+            throw new CustomException(ErrorCode.INSUFFICIENT_BALANCE);
+        }
+    }
+
+    public void validateAccountPassword(Account account, String password) {
+        // balance < amount, throw error
+        if (!account.isCorrectPassword(password)) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+    }
+
+    public void validateNotSelfTransfer(Account senderAccount, Account receiverAccount) {
+        if (senderAccount.getId().equals(receiverAccount.getId())) {
+            throw new CustomException(ErrorCode.INVALID_TRANSFER);
+        }
     }
 }

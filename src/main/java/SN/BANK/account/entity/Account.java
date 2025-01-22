@@ -61,4 +61,16 @@ public class Account {
         this.money = this.money.add(amount);
     }
 
+    public boolean isAccountOwner(Long userId) {
+        return this.user != null && this.user.getId().equals(userId);
+    }
+
+    public boolean isGreaterThanBalance(BigDecimal amount) {
+        return amount.compareTo(money) > 0;
+    }
+
+    public boolean isCorrectPassword(String password) {
+        return this.password.equals(password);
+    }
+
 }

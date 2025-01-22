@@ -7,9 +7,7 @@ import SN.BANK.transaction.dto.request.TransactionFindDetailRequest;
 import SN.BANK.transaction.dto.request.TransactionRequest;
 import SN.BANK.transaction.dto.response.TransactionResponse;
 import SN.BANK.transaction.enums.TransactionType;
-import SN.BANK.transaction.service.DepositService;
 import SN.BANK.transaction.service.TransactionService;
-import SN.BANK.transaction.service.WithdrawService;
 import SN.BANK.users.entity.Users;
 import SN.BANK.users.repository.UsersRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,13 +23,11 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -54,15 +50,6 @@ class TransferIntegrateTest {
 
     @Autowired
     TransactionService transactionService;
-
-    @Autowired
-    DepositService depositService;
-
-    @Autowired
-    WithdrawService withdrawService;
-
-    @Autowired
-    TransactionTemplate transactionTemplate;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -124,7 +111,7 @@ class TransferIntegrateTest {
         session.setAttribute("user", sender.getId());
 
         BigDecimal amount = BigDecimal.valueOf(5000.00);
-        BigDecimal balance = senderAccount.getMoney().subtract(amount);
+        BigDecimal expectedBalance = senderAccount.getMoney().subtract(amount);
 
         TransactionRequest transactionRequest =
                 TransactionRequest.builder()
@@ -143,7 +130,7 @@ class TransferIntegrateTest {
                 .andExpect(jsonPath("$.senderAccountId").value(senderAccount.getId()))
                 .andExpect(jsonPath("$.receiverAccountId").value(receiverAccount.getId()))
                 .andExpect(jsonPath("$.amount").value(amount))
-                .andExpect(jsonPath("$.balance").value(balance))
+                .andExpect(jsonPath("$.balance").value(expectedBalance))
                 .andDo(print());
 
     }
