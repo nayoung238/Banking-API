@@ -20,6 +20,7 @@ configurations {
 }
 
 repositories {
+	google()
 	mavenCentral()
 }
 
@@ -48,6 +49,8 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	runtimeOnly 'com.h2database:h2'
+	implementation 'com.google.firebase:firebase-messaging:23.2.0'
+	implementation 'com.google.firebase:firebase-admin:9.2.0'
 }
 
 dependencyManagement {
