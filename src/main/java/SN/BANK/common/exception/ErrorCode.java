@@ -23,9 +23,19 @@ public enum ErrorCode {
     INVALID_TRANSFER(HttpStatus.BAD_REQUEST, "같은 계좌 간 이체는 불가합니다."),
     NOT_FOUND_TRANSACTION(HttpStatus.NOT_FOUND, "존재하지 않는 거래내역입니다."),
 
-    // Transaction
-    ROLLBACK_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "롤백 실패"),
-    RECEIVER_TRANSACTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "수취 계좌에 금액 추가 실패");
+    // Payment
+    PAYMENT_ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "이미 결제 취소된 내역입니다."),
+    NOT_FOUND_PAYMENT_LIST(HttpStatus.BAD_REQUEST,"결제내역이 존재하지 않습니다."),
+
+    // ExchangeRate
+    EXCHANGE_RATE_FETCH_FAIL(HttpStatus.SERVICE_UNAVAILABLE, "환율 데이터를 가져올 수 없습니다."),
+    INVALID_QUOTE_CURRENCY_ERROR(HttpStatus.BAD_REQUEST, "Quote Currency는 한국 원화(KRW) 단위여야 합니다."),
+
+    // Notification
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED,"잘못된 토큰입니다."),
+    FCM_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE,"네트워크 및 서비스에 장애가 있습니다."),
+    FCM_UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"알수 없는 에러입니다"),
+    DUPLICATE_TOKEN(HttpStatus.BAD_REQUEST,"중복된 토큰입니다.");
 
     private final HttpStatus status;
     private final String message;

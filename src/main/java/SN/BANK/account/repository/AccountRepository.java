@@ -7,11 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 
 @Repository
+
 public interface AccountRepository extends JpaRepository<Account, Long> {
     @Query("SELECT a FROM Account a JOIN FETCH a.user WHERE a.id = :accountId")
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -22,4 +22,5 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     boolean existsByAccountNumber(String accountNumber);
     List<Account> findByUser(Users user);
+    Optional<Account> findByAccountNumber(String accountNumber);
 }
