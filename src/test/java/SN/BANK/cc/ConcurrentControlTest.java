@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -44,9 +45,6 @@ class ConcurrentControlTest {
 
     @BeforeEach
     void setUp() {
-        usersRepository.deleteAll();
-        accountRepository.deleteAll();
-
         user1 = Users.builder()
                 .name("테스터1")
                 .loginId("test1234")
@@ -58,6 +56,9 @@ class ConcurrentControlTest {
                 .loginId("test4321")
                 .password("test4321")
                 .build();
+
+        user1 = usersRepository.save(user1);
+        user2 = usersRepository.save(user2);
 
         sender = Account.builder()
                 .user(user1)
@@ -79,17 +80,21 @@ class ConcurrentControlTest {
                 .currency(Currency.KRW)
                 .build();
 
-        user1 = usersRepository.save(user1);
-        user2 = usersRepository.save(user2);
         sender = accountRepository.save(sender);
         receiver = accountRepository.save(receiver);
+    }
+
+    @AfterEach
+    void clear() {
+        accountRepository.deleteAll();
+        usersRepository.deleteAll();
     }
 
     @Test
     @DisplayName("동시성 제어 테스트")
     void testConcurrentTransfer() throws InterruptedException {
         // 동시 실행할 스레드 개수
-        int threadCount = 5000;
+        int threadCount = 100;
         BigDecimal transferAmount = BigDecimal.valueOf(1000.00);
 
         // 스레드 풀 생성

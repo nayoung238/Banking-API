@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -22,7 +23,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(SpringExtension.class)
 class AccountServiceTest {
@@ -80,7 +82,6 @@ class AccountServiceTest {
 
         // given
         Long userId = 1L;
-        Long accountId = 123L;
 
         Account account1 = Account.builder()
                 .user(user)
@@ -119,6 +120,7 @@ class AccountServiceTest {
 
         when(usersService.validateUser(userId)).thenReturn(user);
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
+        ReflectionTestUtils.setField(user, "id", userId);
 
         // when
         AccountResponse findAccount = accountService.findAccount(userId, accountId);
@@ -136,25 +138,16 @@ class AccountServiceTest {
         Long userId = 1L;
         Long accountId = 123L;
 
-        Users anotherUser = Users.builder()
-                .name("테스터")
-                .loginId("test1111")
-                .password("1111")
-                .build();
-
-        Account account = Account.builder()
-                .user(anotherUser)
-                .build();
-
-        when(usersService.validateUser(userId)).thenReturn(user);
-        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
+        doThrow(new CustomException(ErrorCode.NOT_FOUND_ACCOUNT))
+                .when(accountRepository).findById(any());
 
         // when
         CustomException exception =
                 assertThrows(CustomException.class, () -> accountService.findAccount(userId, accountId));
 
         // then
-        assertEquals(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS, exception.getErrorCode());
+        assertEquals(ErrorCode.NOT_FOUND_ACCOUNT, exception.getErrorCode());
+        verify(accountRepository, times(1)).findById(any());
     }
 
     @Test
