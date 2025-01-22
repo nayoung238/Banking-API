@@ -146,9 +146,9 @@ public class ExchangeRateService {
     private void fallbackUpdate(Currency baseCurrency, Currency quoteCurrency) {
         CompletableFuture
             .anyOf(
-                CompletableFuture
-                    .supplyAsync(() -> mananaService.getExchangeRate(baseCurrency, quoteCurrency))
-                    .orTimeout(CACHE_EXPIRY_TIME, TimeUnit.MILLISECONDS),
+//                CompletableFuture
+//                    .supplyAsync(() -> mananaService.getExchangeRate(baseCurrency, quoteCurrency))
+//                    .orTimeout(CACHE_EXPIRY_TIME, TimeUnit.MILLISECONDS),
 
                 CompletableFuture
                     .supplyAsync(() -> googleFinanceScraper.getExchangeRate(baseCurrency, quoteCurrency))
