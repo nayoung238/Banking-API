@@ -32,6 +32,9 @@ public enum ErrorCode {
     PAYMENT_ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "이미 결제 취소된 내역입니다."),
     NOT_FOUND_PAYMENT_LIST(HttpStatus.BAD_REQUEST,"결제내역이 존재하지 않습니다."),
 
+    // Data
+    DECRYPTION_FAIL(HttpStatus.BAD_REQUEST, "복호화에 실패했습니다. 올바른 암호화 키를 사용하고 있는지 확인해주세요."),
+
     // Notification
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED,"잘못된 토큰입니다."),
     FCM_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE,"네트워크 및 서비스에 장애가 있습니다."),
