@@ -30,7 +30,7 @@ public enum ErrorCode {
 
     // Payment
     PAYMENT_ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "이미 결제 취소된 내역입니다."),
-    NOT_FOUND_PAYMENT_LIST(HttpStatus.BAD_REQUEST,"결제내역이 존재하지 않습니다.");
+    NOT_FOUND_PAYMENT_LIST(HttpStatus.BAD_REQUEST,"결제내역이 존재하지 않습니다."),
 
     // Notification
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED,"잘못된 토큰입니다."),
