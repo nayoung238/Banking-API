@@ -1,4 +1,4 @@
-package SN.BANK.service;
+package SN.BANK.users.service;
 
 
 import SN.BANK.common.exception.CustomException;
@@ -7,7 +7,6 @@ import SN.BANK.users.dto.LoginDto;
 import SN.BANK.users.dto.UsersRequestDto;
 import SN.BANK.users.dto.UsersResponseDto;
 import SN.BANK.users.repository.UsersRepository;
-import SN.BANK.users.service.UsersService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
