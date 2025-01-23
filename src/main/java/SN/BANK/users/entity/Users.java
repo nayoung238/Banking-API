@@ -22,6 +22,7 @@ public class Users {
     private List<Account> accounts;
 
     private String name;
+    @Column(unique = true)
     private String loginId;
     private String password;
     @Enumerated(EnumType.STRING)
