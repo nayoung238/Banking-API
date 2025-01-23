@@ -51,6 +51,9 @@ dependencies {
 	runtimeOnly 'com.h2database:h2'
 	implementation 'com.google.firebase:firebase-messaging:23.2.0'
 	implementation 'com.google.firebase:firebase-admin:9.2.0'
+	implementation 'org.redisson:redisson:3.43.0'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation group: 'it.ozimov', name: 'embedded-redis', version: '0.7.2'
 }
 
 dependencyManagement {
