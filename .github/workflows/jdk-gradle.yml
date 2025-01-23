@@ -17,6 +17,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
 
     steps:
       - name: Check out repository
@@ -38,11 +43,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - services:
-          redis:
-            image: redis:latest
-            ports:
-            - 6379:6379
+      
 
       - name: Grant execute permission to gradlew
         run: chmod +x ./gradlew
