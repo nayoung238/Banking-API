@@ -16,10 +16,10 @@ import java.util.Optional;
 public interface AccountRepository extends JpaRepository<Account, Long> {
     @Query("SELECT a FROM Account a JOIN FETCH a.user WHERE a.id = :accountId")
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<Account> findByIdWithLock(Long accountId);
+    Optional<Account> findByIdWithLock(@Param("accountId")Long accountId);
 
     @Query("SELECT a FROM Account a JOIN FETCH a.user WHERE a.id = :accountId")
-    Optional<Account> findById(Long accountId);
+    Optional<Account> findById(@Param("accountId")Long accountId);
 
     boolean existsByAccountNumber(String accountNumber);
     List<Account> findByUser(Users user);
