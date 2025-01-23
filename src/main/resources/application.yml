@@ -15,10 +15,6 @@ spring:
         format_sql: true
     open-in-view: false
     defer-datasource-initialization:  true
-  sql:
-    init:
-      mode: always
-      data-locations: classpath:db/data.sql
   data:
     redis:
       host: localhost
