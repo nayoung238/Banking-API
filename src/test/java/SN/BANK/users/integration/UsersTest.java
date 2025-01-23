@@ -1,4 +1,4 @@
-package SN.BANK.integration;
+package SN.BANK.users.integration;
 
 import SN.BANK.users.entity.Users;
 import SN.BANK.users.dto.LoginDto;

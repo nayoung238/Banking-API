@@ -229,4 +229,44 @@ public class TransactionService {
 
         return new TransactionResponse(senderTx, senderAccount.getUser().getName(), receiverAccount.getUser().getName());
     }
+
+
+    @Transactional
+    public TransactionResponse createTransactionNonLock(Long userId, TransactionRequest transactionRequest) {
+
+        // 1. 보내는(송금) 사람, 받는(수취) 사람 조회
+        // 1-1. id 가 더 큰 계좌를 먼저 Lock
+        TransactionAccountsResponse transferAccounts = getTransferAccountsNonLock(transactionRequest);
+        Account senderAccount = transferAccounts.getSenderAccount();
+        Account receiverAccount = transferAccounts.getReceiverAccount();
+
+        // 2. 송금, 수취 계좌의 통화 데이터를 통해 환율 가져오기
+        BigDecimal amount = transactionRequest.getAmount(); // (수취 계좌 통화 기준 금액)
+        BigDecimal exchangeRate = exchangeRateService.getExchangeRate(
+                senderAccount.getCurrency(), receiverAccount.getCurrency()
+        );
+
+        BigDecimal convertedAmount = getExchangeAmount(exchangeRate, amount);
+
+        // 3. 계좌 검증
+        validateTransferAccounts(userId,
+                senderAccount, receiverAccount,
+                convertedAmount, transactionRequest.getAccountPassword());
+
+
+        // 4. 보낸 사람 돈 감소, 받는 사람 돈 증가
+        updateAccountBalance(senderAccount, convertedAmount, receiverAccount, amount);
+
+        return createTransactionRecords(senderAccount, receiverAccount,
+                exchangeRate, amount, convertedAmount);
+    }
+
+    private TransactionAccountsResponse getTransferAccountsNonLock(TransactionRequest txRequest) {
+        Account senderAccount = accountService.getAccount(txRequest.getSenderAccountId());
+        Account receiverAccount = accountService.getAccount(txRequest.getReceiverAccountId());
+        return TransactionAccountsResponse.builder()
+                .senderAccount(senderAccount)
+                .receiverAccount(receiverAccount)
+                .build();
+    }
 }
