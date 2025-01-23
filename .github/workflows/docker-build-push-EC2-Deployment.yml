@@ -35,7 +35,7 @@ jobs:
 
       # gradle로 애플리케이션 빌드
       - name: Build with Gradle
-        run: ./gradlew clean build
+        run: ./gradlew clean build --info 
 
       - name: Log in to DockerHub
         uses: docker/login-action@v2
