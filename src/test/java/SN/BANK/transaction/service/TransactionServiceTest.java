@@ -139,6 +139,7 @@ class TransactionServiceTest {
                 .amount(amount)
                 .build();
 
+        when(exchangeRateService.getExchangeRate(any(), any())).thenReturn(BigDecimal.ONE);
         doThrow(new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS))
                 .when(accountService).getAccountWithLock(any());
 
@@ -169,6 +170,7 @@ class TransactionServiceTest {
 
         when(accountService.getAccountWithLock(1L)).thenReturn(senderAccount);
         when(accountService.getAccountWithLock(2L)).thenReturn(receiverAccount);
+        when(exchangeRateService.getExchangeRate(any(), any())).thenReturn(BigDecimal.ONE);
         doThrow(new CustomException(ErrorCode.INVALID_PASSWORD))
                 .when(accountService).validateAccountPassword(senderAccount, incorrectPassword);
 
@@ -198,6 +200,7 @@ class TransactionServiceTest {
 
         when(accountService.getAccountWithLock(1L)).thenReturn(senderAccount);
         when(accountService.getAccountWithLock(2L)).thenReturn(receiverAccount);
+        when(exchangeRateService.getExchangeRate(any(), any())).thenReturn(BigDecimal.ONE);
         doThrow(new CustomException(ErrorCode.INSUFFICIENT_BALANCE))
                 .when(accountService).validateAccountBalance(senderAccount, amount);
 
@@ -227,6 +230,7 @@ class TransactionServiceTest {
 
         when(accountService.getAccountWithLock(1L)).thenReturn(senderAccount);
         when(accountService.getAccountWithLock(2L)).thenReturn(receiverAccount);
+        when(exchangeRateService.getExchangeRate(any(), any())).thenReturn(BigDecimal.ONE);
         doThrow(new CustomException(ErrorCode.INVALID_TRANSFER))
                 .when(accountService).validateNotSelfTransfer(any(), any());
 

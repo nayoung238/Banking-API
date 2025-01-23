@@ -41,22 +41,28 @@ public class TransactionService {
     @Transactional
     public TransactionResponse createTransaction(Long userId, TransactionRequest transactionRequest) {
 
-        // 1. 보내는(송금) 사람, 받는(수취) 사람 검증 및 조회
-        TransactionAccountsResponse txAccounts = getUserAccount(userId, transactionRequest);
-
-        Account senderAccount = txAccounts.getSenderAccount();
-        Account receiverAccount = txAccounts.getReceiverAccount();
+        // 1. 보내는(송금) 사람, 받는(수취) 사람 조회
+        // 1-1. id 가 더 큰 계좌를 먼저 Lock
+        TransactionAccountsResponse transferAccounts = getTransferAccounts(transactionRequest);
+        Account senderAccount = transferAccounts.getSenderAccount();
+        Account receiverAccount = transferAccounts.getReceiverAccount();
 
         // 2. 송금, 수취 계좌의 통화 데이터를 통해 환율 가져오기
-        BigDecimal amount = transactionRequest.getAmount();
+        BigDecimal amount = transactionRequest.getAmount(); // (수취 계좌 통화 기준 금액)
         BigDecimal exchangeRate = exchangeRateService.getExchangeRate(
                 senderAccount.getCurrency(), receiverAccount.getCurrency()
         );
 
         BigDecimal convertedAmount = getExchangeAmount(exchangeRate, amount);
 
-        // 3. 보낸 사람 돈 감소, 받는 사람 돈 증가
-        updateAccountBalance(senderAccount, amount, receiverAccount, convertedAmount);
+        // 3. 계좌 검증
+        validateTransferAccounts(userId,
+                senderAccount, receiverAccount,
+                convertedAmount, transactionRequest.getAccountPassword());
+
+
+        // 4. 보낸 사람 돈 감소, 받는 사람 돈 증가
+        updateAccountBalance(senderAccount, convertedAmount, receiverAccount, amount);
 
         return createTransactionRecords(senderAccount, receiverAccount,
                 exchangeRate, amount, convertedAmount);
@@ -82,32 +88,39 @@ public class TransactionService {
     }
 
     /**
-     * @param userId
      * @param txRequest
      * @return
      */
-    private TransactionAccountsResponse getUserAccount(Long userId, TransactionRequest txRequest) {
+    private TransactionAccountsResponse getTransferAccounts(TransactionRequest txRequest) {
 
-        // 유효한 계좌인지 검증
-        Account userAccount = accountService.getAccountWithLock(txRequest.getSenderAccountId());
-        Account receiverAccount = accountService.getAccountWithLock(txRequest.getReceiverAccountId());
+        Long firstAccountId = Math.max(txRequest.getReceiverAccountId(), txRequest.getSenderAccountId());
+        Long secondAccountId = Math.min(txRequest.getReceiverAccountId(), txRequest.getSenderAccountId());
 
-        // 사용자 유효성, 계좌-사용자 소유 검증
-        accountService.validateAccountOwner(userId, userAccount);
+        Account firstAccount = accountService.getAccountWithLock(firstAccountId);
+        Account secondAccount = accountService.getAccountWithLock(secondAccountId);
 
-        // 사용자 계좌 잔액 검증
-        accountService.validateAccountBalance(userAccount, txRequest.getAmount());
-
-        // 계좌 비밀번호 검증
-        accountService.validateAccountPassword(userAccount, txRequest.getAccountPassword());
-
-        // 자기 자신과의 거래인지 검증
-        accountService.validateNotSelfTransfer(userAccount, receiverAccount);
+        Account senderAccount = txRequest.getSenderAccountId().equals(firstAccount.getId()) ? firstAccount : secondAccount;
+        Account receiverAccount = txRequest.getReceiverAccountId().equals(firstAccount.getId()) ? firstAccount : secondAccount;
 
         return TransactionAccountsResponse.builder()
-                .senderAccount(userAccount)
+                .senderAccount(senderAccount)
                 .receiverAccount(receiverAccount)
                 .build();
+    }
+
+    private void validateTransferAccounts(Long userId,
+                                          Account sennderAccount, Account receiverAccount,
+                                          BigDecimal amount, String password) {
+        accountService.validateAccountOwner(userId, sennderAccount);
+
+        // 사용자 계좌 잔액 검증
+        accountService.validateAccountBalance(sennderAccount, amount);
+
+        // 계좌 비밀번호 검증
+        accountService.validateAccountPassword(sennderAccount, password);
+
+        // 자기 자신과의 거래인지 검증
+        accountService.validateNotSelfTransfer(sennderAccount, receiverAccount);
     }
 
     private void updateAccountBalance(Account senderAccount, BigDecimal amount, Account receiverAccount, BigDecimal convertedAmount) {
@@ -120,7 +133,7 @@ public class TransactionService {
             throw new CustomException(ErrorCode.INVALID_EXCHANGE_RATE);
         }
         if (!exchangeRate.equals(BigDecimal.ONE)) {
-            return amount.divide(exchangeRate, 2, RoundingMode.HALF_UP);
+            return amount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP);
         }
         return amount;
     }
