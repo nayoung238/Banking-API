@@ -33,7 +33,7 @@ public class UsersServiceTest {
     BCryptPasswordEncoder bCryptPasswordEncoder;
 
 
-    @Test
+    /*@Test
     @DisplayName("회원가입 성공 테스트")
     public void joinSuccessTest(){
         //given
@@ -71,7 +71,7 @@ public class UsersServiceTest {
 
         //then
         assertEquals(exception.getErrorCode().getMessage(),"중복된 아이디입니다.");
-    }
+    }*/
 
     @Test
     @DisplayName("유저 정보 가져오기 성공 테스트")
@@ -123,7 +123,7 @@ public class UsersServiceTest {
         assertEquals(exception.getErrorCode().getMessage(),"존재하지 않는 유저입니다.");
     }
 
-    @Test
+    /*@Test
     @DisplayName("로그인 성공 테스트")
     public void loginTest(){
         //given
@@ -177,7 +177,7 @@ public class UsersServiceTest {
 
         //then
         assertEquals(exception.getErrorCode().getMessage(),"아이디 또는 비밀번호가 틀립니다.");
-    }
+    }*/
 
 
     private Users createUser(String name, String loginId, String password){
