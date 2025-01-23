@@ -115,12 +115,7 @@ class PaymentIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(result -> {
-                    // Convert response content to Long and verify
-                    String responseContent = result.getResponse().getContentAsString();
-                    Long paymentId = Long.valueOf(responseContent);
-                    assertThat(paymentId).isNotNull();
-                })
+                .andExpect(jsonPath("$.paymentId").isNotEmpty())
                 .andDo(print());
 
         // Then
