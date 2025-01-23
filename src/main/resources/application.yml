@@ -49,4 +49,4 @@ exchange-rate:
       u8: down
       u2: 1
 
-serverIp: 13.209.87.161
+serverIp: 172.31.47.139
