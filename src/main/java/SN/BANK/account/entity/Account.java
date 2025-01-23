@@ -8,10 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
@@ -23,6 +20,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @EntityListeners(AuditingEntityListener.class)
+@ToString
 public class Account {
 
     @Id
@@ -55,8 +53,24 @@ public class Account {
     @Column(nullable = false)
     private Currency currency;
 
-    public void changeMoney(BigDecimal money) {
-        this.money = money;
+    public void decreaseMoney(BigDecimal amount) {
+        this.money = this.money.subtract(amount);
+    }
+
+    public void increaseMoney(BigDecimal amount) {
+        this.money = this.money.add(amount);
+    }
+
+    public boolean isAccountOwner(Long userId) {
+        return this.user != null && this.user.getId().equals(userId);
+    }
+
+    public boolean isGreaterThanBalance(BigDecimal amount) {
+        return amount.compareTo(money) > 0;
+    }
+
+    public boolean isCorrectPassword(String password) {
+        return this.password.equals(password);
     }
 
 }

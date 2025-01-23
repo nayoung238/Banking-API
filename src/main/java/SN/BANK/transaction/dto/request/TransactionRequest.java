@@ -23,7 +23,7 @@ public class TransactionRequest {
 
     @NotNull
     @DecimalMin(value = "0.01", message = "금액은 0보다 커야합니다.")
-    private BigDecimal amount;
+    private BigDecimal amount; // 원화 -> 외화일 시, 외화 기준으로 보내야 함.
 
     @Builder
     public TransactionRequest(String accountPassword, Long senderAccountId, Long receiverAccountId, BigDecimal amount) {
