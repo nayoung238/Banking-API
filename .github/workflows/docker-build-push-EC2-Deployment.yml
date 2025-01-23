@@ -22,6 +22,11 @@ jobs:
       - name: Create serverKey.json
         run: echo "${{ secrets.SERVER_KEY_JSON }}" > src/main/resources/serverKey.json
 
+      - services:
+          redis:
+            image: redis:latest
+            ports:
+              - 6379:6379
 
       # gradlew에 실행 권한 부여
       - name: Grant execute permission for gradlew
