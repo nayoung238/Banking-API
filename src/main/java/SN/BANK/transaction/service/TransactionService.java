@@ -80,7 +80,7 @@ public class TransactionService {
         BigDecimal convertedAmount = getExchangeAmount(exchangeRate, amount);
 
         // 보낸 사람 돈 감소, 받는 사람 돈 증가
-        updateAccountBalance(senderAccount, amount, receiverAccount, convertedAmount);
+        updateAccountBalance(senderAccount, convertedAmount, receiverAccount, amount);
 
         // 거래내역 생성
         createTransactionRecords(senderAccount, receiverAccount,
@@ -123,7 +123,7 @@ public class TransactionService {
         accountService.validateNotSelfTransfer(sennderAccount, receiverAccount);
     }
 
-    private void updateAccountBalance(Account senderAccount, BigDecimal amount, Account receiverAccount, BigDecimal convertedAmount) {
+    private void updateAccountBalance(Account senderAccount, BigDecimal convertedAmount, Account receiverAccount, BigDecimal amount) {
         senderAccount.decreaseMoney(amount);
         receiverAccount.increaseMoney(convertedAmount);
     }
