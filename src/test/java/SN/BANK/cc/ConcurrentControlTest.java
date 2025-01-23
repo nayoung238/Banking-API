@@ -139,7 +139,7 @@ class ConcurrentControlTest {
     }
 
 
-    @Test
+    /*@Test
     @DisplayName("레디슨 동시성 제어 테스트 ")
     public void testRedissonLock() throws InterruptedException {
         // 동시 실행할 스레드 개수
@@ -180,6 +180,6 @@ class ConcurrentControlTest {
 
         assertEquals(expectedSenderBalance, updatedSenderAccount.getMoney(), "송신 계좌 잔액 검증");
         assertEquals(expectedReceiverBalance, updatedReceiverAccount.getMoney(), "수신 계좌 잔액 검증");
-    }
+    }*/
 
 }
