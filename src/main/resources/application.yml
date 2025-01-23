@@ -48,3 +48,5 @@ exchange-rate:
       u4: KRW
       u8: down
       u2: 1
+
+serverIp: 172.31.47.139
