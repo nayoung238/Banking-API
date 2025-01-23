@@ -24,8 +24,8 @@ public class UsersService {
         if(usersRepository.existsByLoginId(usersRequestDto.getLoginId())){
             throw new CustomException(ErrorCode.DUPLICATE_LOGIN_ID);
         }
-        String encodedPassword = bCryptPasswordEncoder.encode(usersRequestDto.getPassword());
-        Users user = usersRepository.save(Users.builder().name(usersRequestDto.getName()).loginId(usersRequestDto.getLoginId()).password(encodedPassword).build());
+        //String encodedPassword = bCryptPasswordEncoder.encode(usersRequestDto.getPassword());
+        Users user = usersRepository.save(Users.builder().name(usersRequestDto.getName()).loginId(usersRequestDto.getLoginId()).password(usersRequestDto.getPassword()).build());
         return user.getId();
     }
 
@@ -39,7 +39,10 @@ public class UsersService {
 
     public Long checkLogin(LoginDto loginDto) {
         Users user = usersRepository.findByLoginId(loginDto.getLoginId()).orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAIL));
-        if (!bCryptPasswordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
+        /*if (!bCryptPasswordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
+            throw new CustomException(ErrorCode.LOGIN_FAIL);
+        }*/
+        if (!user.getPassword().equals(loginDto.getPassword())) {
             throw new CustomException(ErrorCode.LOGIN_FAIL);
         }
         return user.getId();
