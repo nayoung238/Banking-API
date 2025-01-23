@@ -65,7 +65,7 @@ public class TransactionService {
         updateAccountBalance(senderAccount, convertedAmount, receiverAccount, amount);
 
         return createTransactionRecords(senderAccount, receiverAccount,
-                exchangeRate, amount, convertedAmount);
+                exchangeRate, convertedAmount, amount);
     }
 
     /**
@@ -124,8 +124,8 @@ public class TransactionService {
     }
 
     private void updateAccountBalance(Account senderAccount, BigDecimal convertedAmount, Account receiverAccount, BigDecimal amount) {
-        senderAccount.decreaseMoney(amount);
-        receiverAccount.increaseMoney(convertedAmount);
+        senderAccount.decreaseMoney(convertedAmount);
+        receiverAccount.increaseMoney(amount);
     }
 
     private BigDecimal getExchangeAmount(BigDecimal exchangeRate, BigDecimal amount) {
@@ -214,16 +214,16 @@ public class TransactionService {
 
     // Transaction (거래 내역) 생성 메서드
     public TransactionResponse createTransactionRecords(Account senderAccount, Account receiverAccount,
-                                                        BigDecimal exchangeRate, BigDecimal amount, BigDecimal convertedAmount) {
+                                                        BigDecimal exchangeRate, BigDecimal convertedAmount, BigDecimal amount) {
 
         LocalDateTime transactedAt = LocalDateTime.now();
         String txGroupId = generateTransactionGroupId();
 
         TransactionEntity senderTx = buildTransactionEntity(senderAccount, receiverAccount, TransactionType.WITHDRAWAL, transactedAt,
-                amount, senderAccount.getCurrency(), exchangeRate, senderAccount.getMoney(), txGroupId);
+                convertedAmount, senderAccount.getCurrency(), exchangeRate, senderAccount.getMoney(), txGroupId);
 
         TransactionEntity receiverTx = buildTransactionEntity(senderAccount, receiverAccount, TransactionType.DEPOSIT, transactedAt,
-                convertedAmount, receiverAccount.getCurrency(), exchangeRate, receiverAccount.getMoney(), txGroupId);
+                amount, receiverAccount.getCurrency(), exchangeRate, receiverAccount.getMoney(), txGroupId);
 
         transactionRepository.saveAll(List.of(senderTx, receiverTx));
 
@@ -258,7 +258,7 @@ public class TransactionService {
         updateAccountBalance(senderAccount, convertedAmount, receiverAccount, amount);
 
         return createTransactionRecords(senderAccount, receiverAccount,
-                exchangeRate, amount, convertedAmount);
+                exchangeRate, convertedAmount, amount);
     }
 
     private TransactionAccountsResponse getTransferAccountsNonLock(TransactionRequest txRequest) {
