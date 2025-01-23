@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
     @Entity
     @Getter
     @AllArgsConstructor
-
+    @NoArgsConstructor
+    
     public class PaymentList {
 
         @Id

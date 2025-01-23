@@ -70,8 +70,8 @@ public class PaymentServiceTest {
 
         PaymentList paymentList = new PaymentList(1L,"12345","67890",BigDecimal.valueOf(100),LocalDateTime.now(),Currency.USD,BigDecimal.valueOf(1400),PaymentStatus.PAYMENT_COMPLETED);
 
-        when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
-        when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
+        when(accountRepository.findByAccountNumberWithLock("12345")).thenReturn(Optional.of(mockWithdrawAccount));
+        when(accountRepository.findByAccountNumberWithLock("67890")).thenReturn(Optional.of(mockDepositAccount));
         when(exchangeRateService.getExchangeRate(Currency.KRW, Currency.USD)).thenReturn(BigDecimal.valueOf(1450));
         when(paymentListRepository.save(any(PaymentList.class))).thenReturn(paymentList);
         // When
@@ -79,7 +79,7 @@ public class PaymentServiceTest {
 
         // Then
         assertNotNull(paymentId);
-        verify(accountRepository, times(2)).findByAccountNumber(anyString());
+        verify(accountRepository, times(2)).findByAccountNumberWithLock(anyString());
         verify(exchangeRateService, times(1)).getExchangeRate(Currency.KRW, Currency.USD);
         verify(paymentListRepository, times(1)).save(any(PaymentList.class));
     }
@@ -95,8 +95,8 @@ public class PaymentServiceTest {
                 .password("wrongPassword")
                 .build();
 
-        when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
-        when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
+        when(accountRepository.findByAccountNumberWithLock("12345")).thenReturn(Optional.of(mockWithdrawAccount));
+        when(accountRepository.findByAccountNumberWithLock("67890")).thenReturn(Optional.of(mockDepositAccount));
         // When
         CustomException exception = assertThrows(CustomException.class, () -> paymentService.makePayment(request));
 
@@ -115,8 +115,8 @@ public class PaymentServiceTest {
                 .password("password")
                 .build();
 
-        when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
-        when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
+        when(accountRepository.findByAccountNumberWithLock("12345")).thenReturn(Optional.of(mockWithdrawAccount));
+        when(accountRepository.findByAccountNumberWithLock("67890")).thenReturn(Optional.of(mockDepositAccount));
 
         when(exchangeRateService.getExchangeRate(Currency.KRW, Currency.USD)).thenReturn(BigDecimal.valueOf(1450));
 
@@ -137,7 +137,7 @@ public class PaymentServiceTest {
                 .amount(BigDecimal.valueOf(100))
                 .password("password")
                 .build();
-        when(accountRepository.findByAccountNumber("99999")).thenReturn(Optional.empty());
+        when(accountRepository.findByAccountNumberWithLock("99999")).thenReturn(Optional.empty());
 
         // When
         CustomException exception = assertThrows(CustomException.class, () -> paymentService.makePayment(request));
@@ -174,8 +174,8 @@ public class PaymentServiceTest {
                 .amount(BigDecimal.valueOf(100))
                 .password("password")
                 .build();
-        when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
-        when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
+        when(accountRepository.findByAccountNumberWithLock("12345")).thenReturn(Optional.of(mockWithdrawAccount));
+        when(accountRepository.findByAccountNumberWithLock("67890")).thenReturn(Optional.of(mockDepositAccount));
         when(exchangeRateService.getExchangeRate(Currency.KRW, Currency.USD))
                 .thenThrow(new CustomException(ErrorCode.EXCHANGE_RATE_FETCH_FAIL));
 
@@ -200,16 +200,16 @@ public class PaymentServiceTest {
                 .paymentStatus(PaymentStatus.PAYMENT_COMPLETED)
                 .build();
 
-        when(paymentListRepository.findById(1L)).thenReturn(Optional.of(mockPayment));
-        when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
-        when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
+        when(paymentListRepository.findByIdWithLock(1L)).thenReturn(Optional.of(mockPayment));
+        when(accountRepository.findByAccountNumberWithLock("12345")).thenReturn(Optional.of(mockWithdrawAccount));
+        when(accountRepository.findByAccountNumberWithLock("67890")).thenReturn(Optional.of(mockDepositAccount));
 
         // When
         paymentService.refundPayment(request);
 
         // Then
         assertEquals(PaymentStatus.PAYMENT_CANCELLED, mockPayment.getPaymentStatus());
-        verify(paymentListRepository, times(1)).findById(1L);
+        verify(paymentListRepository, times(1)).findByIdWithLock(1L);
     }
 
     @Test
@@ -218,14 +218,14 @@ public class PaymentServiceTest {
         // given
         PaymentRefundRequestDto request = new PaymentRefundRequestDto(1L,"password");
 
-        when(paymentListRepository.findById(request.getPaymentId())).thenReturn(Optional.empty());
+        when(paymentListRepository.findByIdWithLock(request.getPaymentId())).thenReturn(Optional.empty());
 
         // when
         CustomException exception = assertThrows(CustomException.class, () -> paymentService.refundPayment(request));
 
         // then
         assertEquals(ErrorCode.NOT_FOUND_PAYMENT_LIST, exception.getErrorCode());
-        verify(paymentListRepository, times(1)).findById(request.getPaymentId());
+        verify(paymentListRepository, times(1)).findByIdWithLock(request.getPaymentId());
         verifyNoMoreInteractions(accountRepository);
     }
 
@@ -244,9 +244,9 @@ public class PaymentServiceTest {
                 .paymentStatus(PaymentStatus.PAYMENT_CANCELLED)
                 .build();
 
-        when(paymentListRepository.findById(1L)).thenReturn(Optional.of(mockPayment));
-        when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(mockWithdrawAccount));
-        when(accountRepository.findByAccountNumber("67890")).thenReturn(Optional.of(mockDepositAccount));
+        when(paymentListRepository.findByIdWithLock(1L)).thenReturn(Optional.of(mockPayment));
+        when(accountRepository.findByAccountNumberWithLock("12345")).thenReturn(Optional.of(mockWithdrawAccount));
+        when(accountRepository.findByAccountNumberWithLock("67890")).thenReturn(Optional.of(mockDepositAccount));
 
 
         // when
@@ -254,7 +254,7 @@ public class PaymentServiceTest {
 
         // then
         assertEquals(ErrorCode.PAYMENT_ALREADY_CANCELLED, exception.getErrorCode());
-        verify(paymentListRepository, times(1)).findById(request.getPaymentId());
+        verify(paymentListRepository, times(1)).findByIdWithLock(request.getPaymentId());
     }
 
     @Test
