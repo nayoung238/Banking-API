@@ -4,6 +4,7 @@ import SN.BANK.common.aop.Decrypt;
 import SN.BANK.payment.dto.response.PaymentListResponseDto;
 import SN.BANK.payment.dto.request.PaymentRefundRequestDto;
 import SN.BANK.payment.dto.request.PaymentRequestDto;
+import SN.BANK.payment.dto.response.PaymentResponseDto;
 import SN.BANK.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +22,13 @@ public class PaymentController {
      * 결제 요청을 처리하고 결과를 반환
      *
      * @param request 결제 요청 데이터를 담은 DTO
-     * @return paymentId
+     * @return paymentId를 담은 응답 DTO
      */
     @PostMapping
     @Decrypt
-    public ResponseEntity<Long> makePayment(@Valid @RequestBody PaymentRequestDto request) {
-        Long paymentId = paymentService.makePayment(request);
-        return ResponseEntity.ok(paymentId);
+    public ResponseEntity<PaymentResponseDto> makePayment(@Valid @RequestBody PaymentRequestDto request) {
+        PaymentResponseDto response = paymentService.makePayment(request);
+        return ResponseEntity.ok(response);
     }
 
     /**

@@ -5,6 +5,7 @@ import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
 import SN.BANK.exchangeRate.ExchangeRateService;
 import SN.BANK.payment.dto.request.PaymentRefundRequestDto;
+import SN.BANK.payment.dto.response.PaymentResponseDto;
 import SN.BANK.payment.entity.PaymentList;
 import SN.BANK.payment.dto.response.PaymentListResponseDto;
 import SN.BANK.payment.enums.PaymentStatus;
@@ -30,7 +31,7 @@ public class PaymentService {
     private final TransactionService transactionService;
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public Long makePayment(PaymentRequestDto request) {
+    public PaymentResponseDto makePayment(PaymentRequestDto request) {
 
 
         //출금계좌와 입금 계좌가 동일한지 확인
@@ -68,7 +69,7 @@ public class PaymentService {
         PaymentList payment = createPaymentList(request, withdrawAccount, depositAccount, exchangeRate);
         PaymentList savedPaymentList = paymentListRepository.save(payment);
 
-        return savedPaymentList.getId();
+        return new PaymentResponseDto(savedPaymentList.getId());
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)

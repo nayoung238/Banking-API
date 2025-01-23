@@ -6,6 +6,7 @@ import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.exchangeRate.ExchangeRateService;
 import SN.BANK.payment.dto.request.PaymentRequestDto;
 import SN.BANK.payment.dto.response.PaymentListResponseDto;
+import SN.BANK.payment.dto.response.PaymentResponseDto;
 import SN.BANK.payment.enums.PaymentStatus;
 import SN.BANK.payment.repository.PaymentListRepository;
 import SN.BANK.transaction.service.TransactionService;
@@ -75,10 +76,10 @@ public class PaymentServiceTest {
         when(exchangeRateService.getExchangeRate(Currency.KRW, Currency.USD)).thenReturn(BigDecimal.valueOf(1450));
         when(paymentListRepository.save(any(PaymentList.class))).thenReturn(paymentList);
         // When
-        Long paymentId = paymentService.makePayment(request);
+        PaymentResponseDto response = paymentService.makePayment(request);
 
         // Then
-        assertNotNull(paymentId);
+        assertNotNull(response);
         verify(accountRepository, times(2)).findByAccountNumberWithLock(anyString());
         verify(exchangeRateService, times(1)).getExchangeRate(Currency.KRW, Currency.USD);
         verify(paymentListRepository, times(1)).save(any(PaymentList.class));
