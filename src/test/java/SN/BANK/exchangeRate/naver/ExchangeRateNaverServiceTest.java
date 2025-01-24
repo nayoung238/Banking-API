@@ -3,6 +3,7 @@ package SN.BANK.exchangeRate.naver;
 import SN.BANK.account.enums.Currency;
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
+import SN.BANK.exchangeRate.ExchangeRateNaverService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

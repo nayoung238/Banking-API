@@ -1,7 +1,7 @@
-package SN.BANK.exchangeRate.manana;
+package SN.BANK.exchangeRate.openfeign;
 
 import SN.BANK.account.enums.Currency;
-import SN.BANK.exchangeRate.manana.dto.ExchangeRateMananaResponseDto;
+import SN.BANK.exchangeRate.dto.ExchangeRateMananaResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;

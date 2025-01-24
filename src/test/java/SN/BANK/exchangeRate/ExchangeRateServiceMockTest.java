@@ -1,7 +1,6 @@
 package SN.BANK.exchangeRate;
 
 import SN.BANK.account.enums.Currency;
-import SN.BANK.exchangeRate.naver.ExchangeRateNaverService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

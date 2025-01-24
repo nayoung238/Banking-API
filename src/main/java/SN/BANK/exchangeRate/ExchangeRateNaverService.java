@@ -1,10 +1,10 @@
-package SN.BANK.exchangeRate.naver;
+package SN.BANK.exchangeRate;
 
 import SN.BANK.account.enums.Currency;
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
-import SN.BANK.exchangeRate.ExchangeRateOpenApiInterface;
-import SN.BANK.exchangeRate.naver.dto.ExchangeRateNaverResponseDto;
+import SN.BANK.exchangeRate.dto.ExchangeRateNaverResponseDto;
+import SN.BANK.exchangeRate.openfeign.ExchangeRateNaverClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

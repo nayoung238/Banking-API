@@ -1,8 +1,8 @@
-package SN.BANK.exchangeRate.manana;
+package SN.BANK.exchangeRate;
 
 import SN.BANK.account.enums.Currency;
-import SN.BANK.exchangeRate.ExchangeRateOpenApiInterface;
-import SN.BANK.exchangeRate.manana.dto.ExchangeRateMananaResponseDto;
+import SN.BANK.exchangeRate.dto.ExchangeRateMananaResponseDto;
+import SN.BANK.exchangeRate.openfeign.ExchangeRateMananaClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

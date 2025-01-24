@@ -1,7 +1,7 @@
-package SN.BANK.exchangeRate.naver;
+package SN.BANK.exchangeRate.openfeign;
 
 import SN.BANK.account.enums.Currency;
-import SN.BANK.exchangeRate.naver.dto.ExchangeRateNaverResponseDto;
+import SN.BANK.exchangeRate.dto.ExchangeRateNaverResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
