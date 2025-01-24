@@ -36,26 +36,26 @@ public class AccountService {
         String accountNumber = generateAccountNumber();
 
         // 계좌 별칭 체크 ✅
-        String accountName = request.getAccountName() == null ? "SN은행-계좌" : request.getAccountName();
+        String accountName = request.accountName() == null ? "SN은행-계좌" : request.accountName();
 
         Account account = Account.builder()
                 .user(user)
-                .password(request.getPassword())
+                .password(request.password())
                 .accountNumber(accountNumber)
                 .money(BigDecimal.valueOf(0, 2))
                 .accountName(accountName)
-                .currency(request.getCurrency())
+                .currency(request.currency())
                 .build();
 
         Account savedAccount = accountRepository.save(account);
-        return new CreateAccountResponse(savedAccount);
+        return CreateAccountResponse.of(savedAccount);
     }
 
     public AccountResponse findAccount(Long userId, Long accountId) {
         // 유효한 계좌인지 검증 (+ 사용자 유효성, 계좌-사용자 소유 검증)
         Account account = getAccount(accountId);
         validateAccountOwner(userId, account);
-        return new AccountResponse(account);
+        return AccountResponse.of(account);
     }
 
     public List<AccountResponse> findAllAccounts(Long userId) {
@@ -64,7 +64,7 @@ public class AccountService {
 
         List<Account> accounts = accountRepository.findByUser(user);
         return accounts.stream()
-                .map(AccountResponse::new)
+                .map(AccountResponse::of)
                 .toList();
     }
 

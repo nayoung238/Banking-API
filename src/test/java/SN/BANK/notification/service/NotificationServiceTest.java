@@ -9,7 +9,6 @@ import SN.BANK.notification.repository.FCMTokenRepository;
 import SN.BANK.users.entity.Users;
 import SN.BANK.users.repository.UsersRepository;
 import SN.BANK.users.service.UsersService;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
@@ -32,15 +31,15 @@ import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 
-
 @ExtendWith(MockitoExtension.class)
 public class NotificationServiceTest {
 
-
     @Mock
     private FCMTokenRepository fcmTokenRepository;
+
     @Mock
     private UsersRepository usersRepository;
+
     @Mock
     private UsersService usersService;
 
@@ -49,13 +48,12 @@ public class NotificationServiceTest {
 
     Users user;
     FCMToken fcmToken;
+
     @BeforeEach
     void setUp() {
         user = new Users("테스트이름", "test1234", "test1234");
         fcmToken = FCMToken.builder().userId(1L).token("token").build();
     }
-
-
 
     @Test
     @DisplayName("토큰 생성 완료")
@@ -69,8 +67,8 @@ public class NotificationServiceTest {
         String savedToken = notificationService.saveToken(tokenRequest);
         System.out.println(savedToken);
         Assertions.assertEquals("token", savedToken);
-
     }
+
     @Test
     @DisplayName("토큰이 없는 요청")
     void saveToken_EmptyToken(){
@@ -102,7 +100,6 @@ public class NotificationServiceTest {
     @Test
     @DisplayName("알림 전송 성공")
     void sendNotification_Success() throws Exception {
-
         try (MockedStatic<FirebaseMessaging> firebaseMessagingMock = Mockito.mockStatic(FirebaseMessaging.class)) {
 
             FirebaseMessaging mockInstance = Mockito.mock(FirebaseMessaging.class);
@@ -117,7 +114,6 @@ public class NotificationServiceTest {
                     .message("Test Message")
                     .build();
 
-
             // Act
             String result = notificationService.sendNotification(request);
 
@@ -129,8 +125,6 @@ public class NotificationServiceTest {
     @Test
     @DisplayName("잘못된 토큰으로 인한 예외 발생")
     void sendNotification_InvalidToken() throws Exception {
-
-
         try (MockedStatic<FirebaseMessaging> firebaseMessagingMock = Mockito.mockStatic(FirebaseMessaging.class)) {
 
             FirebaseMessaging mockInstance = Mockito.mock(FirebaseMessaging.class);
@@ -147,7 +141,6 @@ public class NotificationServiceTest {
                     .message("Test Message")
                     .build();
 
-
             NotificationException exception = Assertions.assertThrows(NotificationException.class, () -> {
                 notificationService.sendNotification(request);
             });
@@ -155,11 +148,10 @@ public class NotificationServiceTest {
             Assertions.assertEquals(ErrorCode.INVALID_TOKEN, exception.getErrorCode());
         }
     }
+
     @Test
     @DisplayName("FCM서비스 장애로 인한 예외 발생")
     void sendNotification_fcmServiceUnavailable() throws Exception {
-
-
         try (MockedStatic<FirebaseMessaging> firebaseMessagingMock = Mockito.mockStatic(FirebaseMessaging.class)) {
 
             FirebaseMessaging mockInstance = Mockito.mock(FirebaseMessaging.class);
@@ -176,7 +168,6 @@ public class NotificationServiceTest {
                     .message("Test Message")
                     .build();
 
-
             NotificationException exception = Assertions.assertThrows(NotificationException.class, () -> {
                 notificationService.sendNotification(request);
             });
@@ -188,8 +179,6 @@ public class NotificationServiceTest {
     @Test
     @DisplayName("FCM서비스 장애로 인한 예외 발생")
     void sendNotification_fcmUnknownError() throws Exception {
-
-
         try (MockedStatic<FirebaseMessaging> firebaseMessagingMock = Mockito.mockStatic(FirebaseMessaging.class)) {
 
             FirebaseMessaging mockInstance = Mockito.mock(FirebaseMessaging.class);
@@ -205,7 +194,6 @@ public class NotificationServiceTest {
                     .title("Test Title")
                     .message("Test Message")
                     .build();
-
 
             NotificationException exception = Assertions.assertThrows(NotificationException.class, () -> {
                 notificationService.sendNotification(request);

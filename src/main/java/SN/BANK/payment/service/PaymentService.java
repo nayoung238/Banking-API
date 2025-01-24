@@ -22,7 +22,6 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-
 public class PaymentService {
 
     private final ExchangeRateService exchangeRateService;
@@ -32,10 +31,8 @@ public class PaymentService {
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public PaymentResponseDto makePayment(PaymentRequestDto request) {
-
-
         //출금계좌와 입금 계좌가 동일한지 확인
-        validateDifferentAccounts(request.getWithdrawAccountNumber(), request.getDepositAccountNumber());
+        validateDifferentAccounts(request.withdrawAccountNumber(), request.depositAccountNumber());
 
         // 출금 계좌
         Account withdrawAccount;
@@ -43,27 +40,26 @@ public class PaymentService {
         Account depositAccount;
 
         // 계좌 번호가 사전 순서상 앞에있는것부터 조회 (데드락 방지)
-        if(request.getWithdrawAccountNumber().compareTo(request.getDepositAccountNumber()) < 0){
-            withdrawAccount = getAccountByNumberWithLock(request.getWithdrawAccountNumber());
-            depositAccount = getAccountByNumberWithLock(request.getDepositAccountNumber());
+        if(request.withdrawAccountNumber().compareTo(request.depositAccountNumber()) < 0){
+            withdrawAccount = getAccountByNumberWithLock(request.withdrawAccountNumber());
+            depositAccount = getAccountByNumberWithLock(request.depositAccountNumber());
         }
         else {
-            depositAccount = getAccountByNumberWithLock(request.getDepositAccountNumber());
-            withdrawAccount = getAccountByNumberWithLock(request.getWithdrawAccountNumber());
+            depositAccount = getAccountByNumberWithLock(request.depositAccountNumber());
+            withdrawAccount = getAccountByNumberWithLock(request.withdrawAccountNumber());
         }
 
         // 계좌 비밀번호 확인
-        validateAccountPassword(withdrawAccount, request.getPassword());
-
+        validateAccountPassword(withdrawAccount, request.password());
 
         // 환율 가져오기
         BigDecimal exchangeRate = exchangeRateService.getExchangeRate(withdrawAccount.getCurrency(), depositAccount.getCurrency());
 
         //출금 계좌 잔액 확인
-        validateAccountBalance(withdrawAccount,request.getAmount().multiply(exchangeRate));
+        validateAccountBalance(withdrawAccount,request.amount().multiply(exchangeRate));
 
         // 입출금 처리 및 거래내역 생성
-        transactionService.createTransactionForPayment(withdrawAccount,depositAccount, request.getAmount(),exchangeRate);
+        transactionService.createTransactionForPayment(withdrawAccount,depositAccount, request.amount(),exchangeRate);
 
         // 결제내역 생성 및 저장
         PaymentList payment = createPaymentList(request, withdrawAccount, depositAccount, exchangeRate);
@@ -75,7 +71,7 @@ public class PaymentService {
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void refundPayment(PaymentRefundRequestDto request) {
         // 결제 내역 조회
-        PaymentList paymentList = getPaymentListByIdWithLock(request.getPaymentId());
+        PaymentList paymentList = getPaymentListByIdWithLock(request.paymentId());
 
         // 출금 계좌
         Account withdrawAccount;
@@ -93,7 +89,7 @@ public class PaymentService {
         }
 
         // 계좌 비밀번호 확인
-        validateAccountPassword(withdrawAccount, request.getPassword());
+        validateAccountPassword(withdrawAccount, request.password());
         // 이미 결제 취소된 상태인지 확인
         validatePaymentStatus(paymentList, PaymentStatus.PAYMENT_CANCELLED, ErrorCode.PAYMENT_ALREADY_CANCELLED);
 
@@ -163,7 +159,7 @@ public class PaymentService {
                 .paidAt(LocalDateTime.now())
                 .withdrawAccountNumber(withdrawAccount.getAccountNumber())
                 .depositAccountNumber(depositAccount.getAccountNumber())
-                .amount(request.getAmount()) // 입금 계좌 통화 기준
+                .amount(request.amount()) // 입금 계좌 통화 기준
                 .exchangeRate(exchangeRate)
                 .currency(depositAccount.getCurrency())
                 .paymentStatus(PaymentStatus.PAYMENT_COMPLETED)
@@ -173,30 +169,28 @@ public class PaymentService {
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public Long makePaymentNonLock(PaymentRequestDto request) {
-
-
         //출금계좌와 입금 계좌가 동일한지 확인
-        validateDifferentAccounts(request.getWithdrawAccountNumber(), request.getDepositAccountNumber());
+        validateDifferentAccounts(request.withdrawAccountNumber(), request.depositAccountNumber());
 
         // 출금 계좌
-        Account withdrawAccount = accountRepository.findByAccountNumber(request.getWithdrawAccountNumber())
+        Account withdrawAccount = accountRepository.findByAccountNumber(request.withdrawAccountNumber())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
         // 입금 계좌
-        Account depositAccount = accountRepository.findByAccountNumberWithLock(request.getDepositAccountNumber())
+        Account depositAccount = accountRepository.findByAccountNumberWithLock(request.depositAccountNumber())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
         // 계좌 비밀번호 확인
-        validateAccountPassword(withdrawAccount, request.getPassword());
+        validateAccountPassword(withdrawAccount, request.password());
 
 
         // 환율 가져오기
         BigDecimal exchangeRate = exchangeRateService.getExchangeRate(withdrawAccount.getCurrency(), depositAccount.getCurrency());
 
         //출금 계좌 잔액 확인
-        validateAccountBalance(withdrawAccount,request.getAmount().multiply(exchangeRate));
+        validateAccountBalance(withdrawAccount,request.amount().multiply(exchangeRate));
 
         // 입출금 처리 및 거래내역 생성
-        transactionService.createTransactionForPayment(withdrawAccount,depositAccount, request.getAmount(),exchangeRate);
+        transactionService.createTransactionForPayment(withdrawAccount,depositAccount, request.amount(),exchangeRate);
 
         // 결제내역 생성 및 저장
         PaymentList payment = createPaymentList(request, withdrawAccount, depositAccount, exchangeRate);
@@ -208,7 +202,7 @@ public class PaymentService {
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void refundPaymentNonLock(PaymentRefundRequestDto request) {
         // 결제 내역 조회
-        PaymentList paymentList = getPaymentById(request.getPaymentId());
+        PaymentList paymentList = getPaymentById(request.paymentId());
 
         // 출금 계좌
         Account withdrawAccount = accountRepository.findByAccountNumber(paymentList.getWithdrawAccountNumber())
@@ -218,7 +212,7 @@ public class PaymentService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
         // 계좌 비밀번호 확인
-        validateAccountPassword(withdrawAccount, request.getPassword());
+        validateAccountPassword(withdrawAccount, request.password());
         // 이미 결제 취소된 상태인지 확인
         validatePaymentStatus(paymentList, PaymentStatus.PAYMENT_CANCELLED, ErrorCode.PAYMENT_ALREADY_CANCELLED);
 
@@ -230,6 +224,4 @@ public class PaymentService {
         // 결제 상태 변경
         paymentList.updatePaymentStatus(PaymentStatus.PAYMENT_CANCELLED);
     }
-
-
 }

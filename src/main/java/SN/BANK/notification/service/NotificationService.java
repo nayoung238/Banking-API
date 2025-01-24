@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-
 public class NotificationService {
     private final FCMTokenRepository fcmTokenRepository;
     private final UsersService usersService;
@@ -28,13 +27,13 @@ public class NotificationService {
 
 
         Notification notification = Notification.builder()
-                .setTitle(notificationRequestDto.getTitle())
-                .setBody(notificationRequestDto.getMessage())
+                .setTitle(notificationRequestDto.title())
+                .setBody(notificationRequestDto.message())
                 .build();
 
         Message message = Message.builder()
                 .setNotification(notification)
-                .setToken(notificationRequestDto.getToken())
+                .setToken(notificationRequestDto.token())
                 .build();
 
         try {
@@ -57,13 +56,13 @@ public class NotificationService {
     @Transactional
     public String saveToken(TokenRequest tokenRequest)
     {
-        if(usersService.validateUser(tokenRequest.getUserId())==null)
+        if(usersService.validateUser(tokenRequest.userId())==null)
         {
             throw new CustomException(ErrorCode.NOT_FOUND_USER);
         }
-        if(fcmTokenRepository.existsByToken(tokenRequest.getToken()))
+        if(fcmTokenRepository.existsByToken(tokenRequest.token()))
             throw new NotificationException(ErrorCode.DUPLICATE_TOKEN);
-        FCMToken fcmToken=FCMToken.builder().token(tokenRequest.getToken()).userId(tokenRequest.getUserId()).build();
+        FCMToken fcmToken=FCMToken.builder().token(tokenRequest.token()).userId(tokenRequest.userId()).build();
 
         return fcmTokenRepository.save(fcmToken).getToken();
     }

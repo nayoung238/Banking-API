@@ -23,24 +23,24 @@ public class DecryptionAspect {
 		Object[] args = joinPoint.getArgs();
 		for (int i = 0; i < args.length; i++) {
 			if (args[i] instanceof PaymentRequestDto request) {
-				String decryptedWithdrawAccountNumber = decryptionFacade.decrypt(request.getWithdrawAccountNumber());
-				String decryptedDepositAccountNumber = decryptionFacade.decrypt(request.getDepositAccountNumber());
-				String decryptedPassword = decryptionFacade.decrypt(request.getPassword());
+				String decryptedWithdrawAccountNumber = decryptionFacade.decrypt(request.withdrawAccountNumber());
+				String decryptedDepositAccountNumber = decryptionFacade.decrypt(request.depositAccountNumber());
+				String decryptedPassword = decryptionFacade.decrypt(request.password());
 
-				log.info("[/payment] WithdrawAccountNumber {} -> {}", request.getWithdrawAccountNumber(), decryptedWithdrawAccountNumber);
-				log.info("[/payment] DecryptedDepositAccountNumber {} -> {}", request.getDepositAccountNumber(), decryptedDepositAccountNumber);
-				log.info("[/payment] password {} -> {}", request.getPassword(), decryptedPassword);
+				log.info("[/payment] WithdrawAccountNumber {} -> {}", request.withdrawAccountNumber(), decryptedWithdrawAccountNumber);
+				log.info("[/payment] DecryptedDepositAccountNumber {} -> {}", request.depositAccountNumber(), decryptedDepositAccountNumber);
+				log.info("[/payment] password {} -> {}", request.password(), decryptedPassword);
 
 				args[i] = new PaymentRequestDto(
 					decryptedWithdrawAccountNumber,
 					decryptedDepositAccountNumber,
-					request.getAmount(),
+					request.amount(),
 					decryptedPassword);
 			} else if (args[i] instanceof PaymentRefundRequestDto request) {
-				String decryptedPassword = decryptionFacade.decrypt(request.getPassword());
-				args[i] = new PaymentRefundRequestDto(request.getPaymentId(), decryptedPassword);
+				String decryptedPassword = decryptionFacade.decrypt(request.password());
+				args[i] = new PaymentRefundRequestDto(request.paymentId(), decryptedPassword);
 
-				log.info("[/payment/cancel] password {} -> {}", request.getPassword(), decryptedPassword);
+				log.info("[/payment/cancel] password {} -> {}", request.password(), decryptedPassword);
 			}
 		}
 		return joinPoint.proceed(args);

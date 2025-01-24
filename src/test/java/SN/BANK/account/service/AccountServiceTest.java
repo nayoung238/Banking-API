@@ -45,11 +45,9 @@ class AccountServiceTest {
         user = new Users("테스트이름", "test1234", "test1234");
     }
 
-
     @Test
     @DisplayName("계좌를 개설할 수 있다.")
     void createAccount() {
-
         // given
         Long userId = 1L;
 
@@ -70,16 +68,15 @@ class AccountServiceTest {
         // then
         assertNotNull(createdAccount);
         assertAll(
-                () -> assertEquals("SN은행-계좌", createdAccount.getAccountName()),
-                () -> assertEquals(14, createdAccount.getAccountNumber().length()),
-                () -> assertEquals(Currency.KRW, createdAccount.getCurrency())
+                () -> assertEquals("SN은행-계좌", createdAccount.accountName()),
+                () -> assertEquals(14, createdAccount.accountNumber().length()),
+                () -> assertEquals(Currency.KRW, createdAccount.currency())
         );
     }
 
     @Test
     @DisplayName("사용자의 모든 계좌를 조회할 수 있다.")
     void findAllAccount() {
-
         // given
         Long userId = 1L;
 
@@ -107,7 +104,6 @@ class AccountServiceTest {
     @Test
     @DisplayName("계좌를 조회할 수 있다.")
     void findAccount() {
-
         // given
         Long userId = 1L;
         Long accountId = 123L;
@@ -127,13 +123,12 @@ class AccountServiceTest {
 
         // then
         assertNotNull(findAccount);
-        assertEquals(account.getMoney(), findAccount.getMoney());
+        assertEquals(account.getMoney(), findAccount.money());
     }
 
     @Test
     @DisplayName("계좌 조회 시, 유효하지 않은 계좌인 경우 에러를 던진다.")
     void findAccount_NOT_FOUND_ACCOUNT() {
-
         // given
         Long userId = 1L;
         Long accountId = 123L;
@@ -153,7 +148,6 @@ class AccountServiceTest {
     @Test
     @DisplayName("계좌 조회 시, 계좌 접근 권한이 없는 사용자인 경우 에러를 던진다.")
     void findAccount_UNAUTHORIZED_ACCOUNT_ACCESS() {
-
         // given
         Long userId = 1L;
         Long accountId = 123L;

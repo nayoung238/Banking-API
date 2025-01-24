@@ -54,7 +54,6 @@ class AccountIntegrateTest {
     @Test
     @DisplayName("계좌 개설 통합 테스트")
     void createAccount() throws Exception {
-
         // given
         Users user = Users.builder()
                 .name("테스트이름")
@@ -84,13 +83,11 @@ class AccountIntegrateTest {
                 .andExpect(jsonPath("$.currency").value(Currency.KRW.name()))
                 .andExpect(jsonPath("$.createdAt").exists())
                 .andDo(print());
-
     }
 
     @Test
     @DisplayName("전체 계좌 조회 테스트")
     void findAllAccount() throws Exception {
-
         // given
         Users user = Users.builder()
                 .name("테스트이름")
@@ -130,7 +127,6 @@ class AccountIntegrateTest {
     @Test
     @DisplayName("계좌 단일 조회 테스트")
     void findAccount() throws Exception {
-
         // given
         Users user = Users.builder()
                 .name("테스트이름")
@@ -151,7 +147,7 @@ class AccountIntegrateTest {
         session.setAttribute("user", savedUser.getId());
 
         // when
-        mockMvc.perform(get("/accounts/{id}", account.getAccountId())
+        mockMvc.perform(get("/accounts/{id}", account.accountId())
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON))
                 // then

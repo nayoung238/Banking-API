@@ -7,7 +7,6 @@ import SN.BANK.common.exception.ErrorCode;
 import SN.BANK.payment.dto.request.PaymentRefundRequestDto;
 import SN.BANK.payment.dto.request.PaymentRequestDto;
 import SN.BANK.payment.entity.PaymentList;
-import SN.BANK.payment.repository.PaymentListRepository;
 import SN.BANK.payment.service.PaymentService;
 import SN.BANK.transaction.dto.request.TransactionRequest;
 import SN.BANK.transaction.dto.response.TransactionResponse;
@@ -31,8 +30,8 @@ public class RedissonService {
     public TransactionResponse createTransactionWithRedisson(Long userId, TransactionRequest transactionRequest){
         // 락 설정
         // 여기선 2개의 락을 동시에 잡기에 계좌 id에 대한 락을 멀티락으로 한 번에 잠금
-        String firstLock = "accountLock: " + Math.max(transactionRequest.getReceiverAccountId(),transactionRequest.getSenderAccountId());
-        String secondLock = "accountLock: " + Math.min(transactionRequest.getReceiverAccountId(),transactionRequest.getSenderAccountId());
+        String firstLock = "accountLock: " + Math.max(transactionRequest.receiverAccountId(), transactionRequest.senderAccountId());
+        String secondLock = "accountLock: " + Math.min(transactionRequest.receiverAccountId(), transactionRequest.senderAccountId());
         RLock lock1 = redissonClient.getLock(firstLock);
         RLock lock2 = redissonClient.getLock(secondLock);
 
@@ -55,8 +54,8 @@ public class RedissonService {
     }
 
     public Long makePaymentWithRedisson(PaymentRequestDto request){
-        Account firstAccount = accountRepository.findByAccountNumber(request.getWithdrawAccountNumber()).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
-        Account secondAccount = accountRepository.findByAccountNumber(request.getDepositAccountNumber()).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+        Account firstAccount = accountRepository.findByAccountNumber(request.withdrawAccountNumber()).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+        Account secondAccount = accountRepository.findByAccountNumber(request.depositAccountNumber()).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
         // 락 설정
         String firstLock = "accountLock: " + Math.max(firstAccount.getId(), secondAccount.getId());
         String secondLock = "accountLock: " + Math.min(firstAccount.getId(), secondAccount.getId());
@@ -80,9 +79,10 @@ public class RedissonService {
             }
         }
     }
+
     public void refundPaymentWithRedisson(PaymentRefundRequestDto request){
         // 결제 내역 조회
-        PaymentList paymentList = paymentService.getPaymentById(request.getPaymentId());
+        PaymentList paymentList = paymentService.getPaymentById(request.paymentId());
 
         // 출금 계좌
         Account firstAccount = accountRepository.findByAccountNumber(paymentList.getWithdrawAccountNumber())
@@ -114,6 +114,4 @@ public class RedissonService {
             }
         }
     }
-
-
 }

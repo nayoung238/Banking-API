@@ -40,7 +40,6 @@ public class TransactionService {
      */
     @Transactional
     public TransactionResponse createTransaction(Long userId, TransactionRequest transactionRequest) {
-
         // 1. 보내는(송금) 사람, 받는(수취) 사람 조회
         // 1-1. id 가 더 큰 계좌를 먼저 Lock
         TransactionAccountsResponse transferAccounts = getTransferAccounts(transactionRequest);
@@ -48,7 +47,7 @@ public class TransactionService {
         Account receiverAccount = transferAccounts.getReceiverAccount();
 
         // 2. 송금, 수취 계좌의 통화 데이터를 통해 환율 가져오기
-        BigDecimal amount = transactionRequest.getAmount(); // (수취 계좌 통화 기준 금액)
+        BigDecimal amount = transactionRequest.amount(); // (수취 계좌 통화 기준 금액)
         BigDecimal exchangeRate = exchangeRateService.getExchangeRate(
                 senderAccount.getCurrency(), receiverAccount.getCurrency()
         );
@@ -58,8 +57,7 @@ public class TransactionService {
         // 3. 계좌 검증
         validateTransferAccounts(userId,
                 senderAccount, receiverAccount,
-                convertedAmount, transactionRequest.getAccountPassword());
-
+                convertedAmount, transactionRequest.accountPassword());
 
         // 4. 보낸 사람 돈 감소, 받는 사람 돈 증가
         updateAccountBalance(senderAccount, convertedAmount, receiverAccount, amount);
@@ -92,15 +90,14 @@ public class TransactionService {
      * @return
      */
     private TransactionAccountsResponse getTransferAccounts(TransactionRequest txRequest) {
-
-        Long firstAccountId = Math.max(txRequest.getReceiverAccountId(), txRequest.getSenderAccountId());
-        Long secondAccountId = Math.min(txRequest.getReceiverAccountId(), txRequest.getSenderAccountId());
+        Long firstAccountId = Math.max(txRequest.receiverAccountId(), txRequest.senderAccountId());
+        Long secondAccountId = Math.min(txRequest.receiverAccountId(), txRequest.senderAccountId());
 
         Account firstAccount = accountService.getAccountWithLock(firstAccountId);
         Account secondAccount = accountService.getAccountWithLock(secondAccountId);
 
-        Account senderAccount = txRequest.getSenderAccountId().equals(firstAccount.getId()) ? firstAccount : secondAccount;
-        Account receiverAccount = txRequest.getReceiverAccountId().equals(firstAccount.getId()) ? firstAccount : secondAccount;
+        Account senderAccount = txRequest.senderAccountId().equals(firstAccount.getId()) ? firstAccount : secondAccount;
+        Account receiverAccount = txRequest.receiverAccountId().equals(firstAccount.getId()) ? firstAccount : secondAccount;
 
         return TransactionAccountsResponse.builder()
                 .senderAccount(senderAccount)
@@ -163,7 +160,6 @@ public class TransactionService {
      * 전체 이체 내역 조회
      */
     public List<TransactionFindResponse> findAllTransaction(Long userId, Long accountId) {
-
         // 유효한 계좌인지 검증 (+ 사용자 유효성, 계좌-사용자 소유 검증)
         Account userAccount = accountService.getAccount(accountId);
         accountService.validateAccountOwner(userId, userAccount);
@@ -183,13 +179,12 @@ public class TransactionService {
      * 이체 내역 단건 조회
      */
     public TransactionFindDetailResponse findTransaction(Long userId, TransactionFindDetailRequest request) {
-
         // 유효한 계좌인지 검증 (+ 사용자 유효성, 계좌-사용자 소유 검증)
-        Account userAccount = accountService.getAccount(request.getAccountId());
+        Account userAccount = accountService.getAccount(request.accountId());
         accountService.validateAccountOwner(userId, userAccount);
 
         // 유효한 거래 내역인지 검증
-        TransactionEntity tx = transactionRepository.findById(request.getTransactionId())
+        TransactionEntity tx = transactionRepository.findById(request.transactionId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRANSACTION));
 
         Account receiverAccount = getReceiverAccount(userId, tx, userAccount);
@@ -233,7 +228,6 @@ public class TransactionService {
 
     @Transactional
     public TransactionResponse createTransactionNonLock(Long userId, TransactionRequest transactionRequest) {
-
         // 1. 보내는(송금) 사람, 받는(수취) 사람 조회
         // 1-1. id 가 더 큰 계좌를 먼저 Lock
         TransactionAccountsResponse transferAccounts = getTransferAccountsNonLock(transactionRequest);
@@ -241,7 +235,7 @@ public class TransactionService {
         Account receiverAccount = transferAccounts.getReceiverAccount();
 
         // 2. 송금, 수취 계좌의 통화 데이터를 통해 환율 가져오기
-        BigDecimal amount = transactionRequest.getAmount(); // (수취 계좌 통화 기준 금액)
+        BigDecimal amount = transactionRequest.amount(); // (수취 계좌 통화 기준 금액)
         BigDecimal exchangeRate = exchangeRateService.getExchangeRate(
                 senderAccount.getCurrency(), receiverAccount.getCurrency()
         );
@@ -251,8 +245,7 @@ public class TransactionService {
         // 3. 계좌 검증
         validateTransferAccounts(userId,
                 senderAccount, receiverAccount,
-                convertedAmount, transactionRequest.getAccountPassword());
-
+                convertedAmount, transactionRequest.accountPassword());
 
         // 4. 보낸 사람 돈 감소, 받는 사람 돈 증가
         updateAccountBalance(senderAccount, convertedAmount, receiverAccount, amount);
@@ -262,8 +255,8 @@ public class TransactionService {
     }
 
     private TransactionAccountsResponse getTransferAccountsNonLock(TransactionRequest txRequest) {
-        Account senderAccount = accountService.getAccount(txRequest.getSenderAccountId());
-        Account receiverAccount = accountService.getAccount(txRequest.getReceiverAccountId());
+        Account senderAccount = accountService.getAccount(txRequest.senderAccountId());
+        Account receiverAccount = accountService.getAccount(txRequest.receiverAccountId());
         return TransactionAccountsResponse.builder()
                 .senderAccount(senderAccount)
                 .receiverAccount(receiverAccount)

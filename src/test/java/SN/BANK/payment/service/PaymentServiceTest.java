@@ -32,6 +32,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 public class PaymentServiceTest {
+
     @InjectMocks
     private PaymentService paymentService;
 
@@ -52,7 +53,6 @@ public class PaymentServiceTest {
 
     @BeforeEach
     void setUp() {
-
         // Mock 계좌
         mockWithdrawAccount = new Account(1L, null, "password", "12345", BigDecimal.valueOf(1000000), "WithdrawAccount", null, Currency.KRW);
         mockDepositAccount = new Account(2L, null, "password", "67890", BigDecimal.valueOf(500), "DepositAccount", null, Currency.USD);
@@ -219,14 +219,14 @@ public class PaymentServiceTest {
         // given
         PaymentRefundRequestDto request = new PaymentRefundRequestDto(1L,"password");
 
-        when(paymentListRepository.findByIdWithLock(request.getPaymentId())).thenReturn(Optional.empty());
+        when(paymentListRepository.findByIdWithLock(request.paymentId())).thenReturn(Optional.empty());
 
         // when
         CustomException exception = assertThrows(CustomException.class, () -> paymentService.refundPayment(request));
 
         // then
         assertEquals(ErrorCode.NOT_FOUND_PAYMENT_LIST, exception.getErrorCode());
-        verify(paymentListRepository, times(1)).findByIdWithLock(request.getPaymentId());
+        verify(paymentListRepository, times(1)).findByIdWithLock(request.paymentId());
         verifyNoMoreInteractions(accountRepository);
     }
 
@@ -249,13 +249,12 @@ public class PaymentServiceTest {
         when(accountRepository.findByAccountNumberWithLock("12345")).thenReturn(Optional.of(mockWithdrawAccount));
         when(accountRepository.findByAccountNumberWithLock("67890")).thenReturn(Optional.of(mockDepositAccount));
 
-
         // when
         CustomException exception = assertThrows(CustomException.class, () -> paymentService.refundPayment(request));
 
         // then
         assertEquals(ErrorCode.PAYMENT_ALREADY_CANCELLED, exception.getErrorCode());
-        verify(paymentListRepository, times(1)).findByIdWithLock(request.getPaymentId());
+        verify(paymentListRepository, times(1)).findByIdWithLock(request.paymentId());
     }
 
     @Test
