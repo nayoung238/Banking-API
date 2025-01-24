@@ -13,7 +13,7 @@ import java.math.RoundingMode;
 
 @Component
 @Slf4j
-public class ExchangeRateGoogleFinanceScraper implements ExchangeRateOpenApiInterface {
+public final class ExchangeRateGoogleFinanceScraper implements ExchangeRateOpenApiInterface {
 
 	@Override
 	public BigDecimal getExchangeRate(Currency baseCurrency, Currency quoteCurrency) {

@@ -4,7 +4,8 @@ import SN.BANK.account.enums.Currency;
 
 import java.math.BigDecimal;
 
-public interface ExchangeRateOpenApiInterface {
+public sealed interface ExchangeRateOpenApiInterface
+	permits ExchangeRateNaverService, ExchangeRateMananaService, ExchangeRateGoogleFinanceScraper {
 
 	BigDecimal getExchangeRate(Currency baseCurrency, Currency quoteCurrency);
 }

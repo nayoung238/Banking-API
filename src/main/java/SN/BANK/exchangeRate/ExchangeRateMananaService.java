@@ -14,7 +14,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ExchangeRateMananaService implements ExchangeRateOpenApiInterface {
+public final class ExchangeRateMananaService implements ExchangeRateOpenApiInterface {
 
 	private final ExchangeRateMananaClient exchangeRateMananaClient;
 

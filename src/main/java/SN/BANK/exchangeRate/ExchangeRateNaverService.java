@@ -14,7 +14,7 @@ import java.math.RoundingMode;
 
 @Service
 @RequiredArgsConstructor
-public class ExchangeRateNaverService implements ExchangeRateOpenApiInterface {
+public final class ExchangeRateNaverService implements ExchangeRateOpenApiInterface {
 
 	private final ExchangeRateNaverClient exchangeRateNaverClient;
 
