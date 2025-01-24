@@ -1,15 +1,4 @@
-package SN.BANK.exchangeRate.manana;
-
-import SN.BANK.account.enums.Currency;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-
-import java.math.BigDecimal;
-
-import static org.junit.jupiter.api.Assertions.*;
+package SN.BANK.exchangeRate;
 
 //@SpringBootTest
 //@ActiveProfiles("test")

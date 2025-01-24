@@ -1,7 +1,6 @@
-package SN.BANK.exchangeRate.google;
+package SN.BANK.exchangeRate;
 
 import SN.BANK.account.enums.Currency;
-import SN.BANK.exchangeRate.ExchangeRateGoogleFinanceScraper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
