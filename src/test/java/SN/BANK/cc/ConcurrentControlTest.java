@@ -4,7 +4,7 @@ import SN.BANK.account.entity.Account;
 import SN.BANK.account.enums.Currency;
 import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.transaction.dto.request.TransactionRequest;
-import SN.BANK.redisson.service.RedissonService;
+//import SN.BANK.redisson.service.RedissonService;
 import SN.BANK.transaction.service.TransactionService;
 import SN.BANK.users.entity.Users;
 import SN.BANK.users.repository.UsersRepository;
@@ -36,8 +36,8 @@ class ConcurrentControlTest {
     @Autowired
     private TransactionService transactionService;
 
-    @Autowired
-    private RedissonService redissonService;
+//    @Autowired
+//    private RedissonService redissonService;
 
     Users user1;
     Users user2;
@@ -138,48 +138,46 @@ class ConcurrentControlTest {
         assertEquals(expectedReceiverBalance, updatedReceiverAccount.getMoney(), "수신 계좌 잔액 검증");
     }
 
-
-    /*@Test
-    @DisplayName("레디슨 동시성 제어 테스트 ")
-    public void testRedissonLock() throws InterruptedException {
-        // 동시 실행할 스레드 개수
-        int threadCount = 100;
-        BigDecimal transferAmount = BigDecimal.valueOf(1000.00);
-
-        // 스레드 풀 생성
-        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-        CountDownLatch latch = new CountDownLatch(threadCount);
-
-        TransactionRequest txRequest = new TransactionRequest("1234", sender.getId(),
-                receiver.getId(), transferAmount);
-
-        for (int i = 0; i < threadCount; i++) {
-            executorService.execute(() -> {
-                try {
-                    redissonService.createTransactionWithRedisson(user1.getId(),txRequest);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println("예외: " + e.getMessage());
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-
-        latch.await(); // 모든 스레드가 작업을 완료할 때까지 대기
-        executorService.shutdown();
-
-        // 결과 검증
-        Account updatedSenderAccount = accountRepository.findById(sender.getId()).orElseThrow();
-        Account updatedReceiverAccount = accountRepository.findById(receiver.getId()).orElseThrow();
-
-        BigDecimal expectedSenderBalance = sender.getMoney().subtract(transferAmount.multiply(BigDecimal.valueOf(threadCount)))
-                .setScale(2, RoundingMode.HALF_UP);
-        BigDecimal expectedReceiverBalance = receiver.getMoney().add(transferAmount.multiply(BigDecimal.valueOf(threadCount)))
-                .setScale(2, RoundingMode.HALF_UP);
-
-        assertEquals(expectedSenderBalance, updatedSenderAccount.getMoney(), "송신 계좌 잔액 검증");
-        assertEquals(expectedReceiverBalance, updatedReceiverAccount.getMoney(), "수신 계좌 잔액 검증");
-    }*/
-
+//    @Test
+//    @DisplayName("레디슨 동시성 제어 테스트 ")
+//    public void testRedissonLock() throws InterruptedException {
+//        // 동시 실행할 스레드 개수
+//        int threadCount = 100;
+//        BigDecimal transferAmount = BigDecimal.valueOf(1000.00);
+//
+//        // 스레드 풀 생성
+//        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+//        CountDownLatch latch = new CountDownLatch(threadCount);
+//
+//        TransactionRequest txRequest = new TransactionRequest("1234", sender.getId(),
+//                receiver.getId(), transferAmount);
+//
+//        for (int i = 0; i < threadCount; i++) {
+//            executorService.execute(() -> {
+//                try {
+//                    redissonService.createTransactionWithRedisson(user1.getId(),txRequest);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                    System.out.println("예외: " + e.getMessage());
+//                } finally {
+//                    latch.countDown();
+//                }
+//            });
+//        }
+//
+//        latch.await(); // 모든 스레드가 작업을 완료할 때까지 대기
+//        executorService.shutdown();
+//
+//        // 결과 검증
+//        Account updatedSenderAccount = accountRepository.findById(sender.getId()).orElseThrow();
+//        Account updatedReceiverAccount = accountRepository.findById(receiver.getId()).orElseThrow();
+//
+//        BigDecimal expectedSenderBalance = sender.getMoney().subtract(transferAmount.multiply(BigDecimal.valueOf(threadCount)))
+//                .setScale(2, RoundingMode.HALF_UP);
+//        BigDecimal expectedReceiverBalance = receiver.getMoney().add(transferAmount.multiply(BigDecimal.valueOf(threadCount)))
+//                .setScale(2, RoundingMode.HALF_UP);
+//
+//        assertEquals(expectedSenderBalance, updatedSenderAccount.getMoney(), "송신 계좌 잔액 검증");
+//        assertEquals(expectedReceiverBalance, updatedReceiverAccount.getMoney(), "수신 계좌 잔액 검증");
+//    }
 }
