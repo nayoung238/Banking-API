@@ -23,7 +23,7 @@ public enum ErrorCode {
 
     // Transfer
     INVALID_TRANSFER(HttpStatus.BAD_REQUEST, "같은 계좌 간 이체는 불가합니다."),
-    NOT_FOUND_TRANSACTION(HttpStatus.NOT_FOUND, "존재하지 않는 거래내역입니다."),
+    NOT_FOUND_TRANSFER(HttpStatus.NOT_FOUND, "존재하지 않는 거래내역입니다."),
     
     // ExchangeRate
     EXCHANGE_RATE_FETCH_FAIL(HttpStatus.SERVICE_UNAVAILABLE, "환율 데이터를 가져올 수 없습니다."),
@@ -32,7 +32,7 @@ public enum ErrorCode {
 
     // Payment
     PAYMENT_ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "이미 결제 취소된 내역입니다."),
-    NOT_FOUND_PAYMENT_LIST(HttpStatus.BAD_REQUEST,"결제내역이 존재하지 않습니다."),
+    NOT_FOUND_PAYMENT(HttpStatus.BAD_REQUEST,"결제내역이 존재하지 않습니다."),
 
     // Data
     DECRYPTION_FAIL(HttpStatus.BAD_REQUEST, "복호화에 실패했습니다. 올바른 암호화 키를 사용하고 있는지 확인해주세요."),
