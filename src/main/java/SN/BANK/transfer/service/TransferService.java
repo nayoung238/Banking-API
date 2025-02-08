@@ -33,16 +33,27 @@ public class TransferService {
     private final ExchangeRateService exchangeRateService;
     private final PlatformTransactionManager transactionManager;
 
-    /**
-     * 이체
-     * withdraw account만 처리하고, deposit account는 비동기 처리
-     */
     @Transactional
     public TransferResponseDto transfer(Long withdrawalUserId, TransferRequestDto request) {
+        return executeTransfer(withdrawalUserId, request, (transfer, withdrawalAccount, depositAccount) ->
+            TransferResponseDto.of(
+                transfer, TransferType.WITHDRAWAL,
+                withdrawalAccount.getAccountNumber(), withdrawalAccount.getUser().getName(),
+                depositAccount.getAccountNumber(), depositAccount.getUser().getName()
+            )
+        );
+    }
+
+    @Transactional
+    public Transfer transfer(TransferRequestDto request) {
+        return executeTransfer(null, request, (transfer, withdrawalAccount, depositAccount) -> transfer);
+    }
+
+    private <T> T executeTransfer(Long withdrawalUserId, TransferRequestDto request, TransferResultHandler<T> resultHandler) {
         Account withdrawalAccount = accountRepository.findByAccountNumberWithPessimisticLock(request.withdrawalAccountNumber())
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT));
 
-        if(!withdrawalAccount.getUser().getId().equals(withdrawalUserId)) {
+        if(withdrawalUserId != null && !withdrawalAccount.getUser().getId().equals(withdrawalUserId)) {
             throw new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT);
         }
 
@@ -54,14 +65,13 @@ public class TransferService {
         Account depositAccount = accountRepository.findByAccountNumber(request.depositAccountNumber())
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_DEPOSIT_ACCOUNT));
 
-        Transfer withDrawalTransfer = processWithdrawal(withdrawalAccount, depositAccount, request.amount());
+        // 출금 (sync)
+        Transfer withdrawalTransfer = processWithdrawal(withdrawalAccount, depositAccount, request.amount());
 
-        processDepositAsync(withDrawalTransfer);
+        // 입금 (async)
+        processDepositAsync(withdrawalTransfer);
 
-        return TransferResponseDto.of(
-            withDrawalTransfer, TransferType.WITHDRAWAL,
-            withdrawalAccount.getAccountNumber(), withdrawalAccount.getUser().getName(),
-            depositAccount.getAccountNumber(), depositAccount.getUser().getName());
+        return resultHandler.handle(withdrawalTransfer, withdrawalAccount, depositAccount);
     }
 
     private Transfer processWithdrawal(Account withdrawalAccount, Account depositAccount, BigDecimal amount) {
@@ -139,5 +149,10 @@ public class TransferService {
         String othersAccountNumber = receiverAccount.getAccountNumber();
 
         return new TransferFindDetailResponse(tx, receiverAccount.getUser().getName(), othersAccountNumber);
+    }
+
+    @FunctionalInterface
+    private interface TransferResultHandler<T> {
+        T handle(Transfer transfer, Account withdrawalAccount, Account depositAccount);
     }
 }
