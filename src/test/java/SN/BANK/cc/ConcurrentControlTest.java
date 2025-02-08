@@ -3,16 +3,15 @@ package SN.BANK.cc;
 import SN.BANK.account.entity.Account;
 import SN.BANK.account.enums.Currency;
 import SN.BANK.account.repository.AccountRepository;
-import SN.BANK.transaction.dto.request.TransactionRequest;
+import SN.BANK.transfer.dto.request.TransferRequest;
 //import SN.BANK.redisson.service.RedissonService;
-import SN.BANK.transaction.service.TransactionService;
+import SN.BANK.transfer.service.TransferService;
 import SN.BANK.users.entity.Users;
 import SN.BANK.users.repository.UsersRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import redis.embedded.RedisServer;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -34,7 +33,7 @@ class ConcurrentControlTest {
     private UsersRepository usersRepository;
 
     @Autowired
-    private TransactionService transactionService;
+    private TransferService transferService;
 
 //    @Autowired
 //    private RedissonService redissonService;
@@ -103,13 +102,13 @@ class ConcurrentControlTest {
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         CountDownLatch latch = new CountDownLatch(threadCount);
 
-        TransactionRequest txRequest = new TransactionRequest("1234", sender.getId(),
+        TransferRequest txRequest = new TransferRequest("1234", sender.getId(),
                 receiver.getId(), transferAmount);
 
         for (int i = 0; i < threadCount; i++) {
             executorService.execute(() -> {
                 try {
-                    transactionService.createTransaction(
+                    transferService.createTransfer(
                             user1.getId(), // 송신 계좌 ID
                             txRequest
                     );

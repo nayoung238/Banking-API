@@ -1,7 +1,7 @@
-package SN.BANK.transaction.entity;
+package SN.BANK.transfer.entity;
 
 import SN.BANK.account.enums.Currency;
-import SN.BANK.transaction.enums.TransactionType;
+import SN.BANK.transfer.enums.TransferType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class TransactionEntity {
+public class Transfer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +33,7 @@ public class TransactionEntity {
 
     @Column(name = "transaction_type", nullable = false)
     @Enumerated(EnumType.STRING)
-    private TransactionType type;
+    private TransferType type;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd HH:mm")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -55,10 +55,10 @@ public class TransactionEntity {
     private String description;
 
     @Builder
-    public TransactionEntity(String transactionName, Long senderAccountId, Long receiverAccountId,
-                             TransactionType type, LocalDateTime transactedAt, BigDecimal amount,
-                             Currency currency, BigDecimal exchangeRate, BigDecimal balance, String groupId,
-                             String description) {
+    public Transfer(String transactionName, Long senderAccountId, Long receiverAccountId,
+                    TransferType type, LocalDateTime transactedAt, BigDecimal amount,
+                    Currency currency, BigDecimal exchangeRate, BigDecimal balance, String groupId,
+                    String description) {
         this.transactionName = transactionName;
         this.senderAccountId = senderAccountId;
         this.receiverAccountId = receiverAccountId;

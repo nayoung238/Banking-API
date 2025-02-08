@@ -1,4 +1,4 @@
-package SN.BANK.transaction.service;
+package SN.BANK.transfer.service;
 
 import SN.BANK.account.entity.Account;
 import SN.BANK.account.enums.Currency;
@@ -6,10 +6,10 @@ import SN.BANK.account.service.AccountService;
 import SN.BANK.common.exception.CustomException;
 import SN.BANK.common.exception.ErrorCode;
 import SN.BANK.exchangeRate.ExchangeRateService;
-import SN.BANK.transaction.dto.request.TransactionRequest;
-import SN.BANK.transaction.dto.response.TransactionResponse;
-import SN.BANK.transaction.enums.TransactionType;
-import SN.BANK.transaction.repository.TransactionRepository;
+import SN.BANK.transfer.dto.request.TransferRequest;
+import SN.BANK.transfer.dto.response.TransferResponse;
+import SN.BANK.transfer.enums.TransferType;
+import SN.BANK.transfer.repository.TransferRepository;
 import SN.BANK.users.entity.Users;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,10 +28,10 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(SpringExtension.class)
-class TransactionServiceTest {
+class TransferServiceTest {
 
     @Mock
-    TransactionRepository transactionRepository;
+    TransferRepository transferRepository;
 
     @Mock
     AccountService accountService;
@@ -40,7 +40,7 @@ class TransactionServiceTest {
     ExchangeRateService exchangeRateService;
 
     @InjectMocks
-    TransactionService transactionService;
+    TransferService transferService;
 
     Users sender;
     Users receiver;
@@ -95,7 +95,7 @@ class TransactionServiceTest {
         BigDecimal expectedSenderBalance = senderAccount.getMoney().subtract(amount);
         BigDecimal expectedReceiverBalance = receiverAccount.getMoney().add(amount);
 
-        TransactionRequest transactionRequest = TransactionRequest.builder()
+        TransferRequest transferRequest = TransferRequest.builder()
                 .accountPassword("1234")
                 .senderAccountId(senderAccount.getId())
                 .receiverAccountId(receiverAccount.getId())
@@ -107,13 +107,13 @@ class TransactionServiceTest {
         when(exchangeRateService.getExchangeRate(any(), any())).thenReturn(BigDecimal.ONE);
 
         // when
-        TransactionResponse response = transactionService.createTransaction(userId, transactionRequest);
+        TransferResponse response = transferService.createTransfer(userId, transferRequest);
 
         // then
         assertNotNull(response);
         assertEquals(1L, response.getSenderAccountId());
         assertEquals(2L, response.getReceiverAccountId());
-        assertEquals(TransactionType.WITHDRAWAL, response.getTransactionType());
+        assertEquals(TransferType.WITHDRAWAL, response.getTransferType());
         assertEquals(response.getSenderName(), "테스터1");
         assertEquals(response.getReceiverName(), "테스터2");
         assertEquals(expectedSenderBalance, response.getBalance());
@@ -132,7 +132,7 @@ class TransactionServiceTest {
         Long userId = 1L;
         BigDecimal amount = BigDecimal.valueOf(5000.00);
 
-        TransactionRequest transactionRequest = TransactionRequest.builder()
+        TransferRequest transferRequest = TransferRequest.builder()
                 .accountPassword("1234")
                 .senderAccountId(senderAccount.getId())
                 .receiverAccountId(receiverAccount.getId())
@@ -145,7 +145,7 @@ class TransactionServiceTest {
 
         // when
         CustomException customException =
-                assertThrows(CustomException.class, () -> transactionService.createTransaction(userId, transactionRequest));
+                assertThrows(CustomException.class, () -> transferService.createTransfer(userId, transferRequest));
 
         // then
         assertNotNull(customException);
@@ -161,7 +161,7 @@ class TransactionServiceTest {
         BigDecimal amount = BigDecimal.valueOf(5000.00);
         String incorrectPassword = "0000"; // 다른 비밀번호
 
-        TransactionRequest transactionRequest = TransactionRequest.builder()
+        TransferRequest transferRequest = TransferRequest.builder()
                 .accountPassword(incorrectPassword) // 다른 비밀번호
                 .senderAccountId(senderAccount.getId())
                 .receiverAccountId(receiverAccount.getId())
@@ -176,7 +176,7 @@ class TransactionServiceTest {
 
         // when
         CustomException customException =
-                assertThrows(CustomException.class, () -> transactionService.createTransaction(userId, transactionRequest));
+                assertThrows(CustomException.class, () -> transferService.createTransfer(userId, transferRequest));
 
         // then
         assertNotNull(customException);
@@ -191,7 +191,7 @@ class TransactionServiceTest {
         Long userId = 1L;
         BigDecimal amount = BigDecimal.valueOf(50000.00);
 
-        TransactionRequest transactionRequest = TransactionRequest.builder()
+        TransferRequest transferRequest = TransferRequest.builder()
                 .accountPassword("1234")
                 .senderAccountId(senderAccount.getId())
                 .receiverAccountId(receiverAccount.getId())
@@ -206,7 +206,7 @@ class TransactionServiceTest {
 
         // when
         CustomException customException =
-                assertThrows(CustomException.class, () -> transactionService.createTransaction(userId, transactionRequest));
+                assertThrows(CustomException.class, () -> transferService.createTransfer(userId, transferRequest));
 
         // then
         assertNotNull(customException);
@@ -221,7 +221,7 @@ class TransactionServiceTest {
         Long userId = 1L;
         BigDecimal amount = BigDecimal.valueOf(5000.00);
 
-        TransactionRequest transactionRequest = TransactionRequest.builder()
+        TransferRequest transferRequest = TransferRequest.builder()
                 .accountPassword("1234")
                 .senderAccountId(senderAccount.getId())
                 .receiverAccountId(senderAccount.getId())
@@ -236,7 +236,7 @@ class TransactionServiceTest {
 
         // when
         CustomException customException =
-                assertThrows(CustomException.class, () -> transactionService.createTransaction(userId, transactionRequest));
+                assertThrows(CustomException.class, () -> transferService.createTransfer(userId, transferRequest));
 
         // then
         assertNotNull(customException);
@@ -251,7 +251,7 @@ class TransactionServiceTest {
         Long userId = 1L;
         BigDecimal amount = BigDecimal.valueOf(5000.00);
 
-        TransactionRequest request = TransactionRequest.builder()
+        TransferRequest request = TransferRequest.builder()
                 .accountPassword("1234")
                 .senderAccountId(senderAccount.getId())
                 .receiverAccountId(receiverAccount.getId())
@@ -265,7 +265,7 @@ class TransactionServiceTest {
 
         // when
         CustomException exception =
-                assertThrows(CustomException.class, () -> transactionService.createTransaction(userId, request));
+                assertThrows(CustomException.class, () -> transferService.createTransfer(userId, request));
 
         // then
         assertEquals(ErrorCode.INVALID_EXCHANGE_RATE, exception.getErrorCode());

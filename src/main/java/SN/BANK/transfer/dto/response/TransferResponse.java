@@ -1,7 +1,7 @@
-package SN.BANK.transaction.dto.response;
+package SN.BANK.transfer.dto.response;
 
-import SN.BANK.transaction.entity.TransactionEntity;
-import SN.BANK.transaction.enums.TransactionType;
+import SN.BANK.transfer.entity.Transfer;
+import SN.BANK.transfer.enums.TransferType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @Schema(description = "거래 응답 Dto")
-public class TransactionResponse {
+public class TransferResponse {
     @Schema(description = "거래의 데이터베이스 id 값", example = "1")
     private Long transactionId;
     @Schema(description = "송금계좌의 데이터베이스 id 값", example = "1")
@@ -26,7 +26,7 @@ public class TransactionResponse {
     @Schema(description = "입금자의 이름", example = "전우치")
     private String receiverName;
     @Schema(description = "거래 타입", example = "DEPOSIT")
-    private TransactionType transactionType;
+    private TransferType transferType;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd HH:mm")
     @Schema(description = "거래일", example = "1985.06.11 15:20")
     private LocalDateTime transactedAt;
@@ -36,11 +36,11 @@ public class TransactionResponse {
     private BigDecimal balance; // 이체(입금) 후 잔액
 
     @Builder
-    public TransactionResponse(TransactionEntity tx, String senderName, String receiverName) {
+    public TransferResponse(Transfer tx, String senderName, String receiverName) {
         this.transactionId = tx.getId();
         this.senderAccountId = tx.getSenderAccountId();
         this.receiverAccountId = tx.getReceiverAccountId();
-        this.transactionType = tx.getType();
+        this.transferType = tx.getType();
         this.transactedAt = tx.getTransactedAt();
         this.amount = tx.getAmount();
         this.balance = tx.getBalance();

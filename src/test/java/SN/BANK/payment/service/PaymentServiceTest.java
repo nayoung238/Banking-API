@@ -9,7 +9,7 @@ import SN.BANK.payment.dto.response.PaymentListResponseDto;
 import SN.BANK.payment.dto.response.PaymentResponseDto;
 import SN.BANK.payment.enums.PaymentStatus;
 import SN.BANK.payment.repository.PaymentListRepository;
-import SN.BANK.transaction.service.TransactionService;
+import SN.BANK.transfer.service.TransferService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ public class PaymentServiceTest {
     private ExchangeRateService exchangeRateService;
 
     @Mock
-    private TransactionService transactionService;
+    private TransferService transferService;
 
     private Account mockWithdrawAccount;
     private Account mockDepositAccount;

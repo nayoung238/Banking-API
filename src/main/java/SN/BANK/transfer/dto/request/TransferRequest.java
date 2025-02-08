@@ -1,4 +1,4 @@
-package SN.BANK.transaction.dto.request;
+package SN.BANK.transfer.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @Builder
 @Schema(description = "거래 요청 Dto")
-public record TransactionRequest (
+public record TransferRequest(
     @NotNull
     @Schema(description = "송금계좌 비밀번호", example = "12345")
     String accountPassword,

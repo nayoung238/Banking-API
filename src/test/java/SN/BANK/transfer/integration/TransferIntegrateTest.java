@@ -1,13 +1,13 @@
-package SN.BANK.transaction.integration;
+package SN.BANK.transfer.integration;
 
 import SN.BANK.account.entity.Account;
 import SN.BANK.account.repository.AccountRepository;
 import SN.BANK.account.enums.Currency;
-import SN.BANK.transaction.dto.request.TransactionFindDetailRequest;
-import SN.BANK.transaction.dto.request.TransactionRequest;
-import SN.BANK.transaction.dto.response.TransactionResponse;
-import SN.BANK.transaction.enums.TransactionType;
-import SN.BANK.transaction.service.TransactionService;
+import SN.BANK.transfer.dto.request.TransferFindDetailRequest;
+import SN.BANK.transfer.dto.request.TransferRequest;
+import SN.BANK.transfer.dto.response.TransferResponse;
+import SN.BANK.transfer.enums.TransferType;
+import SN.BANK.transfer.service.TransferService;
 import SN.BANK.users.entity.Users;
 import SN.BANK.users.repository.UsersRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +49,7 @@ class TransferIntegrateTest {
     AccountRepository accountRepository;
 
     @Autowired
-    TransactionService transactionService;
+    TransferService transferService;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -113,8 +113,8 @@ class TransferIntegrateTest {
         BigDecimal amount = BigDecimal.valueOf(5000.00);
         BigDecimal expectedBalance = senderAccount.getMoney().subtract(amount);
 
-        TransactionRequest transactionRequest =
-                TransactionRequest.builder()
+        TransferRequest transferRequest =
+                TransferRequest.builder()
                         .accountPassword("1234")
                         .senderAccountId(senderAccount.getId())
                         .receiverAccountId(receiverAccount.getId())
@@ -124,9 +124,9 @@ class TransferIntegrateTest {
         mockMvc.perform(post("/transfer")
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
-                        .content(objectMapper.writeValueAsString(transactionRequest)))
+                        .content(objectMapper.writeValueAsString(transferRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.transactionType").value(TransactionType.WITHDRAWAL.name()))
+                .andExpect(jsonPath("$.transactionType").value(TransferType.WITHDRAWAL.name()))
                 .andExpect(jsonPath("$.senderAccountId").value(senderAccount.getId()))
                 .andExpect(jsonPath("$.receiverAccountId").value(receiverAccount.getId()))
                 .andExpect(jsonPath("$.amount").value(amount))
@@ -143,8 +143,8 @@ class TransferIntegrateTest {
 
         BigDecimal amount = BigDecimal.valueOf(15000.00);
 
-        TransactionRequest transactionRequest =
-                TransactionRequest.builder()
+        TransferRequest transferRequest =
+                TransferRequest.builder()
                         .accountPassword("1234")
                         .senderAccountId(senderAccount.getId())
                         .receiverAccountId(receiverAccount.getId())
@@ -154,7 +154,7 @@ class TransferIntegrateTest {
         mockMvc.perform(post("/transfer")
                         .contentType(MediaType.APPLICATION_JSON)
                         .session(session)
-                        .content(objectMapper.writeValueAsString(transactionRequest)))
+                        .content(objectMapper.writeValueAsString(transferRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("잔액이 부족합니다.")))
                 .andDo(print());
@@ -168,24 +168,24 @@ class TransferIntegrateTest {
 
         BigDecimal amount = BigDecimal.valueOf(5000.00);
 
-        TransactionRequest transactionRequest1 =
-                TransactionRequest.builder()
+        TransferRequest transferRequest1 =
+                TransferRequest.builder()
                         .accountPassword("1234")
                         .senderAccountId(senderAccount.getId())
                         .receiverAccountId(receiverAccount.getId())
                         .amount(amount)
                         .build();
 
-        TransactionRequest transactionRequest2 =
-                TransactionRequest.builder()
+        TransferRequest transferRequest2 =
+                TransferRequest.builder()
                         .accountPassword("4321")
                         .senderAccountId(receiverAccount.getId())
                         .receiverAccountId(senderAccount.getId())
                         .amount(amount)
                         .build();
 
-        transactionService.createTransaction(sender.getId(), transactionRequest1);
-        transactionService.createTransaction(receiver.getId(), transactionRequest2);
+        transferService.createTransfer(sender.getId(), transferRequest1);
+        transferService.createTransfer(receiver.getId(), transferRequest2);
 
         mockMvc.perform(get("/transfer/history/{accountId}", senderAccount.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -206,17 +206,17 @@ class TransferIntegrateTest {
         BigDecimal amount = BigDecimal.valueOf(5000.00);
         BigDecimal balance = senderAccount.getMoney().subtract(amount);
 
-        TransactionRequest transactionRequest =
-                TransactionRequest.builder()
+        TransferRequest transferRequest =
+                TransferRequest.builder()
                         .accountPassword("1234")
                         .senderAccountId(senderAccount.getId())
                         .receiverAccountId(receiverAccount.getId())
                         .amount(amount)
                         .build();
 
-        TransactionResponse tx = transactionService.createTransaction(sender.getId(), transactionRequest);
+        TransferResponse tx = transferService.createTransfer(sender.getId(), transferRequest);
 
-        TransactionFindDetailRequest txFindDetailRequest = TransactionFindDetailRequest.builder()
+        TransferFindDetailRequest txFindDetailRequest = TransferFindDetailRequest.builder()
                 .accountId(senderAccount.getId())
                 .transactionId(tx.getTransactionId())
                 .build();
@@ -226,7 +226,7 @@ class TransferIntegrateTest {
                         .session(session)
                         .content(objectMapper.writeValueAsString(txFindDetailRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.transactionType").value(TransactionType.WITHDRAWAL.name()))
+                .andExpect(jsonPath("$.transactionType").value(TransferType.WITHDRAWAL.name()))
                 .andExpect(jsonPath("$.othersName").value("테스터2"))
                 .andExpect(jsonPath("$.othersAccountNumber").value("22222222222222"))
                 .andExpect(jsonPath("$.amount").value(amount))

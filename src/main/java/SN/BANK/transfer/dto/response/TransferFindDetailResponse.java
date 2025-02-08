@@ -1,7 +1,7 @@
-package SN.BANK.transaction.dto.response;
+package SN.BANK.transfer.dto.response;
 
-import SN.BANK.transaction.entity.TransactionEntity;
-import SN.BANK.transaction.enums.TransactionType;
+import SN.BANK.transfer.entity.Transfer;
+import SN.BANK.transfer.enums.TransferType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -14,9 +14,9 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @Schema(description = "거래 상세 내역 응답Dto")
-public class TransactionFindDetailResponse {
+public class TransferFindDetailResponse {
     @Schema(description = "거래 타입", example = "DEPOSIT")
-    private TransactionType transactionType;
+    private TransferType transferType;
     @Schema(description = "거래일", example = "1985.06.11 15:20")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd HH:mm")
     private LocalDateTime transactedAt;
@@ -32,8 +32,8 @@ public class TransactionFindDetailResponse {
     private String description;
 
     @Builder
-    public TransactionFindDetailResponse(TransactionEntity tx, String othersName, String othersAccountNumber) {
-        this.transactionType = tx.getType();
+    public TransferFindDetailResponse(Transfer tx, String othersName, String othersAccountNumber) {
+        this.transferType = tx.getType();
         this.transactedAt = tx.getTransactedAt();
         this.othersName = othersName;
         this.othersAccountNumber = othersAccountNumber;
