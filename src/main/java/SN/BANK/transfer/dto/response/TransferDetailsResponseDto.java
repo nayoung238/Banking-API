@@ -1,5 +1,6 @@
 package SN.BANK.transfer.dto.response;
 
+import SN.BANK.account.entity.Account;
 import SN.BANK.transfer.entity.Transfer;
 import SN.BANK.transfer.enums.TransferType;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Schema(description = "이체 응답 DTO")
 @Builder
-public record TransferResponseDto(
+public record TransferDetailsResponseDto (
 
     @Schema(description = "거래 ID", example = "1")
     Long transferId,
@@ -19,13 +20,13 @@ public record TransferResponseDto(
     @Schema(description = "출금 계좌번호", example = "5792214-80232581")
     String withdrawalAccountNumber,
 
-    @Schema(description = "출금자명", example = "홍길동")
+    @Schema(description = "출금처", example = "토스뱅크")
     String senderName,
 
-    @Schema(description = "출금 계좌번호", example = "2197810-05875125")
+    @Schema(description = "입금 계좌번호", example = "2197810-05875125")
     String depositAccountNumber,
 
-    @Schema(description = "입금자명", example = "전우치")
+    @Schema(description = "입금처", example = "네이버")
     String receiverName,
 
     @Schema(description = "이체 타입", example = "DEPOSIT, WITHDRAWAL")
@@ -41,28 +42,27 @@ public record TransferResponseDto(
     BigDecimal amount,
 
     @Schema(description = "거래 후 잔액", example = "8000")
-    BigDecimal balance,
+    BigDecimal balancePostTransaction,
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd HH:mm")
     @Schema(description = "거래일", example = "2024.06.11 15:20")
     LocalDateTime createdAt
 
 ) {
-    public static TransferResponseDto of(Transfer transfer, TransferType transferType,
-                                         String withdrawalAccountNumber, String senderName,
-                                         String depositAccountNumber, String receiverName) {
-        return TransferResponseDto.builder()
+    public static TransferDetailsResponseDto of(Transfer transfer, TransferType transferType,
+                                                Account withdrawalAccount, Account depositAccount) {
+        return TransferDetailsResponseDto.builder()
             .transferId(transfer.getId())
-            .withdrawalAccountNumber(withdrawalAccountNumber)
-            .senderName(senderName)
-            .depositAccountNumber(depositAccountNumber)
-            .receiverName(receiverName)
+            .withdrawalAccountNumber(withdrawalAccount.getAccountNumber())
+            .senderName(withdrawalAccount.getUser().getName())
+            .depositAccountNumber(depositAccount.getAccountNumber())
+            .receiverName(depositAccount.getUser().getName())
             .transferType(transferType)
             .exchangeRate(stripZeros(transfer.getExchangeRate()))
             .currency(transfer.getCurrency())
             .createdAt(transfer.getCreatedAt())
-            .amount(stripZeros(transfer.getAmount()))
-            .balance(stripZeros(transfer.getBalance()))
+            .amount(stripZeros(transfer.getTransferDetails().get(transferType).getAmount()))
+            .balancePostTransaction(stripZeros(transfer.getTransferDetails().get(transferType).getBalancePostTransaction()))
             .build();
     }
 
