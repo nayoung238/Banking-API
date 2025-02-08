@@ -2,8 +2,10 @@ package SN.BANK.payment.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 
 @Schema(description = "환불 요청 Dto")
+@Builder
 public record PaymentRefundRequestDto (
 
     @NotNull

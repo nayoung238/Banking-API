@@ -25,20 +25,25 @@ public class DecryptionAspect {
 			if (args[i] instanceof PaymentRequestDto request) {
 				String decryptedWithdrawAccountNumber = decryptionFacade.decrypt(request.withdrawAccountNumber());
 				String decryptedDepositAccountNumber = decryptionFacade.decrypt(request.depositAccountNumber());
-				String decryptedPassword = decryptionFacade.decrypt(request.password());
+				String decryptedPassword = decryptionFacade.decrypt(request.withdrawalAccountPassword());
 
 				log.info("[/payment] WithdrawAccountNumber {} -> {}", request.withdrawAccountNumber(), decryptedWithdrawAccountNumber);
 				log.info("[/payment] DecryptedDepositAccountNumber {} -> {}", request.depositAccountNumber(), decryptedDepositAccountNumber);
-				log.info("[/payment] password {} -> {}", request.password(), decryptedPassword);
+				log.info("[/payment] password {} -> {}", request.withdrawalAccountPassword(), decryptedPassword);
 
-				args[i] = new PaymentRequestDto(
-					decryptedWithdrawAccountNumber,
-					decryptedDepositAccountNumber,
-					request.amount(),
-					decryptedPassword);
+				args[i] = PaymentRequestDto.builder()
+					.withdrawAccountNumber(decryptedWithdrawAccountNumber)
+					.withdrawalAccountPassword(decryptedPassword)
+					.depositAccountNumber(decryptedDepositAccountNumber)
+					.amount(request.amount())
+					.build();
+
 			} else if (args[i] instanceof PaymentRefundRequestDto request) {
 				String decryptedPassword = decryptionFacade.decrypt(request.password());
-				args[i] = new PaymentRefundRequestDto(request.paymentId(), decryptedPassword);
+				args[i] = PaymentRefundRequestDto.builder()
+					.paymentId(request.paymentId())
+					.password(decryptedPassword)
+					.build();
 
 				log.info("[/payment/cancel] password {} -> {}", request.password(), decryptedPassword);
 			}
