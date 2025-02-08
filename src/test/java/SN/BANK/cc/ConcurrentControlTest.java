@@ -3,8 +3,7 @@ package SN.BANK.cc;
 import SN.BANK.account.entity.Account;
 import SN.BANK.account.enums.Currency;
 import SN.BANK.account.repository.AccountRepository;
-import SN.BANK.transfer.dto.request.TransferRequest;
-//import SN.BANK.redisson.service.RedissonService;
+import SN.BANK.transfer.dto.request.TransferRequestDto;
 import SN.BANK.transfer.service.TransferService;
 import SN.BANK.users.entity.Users;
 import SN.BANK.users.repository.UsersRepository;
@@ -34,9 +33,6 @@ class ConcurrentControlTest {
 
     @Autowired
     private TransferService transferService;
-
-//    @Autowired
-//    private RedissonService redissonService;
 
     Users user1;
     Users user2;
@@ -102,7 +98,7 @@ class ConcurrentControlTest {
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         CountDownLatch latch = new CountDownLatch(threadCount);
 
-        TransferRequest txRequest = new TransferRequest("1234", sender.getId(),
+        TransferRequestDto txRequest = new TransferRequestDto("1234", sender.getId(),
                 receiver.getId(), transferAmount);
 
         for (int i = 0; i < threadCount; i++) {
