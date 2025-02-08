@@ -11,6 +11,7 @@ import SN.BANK.transfer.dto.response.TransferFindDetailResponse;
 import SN.BANK.transfer.dto.response.TransferFindResponse;
 import SN.BANK.transfer.dto.response.TransferResponseDto;
 import SN.BANK.transfer.entity.Transfer;
+import SN.BANK.transfer.entity.TransferDetails;
 import SN.BANK.transfer.enums.TransferType;
 import SN.BANK.transfer.repository.TransferRepository;
 import lombok.RequiredArgsConstructor;
@@ -66,33 +67,38 @@ public class TransferService {
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_DEPOSIT_ACCOUNT));
 
         // 출금 (sync)
-        Transfer withdrawalTransfer = processWithdrawal(withdrawalAccount, depositAccount, request.amount());
+        Transfer transfer = processWithdrawal(withdrawalAccount, depositAccount, request.amount());
 
         // 입금 (async)
-        processDepositAsync(withdrawalTransfer);
+        processDepositAsync(transfer);
 
-        return resultHandler.handle(withdrawalTransfer, withdrawalAccount, depositAccount);
+        return resultHandler.handle(transfer, withdrawalAccount, depositAccount);
     }
 
     private Transfer processWithdrawal(Account withdrawalAccount, Account depositAccount, BigDecimal amount) {
         BigDecimal exchangeRate = exchangeRateService.getExchangeRate(withdrawalAccount.getCurrency(), depositAccount.getCurrency());
         BigDecimal convertedAmount = amount.multiply(exchangeRate);
         withdrawalAccount.decreaseMoney(convertedAmount);
-        return saveTransferRecord(withdrawalAccount, depositAccount, exchangeRate, convertedAmount);
+        return saveTransferAndWithdrawalTransferDetails(withdrawalAccount, depositAccount, exchangeRate, convertedAmount);
     }
 
     // TODO: 실패 시 재시도 처리
-    private void processDepositAsync(Transfer withdrawalTransfer) {
+    private void processDepositAsync(Transfer transfer) {
         CompletableFuture.runAsync(() -> {
             TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
             transactionTemplate.execute(status -> {
-                // 입금
-                Account depositAccount = accountRepository.findByIdWithPessimisticLock(withdrawalTransfer.getWithdrawalAccountId())
+                Account depositAccount = accountRepository.findByIdWithPessimisticLock(transfer.getWithdrawalAccountId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_DEPOSIT_ACCOUNT));
 
-                BigDecimal convertedAmount = withdrawalTransfer.getAmount().divide(withdrawalTransfer.getExchangeRate());
-                depositAccount.increaseMoney(convertedAmount);
+                BigDecimal withdrawalAmount = transfer.getTransferDetails().get(TransferType.WITHDRAWAL).getAmount();
+                BigDecimal depositAmount = withdrawalAmount.divide(transfer.getExchangeRate());
+
+                // 입금 계좌 잔액 변경
+                depositAccount.increaseMoney(depositAmount);
                 accountRepository.save(depositAccount);
+
+                // 이체 내약 (입금) 추가
+                saveDepositTransferDetails(transfer, depositAmount, depositAccount.getMoney());
 
                 // TODO: 입금 알림
 
@@ -101,16 +107,75 @@ public class TransferService {
         });
     }
 
-    public Transfer saveTransferRecord(Account withdrawalAccount, Account depositAccount, BigDecimal exchangeRate, BigDecimal amount) {
-        return transferRepository.save(
-            Transfer.builder()
-                .withdrawalAccountId(withdrawalAccount.getId())
-                .depositAccountId(depositAccount.getId())
-                .currency(depositAccount.getCurrency() + "/" + withdrawalAccount.getCurrency())
-                .exchangeRate(exchangeRate)
-                .amount(amount)
-                .balance(withdrawalAccount.getMoney())
-                .build());
+    @Transactional
+    public Transfer transferForRefund(Long transferId) {
+        Transfer originalTransfer = transferRepository.findById(transferId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRANSFER));
+
+        // Ordered Locking
+        Account originalWithdrawalAccount = null;
+        Account originalDepositAccount = null;
+        if(originalTransfer.getWithdrawalAccountId().compareTo(originalTransfer.getDepositAccountId()) < 0) {
+            originalWithdrawalAccount = accountRepository.findByIdWithPessimisticLock(originalTransfer.getWithdrawalAccountId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT));
+
+            originalDepositAccount = accountRepository.findByIdWithPessimisticLock(originalTransfer.getDepositAccountId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_DEPOSIT_ACCOUNT));
+        } else {
+            originalDepositAccount = accountRepository.findByIdWithPessimisticLock(originalTransfer.getDepositAccountId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_DEPOSIT_ACCOUNT));
+
+            originalWithdrawalAccount = accountRepository.findByIdWithPessimisticLock(originalTransfer.getWithdrawalAccountId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT));
+        }
+
+        Account refundWithdrawalAccount = originalDepositAccount;
+        Account refundDepositAccount = originalWithdrawalAccount;
+
+        // 결제 취소로 인한 출금
+        BigDecimal refundWithdrawalAmount = originalTransfer.getTransferDetails().get(TransferType.DEPOSIT).getAmount();
+        refundWithdrawalAccount.decreaseMoney(refundWithdrawalAmount);
+
+        // 결제 취소로 인한 입금
+        BigDecimal refundDepositAmount = originalTransfer.getTransferDetails().get(TransferType.WITHDRAWAL).getAmount();
+        refundDepositAccount.increaseMoney(refundDepositAmount);
+
+        // 결제 취소에 대한 이체 내역 생성
+        Transfer refundTransfer = saveTransferAndWithdrawalTransferDetails(refundWithdrawalAccount, refundDepositAccount, originalTransfer.getExchangeRate(), refundWithdrawalAmount);
+        saveDepositTransferDetails(refundTransfer, refundWithdrawalAmount, refundDepositAccount.getMoney());
+
+        return refundTransfer;
+    }
+
+    public Transfer saveTransferAndWithdrawalTransferDetails(Account withdrawalAccount, Account depositAccount, BigDecimal exchangeRate, BigDecimal amount) {
+        Transfer transfer = Transfer.builder()
+             .withdrawalAccountId(withdrawalAccount.getId())
+             .depositAccountId(depositAccount.getId())
+             .currency(depositAccount.getCurrency() + "/" + withdrawalAccount.getCurrency())
+             .exchangeRate(exchangeRate)
+             .build();
+
+        TransferDetails withdrawalTransferDetails = TransferDetails.builder()
+            .transfer(transfer)
+            .transferType(TransferType.WITHDRAWAL)
+            .amount(amount)
+            .balancePostTransaction(withdrawalAccount.getMoney())
+            .build();
+
+        transfer.getTransferDetails().put(TransferType.WITHDRAWAL, withdrawalTransferDetails);
+        transferRepository.save(transfer);
+        return transfer;
+    }
+
+    public void saveDepositTransferDetails(Transfer transfer, BigDecimal amount, BigDecimal balancePostTransaction) {
+        TransferDetails depositTransferDetails = TransferDetails.builder()
+            .transfer(transfer)
+            .transferType(TransferType.DEPOSIT)
+            .amount(amount)
+            .balancePostTransaction(balancePostTransaction)
+            .build();
+
+        transfer.getTransferDetails().put(TransferType.DEPOSIT, depositTransferDetails);
     }
 
     /**
