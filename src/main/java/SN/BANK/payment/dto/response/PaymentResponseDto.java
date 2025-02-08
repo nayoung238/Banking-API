@@ -3,6 +3,7 @@ package SN.BANK.payment.dto.response;
 import SN.BANK.payment.entity.Payment;
 import SN.BANK.payment.enums.PaymentStatus;
 import SN.BANK.transfer.entity.Transfer;
+import SN.BANK.transfer.enums.TransferType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -43,7 +44,7 @@ public record PaymentResponseDto (
             .paymentStatus(payment.getPaymentStatus())
             .withdrawAccountNumber(withdrawAccountNumber)
             .receiverName(receiverName)
-            .amount(stripZeros(transfer.getAmount()))
+            .amount(stripZeros(transfer.getTransferDetails().get(TransferType.WITHDRAWAL).getAmount()))
             .exchangeRate(stripZeros(transfer.getExchangeRate()))
             .currency(transfer.getCurrency())
             .paidAt(transfer.getCreatedAt())
