@@ -1,74 +1,37 @@
 package SN.BANK.transfer.entity;
 
-import SN.BANK.account.enums.Currency;
-import SN.BANK.transfer.enums.TransferType;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import SN.BANK.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Transfer {
+@Builder
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Transfer extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String transactionName;
+    @Column(nullable = false)
+    private Long withdrawalAccountId;
 
-    private Long senderAccountId;
+    @Column(nullable = false)
+    private Long depositAccountId;
 
-    private Long receiverAccountId;
+    @Column(nullable = false)
+    private String currency;
 
-    @Column(name = "transaction_type", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private TransferType type;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd HH:mm")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    private LocalDateTime transactedAt;
-
-    private BigDecimal amount;
-
-    @Enumerated(EnumType.STRING)
-    private Currency currency;
-
+    @Column(nullable = false)
     private BigDecimal exchangeRate;
 
+    @Column(nullable = false)
+    private BigDecimal amount;
+
+    @Column(nullable = false)
     private BigDecimal balance;
-
-    @Column(name = "transaction_group_id", nullable = false)
-    private String groupId;
-
-    private String description;
-
-    @Builder
-    public Transfer(String transactionName, Long senderAccountId, Long receiverAccountId,
-                    TransferType type, LocalDateTime transactedAt, BigDecimal amount,
-                    Currency currency, BigDecimal exchangeRate, BigDecimal balance, String groupId,
-                    String description) {
-        this.transactionName = transactionName;
-        this.senderAccountId = senderAccountId;
-        this.receiverAccountId = receiverAccountId;
-        this.type = type;
-        this.transactedAt = transactedAt;
-        this.amount = amount;
-        this.currency = currency;
-        this.exchangeRate = exchangeRate;
-        this.balance = balance;
-        this.groupId = groupId;
-        this.description = description;
-    }
 }
