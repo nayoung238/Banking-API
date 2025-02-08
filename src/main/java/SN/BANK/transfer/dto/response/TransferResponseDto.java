@@ -16,13 +16,13 @@ public record TransferResponseDto(
     @Schema(description = "거래 ID", example = "1")
     Long transferId,
 
-    @Schema(description = "출금 계좌번호", example = "1")
+    @Schema(description = "출금 계좌번호", example = "5792214-80232581")
     String withdrawalAccountNumber,
 
     @Schema(description = "출금자명", example = "홍길동")
     String senderName,
 
-    @Schema(description = "출금 계좌번호", example = "1")
+    @Schema(description = "출금 계좌번호", example = "2197810-05875125")
     String depositAccountNumber,
 
     @Schema(description = "입금자명", example = "전우치")
@@ -31,7 +31,13 @@ public record TransferResponseDto(
     @Schema(description = "이체 타입", example = "DEPOSIT, WITHDRAWAL")
     TransferType transferType,
 
-    @Schema(description = "거래액", example = "200000")
+    @Schema(description = "적용 환율", example = "1355.25")
+    BigDecimal exchangeRate,
+
+    @Schema(description = "통화", example = "KRW/USD")
+    String currency,
+
+    @Schema(description = "거래액", example = "20000")
     BigDecimal amount,
 
     @Schema(description = "거래 후 잔액", example = "8000")
@@ -52,10 +58,15 @@ public record TransferResponseDto(
             .depositAccountNumber(depositAccountNumber)
             .receiverName(receiverName)
             .transferType(transferType)
+            .exchangeRate(stripZeros(transfer.getExchangeRate()))
+            .currency(transfer.getCurrency())
             .createdAt(transfer.getCreatedAt())
-            .amount(transfer.getAmount())
-            .balance(transfer.getBalance())
+            .amount(stripZeros(transfer.getAmount()))
+            .balance(stripZeros(transfer.getBalance()))
             .build();
     }
 
+    private static BigDecimal stripZeros(BigDecimal value) {
+        return value.stripTrailingZeros();
+    }
 }

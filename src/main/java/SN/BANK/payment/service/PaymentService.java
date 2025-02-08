@@ -12,6 +12,7 @@ import SN.BANK.payment.repository.PaymentRepository;
 import SN.BANK.payment.dto.request.PaymentRequestDto;
 import SN.BANK.transfer.dto.request.TransferRequestDto;
 import SN.BANK.transfer.entity.Transfer;
+import SN.BANK.transfer.repository.TransferRepository;
 import SN.BANK.transfer.service.TransferService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final TransferService transferService;
     private final AccountRepository accountRepository;
+    private final TransferRepository transferRepository;
 
     @Transactional
     public PaymentResponseDto processPayment(PaymentRequestDto request) {
@@ -39,19 +41,13 @@ public class PaymentService {
 
         paymentRepository.save(payment);
 
-        Account withdrawalAccount = accountRepository.findById(transfer.getWithdrawalAccountId())
-            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT));
-
-        Account depositAccount = accountRepository.findById(transfer.getDepositAccountId())
-            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_DEPOSIT_ACCOUNT));
-
-        return PaymentResponseDto.of(payment, transfer, withdrawalAccount.getAccountNumber(), depositAccount.getUser().getName());
+        return createPaymentResponseDto(payment.getId());
     }
 
     @Transactional
     public void refundPayment(PaymentRefundRequestDto request) {
         // 결제 내역 조회
-        PaymentList paymentList = getPaymentListByIdWithLock(request.paymentId());
+        Payment paymentList = getPaymentListByIdWithLock(request.paymentId());
 
         // 출금 계좌
         Account withdrawAccount;
@@ -82,21 +78,29 @@ public class PaymentService {
         paymentList.updatePaymentStatus(PaymentStatus.PAYMENT_CANCELLED);
     }
 
-    public PaymentListResponseDto getPaymentListById(Long paymentId) {
-        PaymentList payment = getPaymentById(paymentId);
-        return PaymentListResponseDto.of(payment);
+    public PaymentResponseDto findPaymentById(Long paymentId) {
+        return createPaymentResponseDto(paymentId);
     }
 
-    // 출금 및 입금 계좌가 동일한지 검증
     private void validateDifferentAccounts(String withdrawAccountNumber, String depositAccountNumber) {
         if (withdrawAccountNumber.equals(depositAccountNumber)) {
             throw new CustomException(ErrorCode.INVALID_TRANSFER);
         }
     }
 
-    // 결제 ID로 결제 내역 조회
-    public PaymentList getPaymentById(Long paymentId) {
-        return paymentListRepository.findById(paymentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PAYMENT_LIST));
+    private PaymentResponseDto createPaymentResponseDto(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PAYMENT));
+
+        Transfer transfer = transferRepository.findById(payment.getTransferId())
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRANSFER));
+
+        Account withdrawalAccount = accountRepository.findById(transfer.getWithdrawalAccountId())
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT));
+
+        Account depositAccount = accountRepository.findById(transfer.getDepositAccountId())
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_DEPOSIT_ACCOUNT));
+
+        return PaymentResponseDto.of(payment, transfer, withdrawalAccount.getAccountNumber(), depositAccount.getUser().getName());
     }
 }
