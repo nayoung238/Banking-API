@@ -39,13 +39,13 @@ public class DecryptionAspect {
 					.build();
 
 			} else if (args[i] instanceof PaymentRefundRequestDto request) {
-				String decryptedPassword = decryptionFacade.decrypt(request.password());
+				String decryptedPassword = decryptionFacade.decrypt(request.withdrawalAccountPassword());
 				args[i] = PaymentRefundRequestDto.builder()
 					.paymentId(request.paymentId())
-					.password(decryptedPassword)
+					.withdrawalAccountPassword(decryptedPassword)
 					.build();
 
-				log.info("[/payment/cancel] password {} -> {}", request.password(), decryptedPassword);
+				log.info("[/payment/cancel] password {} -> {}", request.withdrawalAccountPassword(), decryptedPassword);
 			}
 		}
 		return joinPoint.proceed(args);
