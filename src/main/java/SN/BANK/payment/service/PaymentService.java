@@ -61,10 +61,7 @@ public class PaymentService {
 
         Account depositAccount = accountRepository.findById(refundTransfer.getDepositAccountId())
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_DEPOSIT_ACCOUNT));
-        return RefundPaymentResponseDto.builder()
-            .depositAccountNumber(depositAccount.getAccountNumber())
-            .depositAmount(refundTransfer.getTransferDetails().get(TransferType.DEPOSIT).getAmount())
-            .build();
+        return RefundPaymentResponseDto.of(depositAccount.getAccountNumber(), refundTransfer.getTransferDetails().get(TransferType.DEPOSIT).getAmount());
     }
 
     private void verifyWithdrawalAccountPassword(Long transferId, String withdrawalAccountPassword) {
