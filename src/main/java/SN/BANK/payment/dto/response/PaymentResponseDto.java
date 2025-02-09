@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 @Schema(description = "결제 응답 DTO")
@@ -52,6 +53,11 @@ public record PaymentResponseDto (
     }
 
     private static BigDecimal stripZeros(BigDecimal value) {
-        return value.stripTrailingZeros();
+        BigDecimal strippedValue = value.stripTrailingZeros();
+
+        if (strippedValue.scale() <= 0) {
+            return strippedValue.setScale(0, RoundingMode.DOWN);
+        }
+        return strippedValue;
     }
 }

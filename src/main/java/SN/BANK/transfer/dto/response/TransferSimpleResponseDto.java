@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 @Schema(description = "이체 조회 목록용 응답 DTO")
@@ -39,8 +40,17 @@ public record TransferSimpleResponseDto (
             .transferType(transferType)
             .peerName(peerName)
             .transactedAt(transfer.getCreatedAt())
-            .amount(transfer.getTransferDetails().get(transferType).getAmount())
-            .balancePostTransaction(transfer.getTransferDetails().get(transferType).getBalancePostTransaction())
+            .amount(stripZeros(transfer.getTransferDetails().get(transferType).getAmount()))
+            .balancePostTransaction(stripZeros(transfer.getTransferDetails().get(transferType).getBalancePostTransaction()))
             .build();
+    }
+
+    private static BigDecimal stripZeros(BigDecimal value) {
+        BigDecimal strippedValue = value.stripTrailingZeros();
+
+        if (strippedValue.scale() <= 0) {
+            return strippedValue.setScale(0, RoundingMode.DOWN);
+        }
+        return strippedValue;
     }
 }
