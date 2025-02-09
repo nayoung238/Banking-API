@@ -75,7 +75,7 @@ public class TransferService {
     private Transfer processWithdrawal(Account withdrawalAccount, Account depositAccount, BigDecimal amount) {
         BigDecimal exchangeRate = exchangeRateService.getExchangeRate(withdrawalAccount.getCurrency(), depositAccount.getCurrency());
         BigDecimal convertedAmount = amount.multiply(exchangeRate);
-        withdrawalAccount.decreaseMoney(convertedAmount);
+        withdrawalAccount.decreaseBalance(convertedAmount);
         return saveTransferAndWithdrawalTransferDetails(withdrawalAccount, depositAccount, exchangeRate, convertedAmount);
     }
 
@@ -84,18 +84,18 @@ public class TransferService {
         CompletableFuture.runAsync(() -> {
             TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
             transactionTemplate.execute(status -> {
-                Account depositAccount = accountRepository.findByIdWithPessimisticLock(transfer.getWithdrawalAccountId())
+                Account depositAccount = accountRepository.findByIdWithPessimisticLock(transfer.getDepositAccountId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_DEPOSIT_ACCOUNT));
 
                 BigDecimal withdrawalAmount = transfer.getTransferDetails().get(TransferType.WITHDRAWAL).getAmount();
                 BigDecimal depositAmount = withdrawalAmount.divide(transfer.getExchangeRate());
 
                 // 입금 계좌 잔액 변경
-                depositAccount.increaseMoney(depositAmount);
+                depositAccount.increaseBalance(depositAmount);
                 accountRepository.save(depositAccount);
 
                 // 이체 내약 (입금) 추가
-                saveDepositTransferDetails(transfer, depositAmount, depositAccount.getMoney());
+                saveDepositTransferDetails(transfer, depositAmount, depositAccount.getBalance());
 
                 // TODO: 입금 알림
 
@@ -131,15 +131,15 @@ public class TransferService {
 
         // 결제 취소로 인한 출금
         BigDecimal refundWithdrawalAmount = originalTransfer.getTransferDetails().get(TransferType.DEPOSIT).getAmount();
-        refundWithdrawalAccount.decreaseMoney(refundWithdrawalAmount);
+        refundWithdrawalAccount.decreaseBalance(refundWithdrawalAmount);
 
         // 결제 취소로 인한 입금
         BigDecimal refundDepositAmount = originalTransfer.getTransferDetails().get(TransferType.WITHDRAWAL).getAmount();
-        refundDepositAccount.increaseMoney(refundDepositAmount);
+        refundDepositAccount.increaseBalance(refundDepositAmount);
 
         // 결제 취소에 대한 이체 내역 생성
         Transfer refundTransfer = saveTransferAndWithdrawalTransferDetails(refundWithdrawalAccount, refundDepositAccount, originalTransfer.getExchangeRate(), refundWithdrawalAmount);
-        saveDepositTransferDetails(refundTransfer, refundWithdrawalAmount, refundDepositAccount.getMoney());
+        saveDepositTransferDetails(refundTransfer, refundWithdrawalAmount, refundDepositAccount.getBalance());
 
         return refundTransfer;
     }
@@ -155,7 +155,7 @@ public class TransferService {
         TransferDetails withdrawalTransferDetails = TransferDetails.builder()
             .transfer(transfer)
             .amount(amount)
-            .balancePostTransaction(withdrawalAccount.getMoney())
+            .balancePostTransaction(withdrawalAccount.getBalance())
             .build();
 
         transfer.getTransferDetails().put(TransferType.WITHDRAWAL, withdrawalTransferDetails);

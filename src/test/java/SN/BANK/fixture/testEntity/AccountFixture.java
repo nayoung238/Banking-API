@@ -58,10 +58,10 @@ public enum AccountFixture {
 		this.currency = currency;
 	}
 
-	public Account createAccount(Users users) {
+	public Account createAccount(Users user) {
 		return Account.builder()
 			.id(id)
-			.users(users)
+			.user(user)
 			.accountName(accountNumber)
 			.password(password)
 			.balance(balance)

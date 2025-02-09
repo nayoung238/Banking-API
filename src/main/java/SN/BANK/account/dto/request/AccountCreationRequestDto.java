@@ -7,16 +7,17 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Builder
-@Schema(description = "계좌 생성 요청Dto")
-public record CreateAccountRequest (
+@Schema(description = "계좌 생성 요청 DTO")
+public record AccountCreationRequestDto (
+
     @NotEmpty
-    @Schema(description = "비밀번호",example = "12345")
+    @Schema(description = "비밀번호", example = "12345")
     String password,
 
     @NotNull
-    @Schema(description = "통화",example = "KRW")
+    @Schema(description = "통화", example = "KRW")
     Currency currency,
 
-    @Schema(description = "계좌 이름",example = "청년저축통장")
+    @Schema(description = "계좌 이름", example = "청년저축통장")
     String accountName
 ) { }

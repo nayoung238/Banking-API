@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 public record PaymentResponseDto (
 
-    @Schema(description = "결제 DB ID", example = "1")
+    @Schema(description = "결제 DB PK", example = "1")
     Long paymentId,
 
     @Schema(description = "결제 상태", example = "PAYMENT_COMPLETED")

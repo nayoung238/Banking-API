@@ -23,18 +23,18 @@ public class Account extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;
-
-    @Column(nullable = false)
-    private String password;
 
     @Column(nullable = false, unique = true)
     private String accountNumber;
 
     @Column(nullable = false)
-    private BigDecimal money;
+    private String password;
+
+    @Column(nullable = false)
+    private BigDecimal balance;
 
     private String accountName;
 
@@ -42,27 +42,18 @@ public class Account extends BaseTimeEntity {
     @Column(nullable = false)
     private Currency currency;
 
-    public void decreaseMoney(BigDecimal amount) {
-        if (this.money.compareTo(amount) < 0) {
+    public void decreaseBalance(BigDecimal amount) {
+        if (this.balance.compareTo(amount) < 0) {
             throw new CustomException(ErrorCode.INSUFFICIENT_BALANCE);
         }
-        this.money = this.money.subtract(amount);
+        this.balance = this.balance.subtract(amount);
     }
 
-    public void increaseMoney(BigDecimal amount) {
-        this.money = this.money.add(amount);
+    public void increaseBalance(BigDecimal amount) {
+        this.balance = this.balance.add(amount);
     }
 
     public boolean isAccountOwner(Long userId) {
         return this.user != null && this.user.getId().equals(userId);
     }
-
-    public boolean isGreaterThanBalance(BigDecimal amount) {
-        return amount.compareTo(money) > 0;
-    }
-
-    public boolean isCorrectPassword(String password) {
-        return this.password.equals(password);
-    }
-
 }

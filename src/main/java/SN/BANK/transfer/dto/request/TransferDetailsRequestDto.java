@@ -9,10 +9,10 @@ import lombok.Builder;
 public record TransferDetailsRequestDto (
 
     @NotNull
-    @Schema(description = "계좌 DB ID", example = "1")
+    @Schema(description = "계좌 DB PK", example = "1")
     Long accountId,
 
     @NotNull
-    @Schema(description = "이체 DB ID", example = "1")
+    @Schema(description = "이체 DB PK", example = "1")
     Long transferId
 ) { }

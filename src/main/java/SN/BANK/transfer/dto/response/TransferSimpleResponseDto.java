@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 public record TransferSimpleResponseDto (
 
-    @Schema(description = "거래의 데이터베이스 id 값", example = "1")
+    @Schema(description = "이체 DB PK", example = "1")
     Long transferId,
 
     @Schema(description = "거래 타입", example = "DEPOSIT")
@@ -40,7 +40,7 @@ public record TransferSimpleResponseDto (
             .peerName(peerName)
             .transactedAt(transfer.getCreatedAt())
             .amount(transfer.getTransferDetails().get(transferType).getAmount())
-            .amount(transfer.getTransferDetails().get(transferType).getBalancePostTransaction())
+            .balancePostTransaction(transfer.getTransferDetails().get(transferType).getBalancePostTransaction())
             .build();
     }
 }

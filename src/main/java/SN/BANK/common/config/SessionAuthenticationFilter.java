@@ -18,18 +18,21 @@ import java.io.IOException;
 
 @Slf4j
 public class SessionAuthenticationFilter extends OncePerRequestFilter {
+
     private final CustomUserDetailsService customUserDetailsService;
     private final ObjectMapper objectMapper;
+
     public SessionAuthenticationFilter(CustomUserDetailsService customUserDetailsService, ObjectMapper objectMapper){
         this.customUserDetailsService = customUserDetailsService;
         this.objectMapper = objectMapper;
     }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             Long userId = (Long) request.getSession().getAttribute("user");
-            if(userId!=null){
-                log.info("요청 유저 id :{}",userId);
+            if(userId != null) {
+                log.info("요청 유저 id: {}", userId);
                 UserDetails loginUser = customUserDetailsService.loadUserByUsername(userId.toString());
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
