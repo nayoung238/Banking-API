@@ -46,8 +46,8 @@ public class AccountService {
             .currency(request.currency())
             .build();
 
-        Account savedAccount = accountRepository.save(account);
-        return AccountResponseDto.of(savedAccount);
+        accountRepository.save(account);
+        return AccountResponseDto.of(account);
     }
 
     private String generateUniqueAccountNumber() {
