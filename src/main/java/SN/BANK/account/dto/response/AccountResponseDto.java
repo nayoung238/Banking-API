@@ -34,7 +34,7 @@ public record AccountResponseDto (
             .accountNumber(account.getAccountNumber())
             .currency(account.getCurrency())
             .balance(stripZeros(account.getBalance()))
-            .accountNumber(account.getAccountNumber())
+            .accountName(account.getAccountName())
             .build();
     }
 
