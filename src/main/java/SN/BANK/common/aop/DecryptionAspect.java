@@ -23,24 +23,29 @@ public class DecryptionAspect {
 		Object[] args = joinPoint.getArgs();
 		for (int i = 0; i < args.length; i++) {
 			if (args[i] instanceof PaymentRequestDto request) {
-				String decryptedWithdrawAccountNumber = decryptionFacade.decrypt(request.withdrawAccountNumber());
+				String decryptedWithdrawAccountNumber = decryptionFacade.decrypt(request.withdrawalAccountNumber());
 				String decryptedDepositAccountNumber = decryptionFacade.decrypt(request.depositAccountNumber());
-				String decryptedPassword = decryptionFacade.decrypt(request.password());
+				String decryptedPassword = decryptionFacade.decrypt(request.withdrawalAccountPassword());
 
-				log.info("[/payment] WithdrawAccountNumber {} -> {}", request.withdrawAccountNumber(), decryptedWithdrawAccountNumber);
+				log.info("[/payment] WithdrawAccountNumber {} -> {}", request.withdrawalAccountNumber(), decryptedWithdrawAccountNumber);
 				log.info("[/payment] DecryptedDepositAccountNumber {} -> {}", request.depositAccountNumber(), decryptedDepositAccountNumber);
-				log.info("[/payment] password {} -> {}", request.password(), decryptedPassword);
+				log.info("[/payment] password {} -> {}", request.withdrawalAccountPassword(), decryptedPassword);
 
-				args[i] = new PaymentRequestDto(
-					decryptedWithdrawAccountNumber,
-					decryptedDepositAccountNumber,
-					request.amount(),
-					decryptedPassword);
+				args[i] = PaymentRequestDto.builder()
+					.withdrawalAccountNumber(decryptedWithdrawAccountNumber)
+					.withdrawalAccountPassword(decryptedPassword)
+					.depositAccountNumber(decryptedDepositAccountNumber)
+					.amount(request.amount())
+					.build();
+
 			} else if (args[i] instanceof PaymentRefundRequestDto request) {
-				String decryptedPassword = decryptionFacade.decrypt(request.password());
-				args[i] = new PaymentRefundRequestDto(request.paymentId(), decryptedPassword);
+				String decryptedPassword = decryptionFacade.decrypt(request.withdrawalAccountPassword());
+				args[i] = PaymentRefundRequestDto.builder()
+					.paymentId(request.paymentId())
+					.withdrawalAccountPassword(decryptedPassword)
+					.build();
 
-				log.info("[/payment/cancel] password {} -> {}", request.password(), decryptedPassword);
+				log.info("[/payment/cancel] password {} -> {}", request.withdrawalAccountPassword(), decryptedPassword);
 			}
 		}
 		return joinPoint.proceed(args);

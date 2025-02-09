@@ -16,16 +16,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class NotificationService {
+
     private final FCMTokenRepository fcmTokenRepository;
     private final UsersService usersService;
+
     public String sendNotification(NotificationRequestDto notificationRequestDto) {
-
-
         Notification notification = Notification.builder()
                 .setTitle(notificationRequestDto.title())
                 .setBody(notificationRequestDto.message())
@@ -40,7 +38,6 @@ public class NotificationService {
             return FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
             String errorCode = String.valueOf(e.getErrorCode());
-
             if (errorCode.matches("UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND")) {
                 // 잘못된 토큰, 등록되지 않은 토큰, 또는 찾을 수 없는 리소스
                 throw new NotificationException(ErrorCode.INVALID_TOKEN);
@@ -53,16 +50,20 @@ public class NotificationService {
             }
         }
     }
+
     @Transactional
-    public String saveToken(TokenRequest tokenRequest)
-    {
-        if(usersService.validateUser(tokenRequest.userId())==null)
-        {
+    public String saveToken(TokenRequest tokenRequest) {
+        if(!usersService.isExistUser(tokenRequest.userId())) {
             throw new CustomException(ErrorCode.NOT_FOUND_USER);
         }
-        if(fcmTokenRepository.existsByToken(tokenRequest.token()))
+        if(fcmTokenRepository.existsByToken(tokenRequest.token())) {
             throw new NotificationException(ErrorCode.DUPLICATE_TOKEN);
-        FCMToken fcmToken=FCMToken.builder().token(tokenRequest.token()).userId(tokenRequest.userId()).build();
+        }
+
+        FCMToken fcmToken = FCMToken.builder()
+            .token(tokenRequest.token())
+            .userId(tokenRequest.userId())
+            .build();
 
         return fcmTokenRepository.save(fcmToken).getToken();
     }

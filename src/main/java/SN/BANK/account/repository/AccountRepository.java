@@ -7,25 +7,22 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
-
 public interface AccountRepository extends JpaRepository<Account, Long> {
-    @Query("SELECT a FROM Account a JOIN FETCH a.user WHERE a.id = :accountId")
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<Account> findByIdWithLock(@Param("accountId")Long accountId);
 
-    @Query("SELECT a FROM Account a JOIN FETCH a.user WHERE a.id = :accountId")
-    Optional<Account> findById(@Param("accountId")Long accountId);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT a FROM Account a WHERE a.id=:accountId")
+    Optional<Account> findByIdWithPessimisticLock(@Param("accountId") Long id);
 
     boolean existsByAccountNumber(String accountNumber);
+
     List<Account> findByUser(Users user);
+
     Optional<Account> findByAccountNumber(String accountNumber);
 
-    @Query("SELECT a FROM Account a WHERE a.accountNumber = :accountNumber")
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<Account> findByAccountNumberWithLock(@Param("accountNumber") String accountNumber);
+    @Query("SELECT a FROM Account a WHERE a.accountNumber=:accountNumber")
+    Optional<Account> findByAccountNumberWithPessimisticLock(@Param("accountNumber") String accountNumber);
 }
