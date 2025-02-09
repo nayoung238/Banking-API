@@ -26,7 +26,7 @@ public class TransferController {
 
     private final TransferService transferService;
 
-    @Operation(summary = "송금", description = "바디에 {senderAccountId, receiverAccountId,amount, accountPassword}을 json 형식으로 보내주세요. 세션에 연결되어 있어야합니다.")
+    @Operation(summary = "이체", description = "바디에 {senderAccountId, receiverAccountId,amount, accountPassword}을 json 형식으로 보내주세요. 세션에 연결되어 있어야합니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "송금 성공", content = @Content(schema = @Schema(implementation = TransferDetailsResponseDto.class))),
         @ApiResponse(responseCode = "404", description = "존재하지 않는 계좌입니다.", content = @Content(schema = @Schema(implementation = String.class))),
@@ -51,7 +51,7 @@ public class TransferController {
         @ApiResponse(responseCode = "403", description = "해당 계좌에 대한 접근 권한이 없습니다.", content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping("/history/{accountId}")
-    public ResponseEntity<?> findAllTransferSimple(HttpSession session, @PathVariable Long accountId) {
+    public ResponseEntity<?> findAllTransferSimple(HttpSession session, @PathVariable("accountId") Long accountId) {
         Long userId = (Long) session.getAttribute("user");
 
         return ResponseEntity
