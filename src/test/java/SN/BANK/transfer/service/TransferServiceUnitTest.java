@@ -171,7 +171,7 @@ class TransferServiceUnitTest {
     }
 
     @Test
-    @DisplayName("[이체 실패 테스트] 송신 계좌와 수신 계좌가 동일한 경우 이체 실패")
+    @DisplayName("[이체 실패 테스트] 송신 계좌와 수신 계좌 동일하면 이체 실패")
     void transfer_fail_when_same_account () {
         // given
         Users user = UserFixture.USER_FIXTURE_1.createUser();
@@ -191,7 +191,7 @@ class TransferServiceUnitTest {
                 CustomException customException = (CustomException) ex;
                 assertEquals(ErrorCode.SAME_ACCOUNT_TRANSFER_NOT_ALLOWED, customException.getErrorCode());
                 assertEquals(HttpStatus.BAD_REQUEST, customException.getErrorCode().getStatus());
-                assertEquals("같은 계좌 간 이체는 불가합니다.", customException.getErrorCode().getMessage());
+                assertEquals("같은 계좌 간 거래는 불가합니다.", customException.getErrorCode().getMessage());
             });
     }
 }
