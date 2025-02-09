@@ -23,7 +23,7 @@ public class TransferDetails {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private TransferType transferType;
+	private TransferType type;
 
 	@Column(nullable = false)
 	private BigDecimal amount;

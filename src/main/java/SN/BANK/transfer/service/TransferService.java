@@ -154,6 +154,7 @@ public class TransferService {
 
         TransferDetails withdrawalTransferDetails = TransferDetails.builder()
             .transfer(transfer)
+            .type(TransferType.WITHDRAWAL)
             .amount(amount)
             .balancePostTransaction(withdrawalAccount.getBalance())
             .build();
@@ -166,6 +167,7 @@ public class TransferService {
     public void saveDepositTransferDetails(Transfer transfer, BigDecimal amount, BigDecimal balancePostTransaction) {
         TransferDetails depositTransferDetails = TransferDetails.builder()
             .transfer(transfer)
+            .type(TransferType.DEPOSIT)
             .amount(amount)
             .balancePostTransaction(balancePostTransaction)
             .build();

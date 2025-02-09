@@ -33,6 +33,7 @@ public class Transfer extends BaseTimeEntity {
     private BigDecimal exchangeRate;
 
     @Column(nullable = false)
+    @Builder.Default
     @OneToMany(mappedBy = "transfer", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @MapKey(name = "type")
     private Map<TransferType, TransferDetails> transferDetails = new HashMap<>();
