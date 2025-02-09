@@ -42,7 +42,10 @@ public enum ErrorCode {
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED,"잘못된 토큰입니다."),
     FCM_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE,"네트워크 및 서비스에 장애가 있습니다."),
     FCM_UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"알수 없는 에러입니다"),
-    DUPLICATE_TOKEN(HttpStatus.BAD_REQUEST,"중복된 토큰입니다.");
+    DUPLICATE_TOKEN(HttpStatus.BAD_REQUEST,"중복된 토큰입니다."),
+
+    // Valid
+    NULL_PARAMETER(HttpStatus.BAD_REQUEST, "파라미터가 null 입니다.");
 
     private final HttpStatus status;
     private final String message;

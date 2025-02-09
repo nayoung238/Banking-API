@@ -46,7 +46,7 @@ public class UsersService {
 
     public UserResponseDto findUserDetails(Long userId) {
         if (userId == null) {
-            throw new CustomException(ErrorCode.NOT_FOUND_USER);
+            throw new CustomException(ErrorCode.NULL_PARAMETER);
         }
         Users user = findUserEntity(userId);
         return UserResponseDto.of(user);
