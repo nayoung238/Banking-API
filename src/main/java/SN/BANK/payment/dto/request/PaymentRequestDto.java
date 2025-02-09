@@ -14,7 +14,7 @@ public record PaymentRequestDto (
 
     @NotBlank
     @Schema(description = "결제 계좌번호", example = "5792214-80232581")
-    String withdrawAccountNumber,
+    String withdrawalAccountNumber,
 
     @NotBlank
     @Schema(description = "결제계좌 비밀번호", example = "12345")

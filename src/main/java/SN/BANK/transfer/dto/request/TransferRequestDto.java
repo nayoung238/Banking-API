@@ -31,7 +31,7 @@ public record TransferRequestDto(
 ) {
     public static TransferRequestDto of(PaymentRequestDto paymentRequestDto) {
         return TransferRequestDto.builder()
-            .withdrawalAccountNumber(paymentRequestDto.withdrawAccountNumber())
+            .withdrawalAccountNumber(paymentRequestDto.withdrawalAccountNumber())
             .withdrawalAccountPassword(paymentRequestDto.withdrawalAccountPassword())
             .depositAccountNumber(paymentRequestDto.depositAccountNumber())
             .amount(paymentRequestDto.amount())

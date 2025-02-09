@@ -18,13 +18,13 @@ public record RefundPaymentResponseDto (
 
 	@NotNull
 	@Schema(description = "결제 취소로 인한 입금 금액", example = "10000")
-	BigDecimal depositAmount
+	BigDecimal refundAmount
 ) {
 
-	public static RefundPaymentResponseDto of(String depositAccountNumber, BigDecimal depositAmount) {
+	public static RefundPaymentResponseDto of(String depositAccountNumber, BigDecimal refundAmount) {
 		return RefundPaymentResponseDto.builder()
 			.depositAccountNumber(depositAccountNumber)
-			.depositAmount(stripZeros(depositAmount))
+			.refundAmount(stripZeros(refundAmount))
 			.build();
 	}
 

@@ -32,7 +32,7 @@ public class PaymentService {
     @Transactional
     public PaymentResponseDto processPayment(PaymentRequestDto request) {
         //출금 계좌와 입금 계좌가 다른지 확인
-        validateDifferentAccounts(request.withdrawAccountNumber(), request.depositAccountNumber());
+        validateDifferentAccounts(request.withdrawalAccountNumber(), request.depositAccountNumber());
 
         Transfer transfer = transferService.transfer(TransferRequestDto.of(request));
         Payment payment = Payment.builder()
