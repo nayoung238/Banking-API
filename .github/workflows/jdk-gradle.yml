@@ -6,6 +6,8 @@ on:
       - '**'
     paths:
       - '**.java'
+      - '**.yml'
+      - '**.properties'
       - 'build.gradle'
       - 'settings.gradle'
     tags:
@@ -17,11 +19,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    services:
-      redis:
-        image: redis:latest
-        ports:
-          - 6379:6379
 
     steps:
       - name: Check out repository
@@ -42,8 +39,6 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-
-      
 
       - name: Grant execute permission to gradlew
         run: chmod +x ./gradlew
