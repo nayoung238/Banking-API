@@ -52,6 +52,10 @@ public class PaymentService {
 
         verifyWithdrawalAccountPassword(payment.getTransferId(), request.withdrawalAccountPassword());
 
+        if(payment.getPaymentStatus().equals(PaymentStatus.PAYMENT_CANCELLED)) {
+            throw new CustomException(ErrorCode.PAYMENT_ALREADY_CANCELLED);
+        }
+
         Transfer refundTransfer = transferService.transferForRefund(payment.getTransferId());
 
         // Payment 상태 변경 (PENDING/COMPLETED -> CANCELLED)
@@ -71,7 +75,7 @@ public class PaymentService {
         Account withdrawalAccount = accountRepository.findById(transfer.getWithdrawalAccountId())
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT));
 
-        if(withdrawalAccount.getPassword().equals(withdrawalAccountPassword)) {
+        if(!withdrawalAccount.getPassword().equals(withdrawalAccountPassword)) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
     }
