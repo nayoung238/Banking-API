@@ -95,10 +95,10 @@ class PaymentControllerIntegrationTest {
         UserResponseDto receiverUserResponse = userService.register(receiverCreationRequest);
 
         AccountCreationRequestDto senderAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto();
-        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.id(), senderAccountRequest);
+        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.userId(), senderAccountRequest);
 
         AccountCreationRequestDto receiverAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_2.createAccountCreationRequestDto();
-        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.id(), receiverAccountRequest);
+        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.userId(), receiverAccountRequest);
 
         // given2 - 송금 계좌에 입금
         final BigDecimal currentBalance = BigDecimal.valueOf(10000);
@@ -155,10 +155,10 @@ class PaymentControllerIntegrationTest {
         UserResponseDto receiverUserResponse = userService.register(receiverCreationRequest);
 
         AccountCreationRequestDto senderAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto();
-        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.id(), senderAccountRequest);
+        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.userId(), senderAccountRequest);
 
         AccountCreationRequestDto receiverAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_2.createAccountCreationRequestDto();
-        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.id(), receiverAccountRequest);
+        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.userId(), receiverAccountRequest);
 
         // given2 - 송금 계좌에 입금
         final BigDecimal currentBalance = BigDecimal.valueOf(10000);
@@ -208,10 +208,10 @@ class PaymentControllerIntegrationTest {
         UserResponseDto receiverUserResponse = userService.register(receiverCreationRequest);
 
         AccountCreationRequestDto senderAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto();
-        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.id(), senderAccountRequest);
+        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.userId(), senderAccountRequest);
 
         AccountCreationRequestDto receiverAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_2.createAccountCreationRequestDto();
-        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.id(), receiverAccountRequest);
+        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.userId(), receiverAccountRequest);
 
         // given2 - 송금 계좌에 입금
         final BigDecimal currentBalance = BigDecimal.valueOf(10000);

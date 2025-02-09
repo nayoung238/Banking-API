@@ -9,7 +9,7 @@ import lombok.Builder;
 public record UserResponseDto (
 
     @Schema(description = "유저 DB PK", example = "1")
-    Long id,
+    Long userId,
 
     @Schema(description = "이름", example = "홍길동")
     String name,
@@ -19,7 +19,7 @@ public record UserResponseDto (
 ) {
     public static UserResponseDto of(Users user){
         return UserResponseDto.builder()
-            .id(user.getId())
+            .userId(user.getId())
             .name(user.getName())
             .loginId(user.getLoginId())
             .build();

@@ -9,14 +9,14 @@ import lombok.Builder;
 public record UserCreationRequestDto (
 
     @Schema(description = "이름", example = "홍길동")
-    @NotBlank
+    @NotBlank(message = "이름은 필수입니다.")
     String name,
 
     @Schema(description = "로그인 ID", example = "abc123")
-    @NotBlank
+    @NotBlank(message = "로그인 아이디는 필수입니다.")
     String loginId,
 
     @Schema(description = "비밀번호", example = "12345")
-    @NotBlank
+    @NotBlank(message = "비밀번호는 필수입니다.")
     String password
 ) { }

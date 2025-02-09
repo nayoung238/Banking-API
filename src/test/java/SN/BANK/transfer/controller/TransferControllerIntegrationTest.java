@@ -87,10 +87,10 @@ class TransferControllerIntegrationTest {
         UserResponseDto receiverUserResponse = userService.register(receiverCreationRequest);
 
         AccountCreationRequestDto senderAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto();
-        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.id(), senderAccountRequest);
+        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.userId(), senderAccountRequest);
 
         AccountCreationRequestDto receiverAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_2.createAccountCreationRequestDto();
-        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.id(), receiverAccountRequest);
+        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.userId(), receiverAccountRequest);
 
         // given2 - 송금 계좌에 입금
         final BigDecimal currentBalance = new BigDecimal(10000);
@@ -111,7 +111,7 @@ class TransferControllerIntegrationTest {
             .build();
 
         MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", senderUserResponse.id());
+        session.setAttribute("user", senderUserResponse.userId());
 
         // when & then
         mockMvc.perform(
@@ -145,10 +145,10 @@ class TransferControllerIntegrationTest {
         UserResponseDto receiverUserResponse = userService.register(receiverCreationRequest);
 
         AccountCreationRequestDto senderAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto();
-        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.id(), senderAccountRequest);
+        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.userId(), senderAccountRequest);
 
         AccountCreationRequestDto receiverAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_2.createAccountCreationRequestDto();
-        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.id(), receiverAccountRequest);
+        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.userId(), receiverAccountRequest);
 
         // given2 - 송금 계좌에 입금
         final BigDecimal currentBalance = new BigDecimal(1000);
@@ -169,7 +169,7 @@ class TransferControllerIntegrationTest {
             .build();
 
         MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", senderUserResponse.id());
+        session.setAttribute("user", senderUserResponse.userId());
 
         // when & then
         mockMvc.perform(
@@ -196,10 +196,10 @@ class TransferControllerIntegrationTest {
         UserResponseDto receiverUserResponse = userService.register(receiverCreationRequest);
 
         AccountCreationRequestDto senderAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto();
-        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.id(), senderAccountRequest);
+        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.userId(), senderAccountRequest);
 
         AccountCreationRequestDto receiverAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_2.createAccountCreationRequestDto();
-        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.id(), receiverAccountRequest);
+        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.userId(), receiverAccountRequest);
 
         // given2 - 송금 계좌에 입금
         final BigDecimal currentBalance = new BigDecimal(10000);
@@ -219,7 +219,7 @@ class TransferControllerIntegrationTest {
             .amount(withdrawalAmount)
             .build();
 
-        TransferDetailsResponseDto transferDetailsResponse = transferService.transfer(senderUserResponse.id(), transferRequest);
+        TransferDetailsResponseDto transferDetailsResponse = transferService.transfer(senderUserResponse.userId(), transferRequest);
 
         TransferDetailsRequestDto transferDetailsRequest = TransferDetailsRequestDto.builder()
             .accountId(senderAccountResponse.accountId())
@@ -227,7 +227,7 @@ class TransferControllerIntegrationTest {
             .build();
 
         MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", senderUserResponse.id());
+        session.setAttribute("user", senderUserResponse.userId());
 
         // when & then
         mockMvc.perform(
@@ -261,10 +261,10 @@ class TransferControllerIntegrationTest {
         UserResponseDto receiverUserResponse = userService.register(receiverCreationRequest);
 
         AccountCreationRequestDto senderAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto();
-        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.id(), senderAccountRequest);
+        AccountResponseDto senderAccountResponse = accountService.createAccount(senderUserResponse.userId(), senderAccountRequest);
 
         AccountCreationRequestDto receiverAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_2.createAccountCreationRequestDto();
-        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.id(), receiverAccountRequest);
+        AccountResponseDto receiverAccountResponse = accountService.createAccount(receiverUserResponse.userId(), receiverAccountRequest);
 
         // given2 - 송금 계좌에 입금
         final BigDecimal currentBalance = new BigDecimal(10000);
@@ -284,12 +284,12 @@ class TransferControllerIntegrationTest {
             .amount(withdrawalAmount)
             .build();
 
-        transferService.transfer(senderUserResponse.id(), transferRequest);
-        transferService.transfer(senderUserResponse.id(), transferRequest);
-        transferService.transfer(senderUserResponse.id(), transferRequest);
+        transferService.transfer(senderUserResponse.userId(), transferRequest);
+        transferService.transfer(senderUserResponse.userId(), transferRequest);
+        transferService.transfer(senderUserResponse.userId(), transferRequest);
 
         MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", senderUserResponse.id());
+        session.setAttribute("user", senderUserResponse.userId());
 
         mockMvc.perform(
             get("/transfer/history/{accountId}", senderAccountResponse.accountId())

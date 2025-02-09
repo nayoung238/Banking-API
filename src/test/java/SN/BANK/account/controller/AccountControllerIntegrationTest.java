@@ -72,7 +72,7 @@ class AccountControllerIntegrationTest {
         UserResponseDto userResponse = userService.register(userCreationRequest);
 
         MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", userResponse.id());
+        session.setAttribute("user", userResponse.userId());
 
         AccountCreationRequestDto request = AccountCreationRequestDto.builder()
             .password("62324")
@@ -106,7 +106,7 @@ class AccountControllerIntegrationTest {
         UserResponseDto userResponse = userService.register(userCreationRequest);
 
         MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", userResponse.id());
+        session.setAttribute("user", userResponse.userId());
 
         AccountCreationRequestDto request = AccountCreationRequestDto.builder()
             .password("62324")
@@ -114,7 +114,7 @@ class AccountControllerIntegrationTest {
             .accountName("Test Account")
             .build();
 
-        AccountResponseDto response = accountService.createAccount(userResponse.id(), request);
+        AccountResponseDto response = accountService.createAccount(userResponse.userId(), request);
         Account account = accountRepository.findByAccountNumber(response.accountNumber())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
@@ -139,7 +139,7 @@ class AccountControllerIntegrationTest {
         UserResponseDto userResponse = userService.register(userCreationRequest);
 
         MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", userResponse.id());
+        session.setAttribute("user", userResponse.userId());
 
         AccountCreationRequestDto requestKrwAccount = AccountCreationRequestDto.builder()
             .password("62324")
@@ -153,8 +153,8 @@ class AccountControllerIntegrationTest {
             .accountName("Test USD Account")
             .build();
 
-        accountService.createAccount(userResponse.id(), requestKrwAccount);
-        accountService.createAccount(userResponse.id(), requestUsdAccount);
+        accountService.createAccount(userResponse.userId(), requestKrwAccount);
+        accountService.createAccount(userResponse.userId(), requestUsdAccount);
 
         // when & then
         mockMvc.perform(get("/accounts")
