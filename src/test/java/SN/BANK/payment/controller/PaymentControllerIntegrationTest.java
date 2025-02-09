@@ -170,7 +170,7 @@ class PaymentControllerIntegrationTest {
         accountBalanceService.atmDeposit(depositRequest);
 
         // given3 - 결제 요청 및 처리
-        final BigDecimal paymentAmount = new BigDecimal(2000);
+        final BigDecimal paymentAmount = BigDecimal.valueOf(2000);
         PaymentRequestDto paymentRequest = PaymentRequestDto.builder()
             .withdrawalAccountNumber(senderAccountResponse.accountNumber())
             .withdrawalAccountPassword(senderAccountRequest.password())
@@ -182,7 +182,7 @@ class PaymentControllerIntegrationTest {
         // given4 - 결제 취소 요청 DTO 생성
         PaymentRefundRequestDto refundRequest = PaymentRefundRequestDto.builder()
             .paymentId(paymentResponse.paymentId())
-            .withdrawalAccountPassword(encryptionFacade.encrypt(UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_1.createUserCreationRequestDto().password()))
+            .withdrawalAccountPassword(encryptionFacade.encrypt(AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto().password()))
             .build();
 
         // When & Then
