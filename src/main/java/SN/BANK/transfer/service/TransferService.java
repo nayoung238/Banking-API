@@ -48,11 +48,15 @@ public class TransferService {
     }
 
     public <T> T executeTransfer(Long withdrawalUserId, TransferRequestDto request, TransferResultHandler<T> resultHandler) {
+        if(request.withdrawalAccountNumber().equals(request.depositAccountNumber())) {
+            throw new CustomException(ErrorCode.SAME_ACCOUNT_TRANSFER_NOT_ALLOWED);
+        }
+
         Account withdrawalAccount = accountRepository.findByAccountNumberWithPessimisticLock(request.withdrawalAccountNumber())
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT));
 
         if(withdrawalUserId != null && !withdrawalAccount.getUser().getId().equals(withdrawalUserId)) {
-            throw new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT);
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
         }
 
         if(!withdrawalAccount.getPassword().equals(request.withdrawalAccountPassword())) {
@@ -259,7 +263,7 @@ public class TransferService {
     }
 
     @FunctionalInterface
-    private interface TransferResultHandler<T> {
+    public interface TransferResultHandler<T> {
         T handle(Transfer transfer, Account withdrawalAccount, Account depositAccount);
     }
 }

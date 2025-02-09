@@ -82,7 +82,7 @@ public class PaymentService {
 
     private void validateDifferentAccounts(String withdrawAccountNumber, String depositAccountNumber) {
         if (withdrawAccountNumber.equals(depositAccountNumber)) {
-            throw new CustomException(ErrorCode.INVALID_TRANSFER);
+            throw new CustomException(ErrorCode.SAME_ACCOUNT_TRANSFER_NOT_ALLOWED);
         }
     }
 
