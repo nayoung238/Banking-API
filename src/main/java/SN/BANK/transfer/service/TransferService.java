@@ -47,7 +47,7 @@ public class TransferService {
         return executeTransfer(null, request, (transfer, withdrawalAccount, depositAccount) -> transfer);
     }
 
-    private <T> T executeTransfer(Long withdrawalUserId, TransferRequestDto request, TransferResultHandler<T> resultHandler) {
+    public <T> T executeTransfer(Long withdrawalUserId, TransferRequestDto request, TransferResultHandler<T> resultHandler) {
         Account withdrawalAccount = accountRepository.findByAccountNumberWithPessimisticLock(request.withdrawalAccountNumber())
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT));
 
@@ -72,7 +72,7 @@ public class TransferService {
         return resultHandler.handle(transfer, withdrawalAccount, depositAccount);
     }
 
-    private Transfer processWithdrawal(Account withdrawalAccount, Account depositAccount, BigDecimal amount) {
+    public Transfer processWithdrawal(Account withdrawalAccount, Account depositAccount, BigDecimal amount) {
         BigDecimal exchangeRate = exchangeRateService.getExchangeRate(withdrawalAccount.getCurrency(), depositAccount.getCurrency());
         BigDecimal convertedAmount = amount.multiply(exchangeRate);
         withdrawalAccount.decreaseBalance(convertedAmount);
@@ -80,7 +80,7 @@ public class TransferService {
     }
 
     // TODO: 실패 시 재시도 처리
-    private void processDepositAsync(Transfer transfer) {
+    public void processDepositAsync(Transfer transfer) {
         CompletableFuture.runAsync(() -> {
             TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
             transactionTemplate.execute(status -> {
@@ -173,6 +173,7 @@ public class TransferService {
             .build();
 
         transfer.getTransferDetails().put(TransferType.DEPOSIT, depositTransferDetails);
+        transferRepository.save(transfer);
     }
 
     /**
