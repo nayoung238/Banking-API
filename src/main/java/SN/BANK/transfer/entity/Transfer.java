@@ -1,13 +1,15 @@
 package SN.BANK.transfer.entity;
 
 import SN.BANK.common.entity.BaseTimeEntity;
+import SN.BANK.common.exception.CustomException;
+import SN.BANK.common.exception.ErrorCode;
 import SN.BANK.transfer.enums.TransferType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Entity
 @Getter
@@ -36,5 +38,14 @@ public class Transfer extends BaseTimeEntity {
     @Builder.Default
     @OneToMany(mappedBy = "transfer", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @MapKey(name = "type")
-    private Map<TransferType, TransferDetails> transferDetails = new HashMap<>();
+    private Map<TransferType, TransferDetails> transferDetails = new ConcurrentHashMap<>();
+
+    public void addTransferDetails(TransferType type, TransferDetails transferDetails) {
+        this.transferDetails.computeIfAbsent(type, key -> {
+            if (this.transferDetails.containsKey(key)) {
+                throw new CustomException(ErrorCode.DUPLICATE_TRANSFER_TYPE);
+            }
+            return transferDetails;
+        });
+    }
 }

@@ -22,9 +22,10 @@ public enum ErrorCode {
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
 
     // Transfer
-    SAME_ACCOUNT_TRANSFER_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "같은 계좌 간 이체는 불가합니다."),
+    SAME_ACCOUNT_TRANSFER_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "같은 계좌 간 거래는 불가합니다."),
     NOT_FOUND_TRANSFER(HttpStatus.NOT_FOUND, "존재하지 않는 거래내역입니다."),
     UNAUTHORIZED_TRANSFER_ACCESS(HttpStatus.FORBIDDEN, "해당 이체 내역에 대한 접근 권한이 없습니다."),
+    DUPLICATE_TRANSFER_TYPE(HttpStatus.BAD_REQUEST, "이미 존재하는 이체 타입입니다."),
     
     // ExchangeRate
     EXCHANGE_RATE_FETCH_FAIL(HttpStatus.SERVICE_UNAVAILABLE, "환율 데이터를 가져올 수 없습니다."),

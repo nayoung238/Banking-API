@@ -163,7 +163,7 @@ public class TransferService {
             .balancePostTransaction(withdrawalAccount.getBalance())
             .build();
 
-        transfer.getTransferDetails().put(TransferType.WITHDRAWAL, withdrawalTransferDetails);
+        transfer.addTransferDetails(TransferType.WITHDRAWAL, withdrawalTransferDetails);
         transferRepository.save(transfer);
         return transfer;
     }
@@ -176,7 +176,7 @@ public class TransferService {
             .balancePostTransaction(balancePostTransaction)
             .build();
 
-        transfer.getTransferDetails().put(TransferType.DEPOSIT, depositTransferDetails);
+        transfer.addTransferDetails(TransferType.DEPOSIT, depositTransferDetails);
         transferRepository.save(transfer);
     }
 
