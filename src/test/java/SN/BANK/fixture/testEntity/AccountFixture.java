@@ -62,7 +62,7 @@ public enum AccountFixture {
 		return Account.builder()
 			.id(id)
 			.user(user)
-			.accountName(accountNumber)
+			.accountNumber(accountNumber)
 			.password(password)
 			.balance(balance)
 			.currency(currency)
