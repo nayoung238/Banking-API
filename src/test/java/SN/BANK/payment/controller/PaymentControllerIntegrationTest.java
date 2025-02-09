@@ -1,4 +1,4 @@
-package SN.BANK.payment.integration;
+package SN.BANK.payment.controller;
 
 import SN.BANK.account.dto.request.AccountCreationRequestDto;
 import SN.BANK.account.dto.request.DepositRequestDto;
