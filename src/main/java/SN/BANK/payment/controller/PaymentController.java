@@ -76,7 +76,7 @@ public class PaymentController {
         @ApiResponse(responseCode = "404", description = "결제 내역이 존재하지 않습니다.", content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping("/{paymentId}")
-    public ResponseEntity<?> findPaymentDetail(@PathVariable Long paymentId) {
+    public ResponseEntity<?> findPaymentDetail(@PathVariable("paymentId") Long paymentId) {
         PaymentResponseDto response = paymentService.findPaymentById(paymentId);
         return ResponseEntity.ok(response);
     }
