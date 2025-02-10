@@ -3,9 +3,11 @@
 종료된 [팀 프로젝트](https://github.com/sungnyuung/SN-BANK) 디벨롭하기...🔥
 
 ### 기능
-- 결제 및 이체 기능
-- 원화 및 외화 계좌
-- 원화 <-> 외화 간 거래에 실시간 환율 데이터 사용
+- [X] 이체 기능
+- [X] 원화 및 외화 계좌 제공 (원화, 외화 간 거래에 실시간 환율 데이터 사용)
+- [X] 결제 API 제공 (+ 결제 취소)
+- [ ] 무중단 데이터 정합성 체크 기능
+- [ ] 실시간 여러 환율 페이지 제공
 
 <br>
 
@@ -25,7 +27,7 @@
 - 기대: 효율적인 CPU 사용
 - [X] CompletableFuture 기반 환율 Open API [설계](https://github.com/imzero238/exchange-rate-open-api-test?tab=readme-ov-file#%ED%99%98%EC%9C%A8-open-api-%EC%84%A4%EA%B3%84)
 - [ ] Timeout 동적 설정
-- [X] [Spin Lock vs Sleep 방식 CPU usage & RPS 모니터링](https://github.com/imzero238/exchange-rate-open-api-test?tab=readme-ov-file#cpu-usage--requests-per-second-%EB%AA%A8%EB%8B%88%ED%84%B0%EB%A7%81)
+- [X] Spin Lock vs Sleep 방식 [CPU usage & RPS 모니터링](https://github.com/imzero238/exchange-rate-open-api-test?tab=readme-ov-file#cpu-usage--requests-per-second-%EB%AA%A8%EB%8B%88%ED%84%B0%EB%A7%81)
 - [ ] 분산 환경 고려 (현재 딘일 서버 기준으로 구현됨)
 - [ ] 테스트 코드 Timeout 설정 (외부 API 오류 시 테스트 코드에서 timeout 발생)
 
