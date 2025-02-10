@@ -23,9 +23,9 @@
 - 기존 문제: 수많은 스레드의 상태 전환 문제 -> Context Switching 비용 문제
 - 해결 방법: Spin Lock, Sleep 등 여러 방법 중 CPU 사용률 낮고, RPS가 큰 방식 채택
 - 기대: 효율적인 CPU 사용
-- [X] CompletableFuture 기반 환율 Open API
+- [X] CompletableFuture 기반 환율 Open API [설계](https://github.com/imzero238/exchange-rate-open-api-test?tab=readme-ov-file#%ED%99%98%EC%9C%A8-open-api-%EC%84%A4%EA%B3%84)
 - [ ] Timeout 동적 설정
-- [X] Spin Lock vs Sleep 방식 CPU usage & RPS 모니터링
+- [X] [Spin Lock vs Sleep 방식 CPU usage & RPS 모니터링](https://github.com/imzero238/exchange-rate-open-api-test?tab=readme-ov-file#cpu-usage--requests-per-second-%EB%AA%A8%EB%8B%88%ED%84%B0%EB%A7%81)
 - [ ] 분산 환경 고려 (현재 딘일 서버 기준으로 구현됨)
 - [ ] 테스트 코드 Timeout 설정 (외부 API 오류 시 테스트 코드에서 timeout 발생)
 
@@ -36,11 +36,11 @@
 - [ ] SSL 전환
 
 ### CI/CD 파이프라인
-- 기존 문제: 코드 증가로 CI만 5m 23s 소요
+- 기존 문제: 코드 증가로 CI 작업만 5m 23s 소요
 - 해결 방법: CI/CD 파이프라인 개선
 - 기대: 코드 증가에도 빠른 CI/CD 가능
 - [X] Gradle 캐싱
 - [ ] Docker Layer 캐싱
 - [ ] 파이프라인 병렬화
-- [ ] Docker Hub -> AWS ECR
+- [ ] Docker Hub -> AWS ECR 전환
 
