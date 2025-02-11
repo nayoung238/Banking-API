@@ -1,4 +1,4 @@
-name: Java CI
+name: Java Build & Coverage  CI
 
 on:
   push:
@@ -45,3 +45,9 @@ jobs:
 
       - name: Test with Gradle
         run: ./gradlew clean test
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: imzero238/Banking-API
