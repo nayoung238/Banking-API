@@ -8,8 +8,6 @@ import banking.payment.dto.request.PaymentRequestDto;
 import banking.payment.enums.PaymentStatus;
 import banking.payment.repository.PaymentRepository;
 import banking.transfer.entity.Transfer;
-import banking.transfer.entity.TransferDetails;
-import banking.transfer.enums.TransferType;
 import banking.transfer.repository.TransferRepository;
 import banking.transfer.service.TransferService;
 import banking.users.entity.Users;
@@ -68,27 +66,23 @@ public class PaymentServiceUnitTest {
 		Transfer mockTransfer = Transfer.builder()
 			.id(1L)
 			.exchangeRate(BigDecimal.ONE)
-			.build();
-
-		TransferDetails withdrawalTransferDetails = TransferDetails.builder()
 			.amount(BigDecimal.valueOf(200))
 			.build();
-		mockTransfer.addTransferDetails(TransferType.WITHDRAWAL, withdrawalTransferDetails);
 
 		Payment mockPayment = Payment.builder().id(1L).build();
 
 		when(transferService.transfer(any())).thenReturn(mockTransfer);
 		when(paymentRepository.findById(any())).thenReturn(Optional.ofNullable(mockPayment));
-		when(transferRepository.findById(any())).thenReturn(Optional.of(mockTransfer));
+		when(transferRepository.findByTransferGroupIdAndTransferType(any(), any())).thenReturn(Optional.of(mockTransfer));
 		when(accountRepository.findById(any())).thenReturn(Optional.of(withdrawalAccount));
 
 		// when
-		paymentService.processPayment(paymentRequest);
+		paymentService.processPayment(user.getId(), paymentRequest);
 
 		// then
 		verify(transferService, times(1)).transfer(any());
 		verify(paymentRepository, times(1)).save(any(Payment.class));
-    }
+	}
 
 
     @Test
@@ -106,7 +100,7 @@ public class PaymentServiceUnitTest {
 			.build();
 
         // when & then
-		Assertions.assertThatThrownBy(() -> paymentService.processPayment(paymentRequest))
+		Assertions.assertThatThrownBy(() -> paymentService.processPayment(user.getId(), paymentRequest))
 			.isInstanceOf(CustomException.class)
 			.satisfies(ex -> {
 				CustomException customException = (CustomException) ex;
@@ -122,7 +116,7 @@ public class PaymentServiceUnitTest {
         // given
 		Payment mockPayment = Payment.builder()
 			.id(1L)
-			.transferId(1L)
+			.transferGroupId("173234Ad2D")
 			.paymentStatus(PaymentStatus.PAYMENT_CANCELLED)
 			.build();
 
@@ -136,7 +130,7 @@ public class PaymentServiceUnitTest {
 		Account withdrawalAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
 
 		when(paymentRepository.findById(anyLong())).thenReturn(Optional.ofNullable(mockPayment));
-		when(transferRepository.findById(anyLong())).thenReturn(Optional.of(mockTransfer));
+		when(transferRepository.findByTransferGroupIdAndTransferType(any(), any())).thenReturn(Optional.of(mockTransfer));
 		when(accountRepository.findById(anyLong())).thenReturn(Optional.of(withdrawalAccount));
 
         PaymentRefundRequestDto refundRequest = PaymentRefundRequestDto.builder()
@@ -145,7 +139,7 @@ public class PaymentServiceUnitTest {
 			.build();
 
         // when & then
-		Assertions.assertThatThrownBy(() -> paymentService.refundPayment(refundRequest))
+		Assertions.assertThatThrownBy(() -> paymentService.refundPayment(user.getId(), refundRequest))
 			.isInstanceOf(CustomException.class)
 			.satisfies(ex -> {
 				CustomException customException = (CustomException) ex;
@@ -155,7 +149,8 @@ public class PaymentServiceUnitTest {
 			});
 
         verify(paymentRepository, times(1)).findById(anyLong());
-		verify(transferRepository, times(1)).findById(anyLong());
+		verify(transferRepository, times(1)).findByTransferGroupIdAndTransferType(any(), any());
 		verify(accountRepository, times(1)).findById(anyLong());
+		verify(transferService, times(0)).transferForRefund(any(), any());
     }
 }
