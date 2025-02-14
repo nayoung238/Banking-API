@@ -30,13 +30,13 @@ public class PaymentService {
     private final TransferRepository transferRepository;
 
     @Transactional
-    public PaymentResponseDto processPayment(PaymentRequestDto request) {
+    public PaymentResponseDto processPayment(Long requesterId, PaymentRequestDto request) {
         //출금 계좌와 입금 계좌가 다른지 확인
         validateDifferentAccounts(request.withdrawalAccountNumber(), request.depositAccountNumber());
 
         Transfer transfer = transferService.transfer(TransferRequestDto.of(request));
         Payment payment = Payment.builder()
-            .transferId(transfer.getId())
+            .transferGroupId(transfer.getTransferGroupId())
             .paymentStatus(PaymentStatus.PAYMENT_PENDING)
             .build();
 
@@ -46,17 +46,17 @@ public class PaymentService {
     }
 
     @Transactional
-    public RefundPaymentResponseDto refundPayment(PaymentRefundRequestDto request) {
+    public RefundPaymentResponseDto refundPayment(Long requesterId, PaymentRefundRequestDto request) {
         Payment payment = paymentRepository.findById(request.paymentId())
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PAYMENT));
 
-        verifyWithdrawalAccountPassword(payment.getTransferId(), request.withdrawalAccountPassword());
+        verifyWithdrawalAccountPassword(payment.getTransferGroupId(), request.withdrawalAccountPassword());
 
         if(payment.getPaymentStatus().equals(PaymentStatus.PAYMENT_CANCELLED)) {
             throw new CustomException(ErrorCode.PAYMENT_ALREADY_CANCELLED);
         }
 
-        Transfer refundTransfer = transferService.transferForRefund(payment.getTransferId());
+        Transfer refundTransfer = transferService.transferForRefund(requesterId, payment.getTransferGroupId());
 
         // Payment 상태 변경 (PENDING/COMPLETED -> CANCELLED)
         payment.updatePaymentStatus(PaymentStatus.PAYMENT_CANCELLED);
@@ -65,14 +65,14 @@ public class PaymentService {
 
         Account depositAccount = accountRepository.findById(refundTransfer.getDepositAccountId())
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_DEPOSIT_ACCOUNT));
-        return RefundPaymentResponseDto.of(depositAccount.getAccountNumber(), refundTransfer.getTransferDetails().get(TransferType.DEPOSIT).getAmount());
+        return RefundPaymentResponseDto.of(depositAccount.getAccountNumber(), refundTransfer.getAmount());
     }
 
-    private void verifyWithdrawalAccountPassword(Long transferId, String withdrawalAccountPassword) {
-        Transfer transfer = transferRepository.findById(transferId)
+    private void verifyWithdrawalAccountPassword(String transferGroupId, String withdrawalAccountPassword) {
+        Transfer withdrawalTransfer = transferRepository.findByTransferGroupIdAndTransferType(transferGroupId, TransferType.WITHDRAWAL)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRANSFER));
 
-        Account withdrawalAccount = accountRepository.findById(transfer.getWithdrawalAccountId())
+        Account withdrawalAccount = accountRepository.findById(withdrawalTransfer.getWithdrawalAccountId())
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT));
 
         if(!withdrawalAccount.getPassword().equals(withdrawalAccountPassword)) {
@@ -94,7 +94,7 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(paymentId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PAYMENT));
 
-        Transfer transfer = transferRepository.findById(payment.getTransferId())
+        Transfer transfer = transferRepository.findByTransferGroupIdAndTransferType(payment.getTransferGroupId(), TransferType.WITHDRAWAL)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRANSFER));
 
         Account withdrawalAccount = accountRepository.findById(transfer.getWithdrawalAccountId())

@@ -16,7 +16,7 @@ public class Payment {
     private Long id;
 
     @Column(nullable = false)
-    private Long transferId;
+    private String transferGroupId;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
