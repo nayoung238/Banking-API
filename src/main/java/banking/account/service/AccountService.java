@@ -91,8 +91,56 @@ public class AccountService {
 
     public AccountPublicInfoDto findAccountPublicInfo(Long accountId) {
         Account account = accountRepository.findById(accountId)
-            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_DEPOSIT_ACCOUNT));
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
         return AccountPublicInfoDto.of(account);
+    }
+
+    public AccountPublicInfoDto findAccountPublicInfo(String accountNumber) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+
+        return AccountPublicInfoDto.of(account);
+    }
+
+    public Account findAuthorizedAccountWithLock(Long requesterId, String accountNumber, String password) {
+        Account account = accountRepository.findByAccountNumberWithLock(accountNumber)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT));
+
+        if(requesterId != null && !account.getUser().getId().equals(requesterId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
+        }
+
+        if(!account.getPassword().equals(password)) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        return account;
+    }
+
+    public Account findAuthorizedAccountWithLock(Long requesterId, Long accountId, String password) {
+        Account account = accountRepository.findByIdWithLock(accountId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT));
+
+        if(requesterId != null && !account.getUser().getId().equals(requesterId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
+        }
+
+        if(!account.getPassword().equals(password)) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        return account;
+    }
+
+    // TODO: 상대 계좌 접근 권한
+    public Account findAccountWithLock(Long accountId) {
+        return accountRepository.findByIdWithLock(accountId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+    }
+
+    public void verifyAccountOwner(Long accountId, Long userId) {
+        if(!accountRepository.existsByAccountIdAndUserId(accountId, userId))
+            throw new CustomException(ErrorCode.NOT_FOUND_ACCOUNT);
     }
 }

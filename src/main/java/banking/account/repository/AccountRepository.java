@@ -13,8 +13,8 @@ import java.util.Optional;
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT a FROM Account a WHERE a.id=:accountId")
-    Optional<Account> findByIdWithPessimisticLock(@Param("accountId") Long id);
+    @Query("SELECT a FROM Account a WHERE a.id = :accountId")
+    Optional<Account> findByIdWithLock(@Param("accountId") Long id);
 
     boolean existsByAccountNumber(String accountNumber);
 
@@ -23,6 +23,10 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     Optional<Account> findByAccountNumber(String accountNumber);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT a FROM Account a WHERE a.accountNumber=:accountNumber")
-    Optional<Account> findByAccountNumberWithPessimisticLock(@Param("accountNumber") String accountNumber);
+    @Query("SELECT a FROM Account a WHERE a.accountNumber = :accountNumber")
+    Optional<Account> findByAccountNumberWithLock(@Param("accountNumber") String accountNumber);
+
+    @Query("select case when exists " +
+        "(select 1 from Account a where a.id = :accountId and a.user.id = :userId) then true else false end")
+    boolean existsByAccountIdAndUserId(@Param("accountId") Long accountId, @Param("userId") Long userId);
 }
