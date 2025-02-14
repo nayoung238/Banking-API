@@ -10,6 +10,7 @@ import banking.fixture.testEntity.AccountFixture;
 import banking.fixture.testEntity.UserFixture;
 import banking.transfer.dto.request.TransferRequestDto;
 import banking.transfer.entity.Transfer;
+import banking.transfer.repository.TransferRepository;
 import banking.user.entity.User;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -32,6 +33,9 @@ class TransferServiceUnitTest {
 
     @InjectMocks
     TransferService transferService;
+
+    @Mock
+    TransferRepository transferRepository;
 
     @Mock
     AccountService accountService;
