@@ -2,6 +2,7 @@ package banking.account.service;
 
 import banking.account.dto.request.AccountCreationRequestDto;
 import banking.account.dto.response.AccountResponseDto;
+import banking.account.dto.response.AccountPublicInfoDto;
 import banking.account.repository.AccountRepository;
 import banking.account.entity.Account;
 import banking.common.exception.CustomException;
@@ -34,7 +35,6 @@ public class AccountService {
     @Transactional
     public AccountResponseDto createAccount(Long userId, AccountCreationRequestDto request) {
         Users user = userService.findUserEntity(userId);
-
         String accountName = request.accountName() != null ? request.accountName() : "은행 계좌명";
 
         Account account = Account.builder()
@@ -87,5 +87,12 @@ public class AccountService {
         return accounts.stream()
                 .map(AccountResponseDto::of)
                 .toList();
+    }
+
+    public AccountPublicInfoDto findAccountPublicInfo(Long accountId) {
+        Account account = accountRepository.findById(accountId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_DEPOSIT_ACCOUNT));
+
+        return AccountPublicInfoDto.of(account);
     }
 }
