@@ -62,8 +62,8 @@ public record TransferDetailsResponseDto (
             .exchangeRate(stripZeros(transfer.getExchangeRate()))
             .currency(transfer.getCurrency())
             .createdAt(transfer.getCreatedAt())
-            .amount(stripZeros(transfer.getTransferDetails().get(transferType).getAmount()))
-            .balancePostTransaction(stripZeros(transfer.getTransferDetails().get(transferType).getBalancePostTransaction()))
+            .amount(stripZeros(transfer.getAmount()))
+            .balancePostTransaction(stripZeros(transfer.getBalancePostTransaction()))
             .build();
     }
 
