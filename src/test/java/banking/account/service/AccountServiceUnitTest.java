@@ -9,9 +9,9 @@ import banking.common.exception.ErrorCode;
 import banking.account.enums.Currency;
 import banking.fixture.testEntity.AccountFixture;
 import banking.fixture.testEntity.UserFixture;
-import banking.users.entity.Users;
-import banking.users.repository.UsersRepository;
-import banking.users.service.UsersService;
+import banking.user.entity.User;
+import banking.user.repository.UserRepository;
+import banking.user.service.UserService;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,24 +34,24 @@ class AccountServiceUnitTest {
     AccountRepository accountRepository;
 
     @Mock
-    UsersRepository userRepository;
+    UserRepository userRepository;
 
     @Mock
-    UsersService userService;
+    UserService userService;
 
     @Test
     @DisplayName("[계좌 조회 실패 테스트] 계좌 조회 시 자신의 계좌가 아니면 FORBIDDEN 에러 코드 예외 발생")
     void account_owner_test () {
         // given
-        Users users = UserFixture.USER_FIXTURE_1.createUser();
-        Account account = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(users);
+        User user = UserFixture.USER_FIXTURE_1.createUser();
+        Account account = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
 
         when(accountRepository.findById(anyLong())).thenReturn(Optional.ofNullable(account));
         when(userService.isExistUser(anyLong())).thenReturn(true);
 
         // when & then
         assert account != null;
-        org.assertj.core.api.Assertions.assertThatThrownBy(() -> accountService.findAccount(users.getId() + 1, account.getId()))
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> accountService.findAccount(user.getId() + 1, account.getId()))
             .isInstanceOf(CustomException.class)
             .satisfies(ex -> {
                 CustomException customException = (CustomException) ex;
@@ -82,7 +82,7 @@ class AccountServiceUnitTest {
     @DisplayName("[계좌번호 유효성 테스트] 고유한 15자리 계좌번호 검증")
     void generate_account_number_test () {
         // given (중복 계좌 없다고 가정)
-        Users user = UserFixture.USER_FIXTURE_1.createUser();
+        User user = UserFixture.USER_FIXTURE_1.createUser();
         when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(user));
         when(accountRepository.existsByAccountNumber(anyString())).thenReturn(false);
 		when(accountRepository.save(any(Account.class))).thenReturn(null);

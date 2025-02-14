@@ -1,4 +1,4 @@
-package banking.users.entity;
+package banking.user.entity;
 
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -11,9 +11,9 @@ import java.util.List;
 @Getter
 public class CustomUserDetails implements UserDetails {
 
-    private Users user;
+    private User user;
 
-    public CustomUserDetails(Users user){
+    public CustomUserDetails(User user){
         this.user = user;
     }
     @Override

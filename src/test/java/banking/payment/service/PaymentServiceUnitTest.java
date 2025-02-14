@@ -11,9 +11,9 @@ import banking.payment.repository.PaymentRepository;
 import banking.transfer.entity.Transfer;
 import banking.transfer.enums.TransferType;
 import banking.transfer.service.TransferService;
-import banking.users.dto.response.UserPublicInfoDto;
-import banking.users.entity.Users;
-import banking.users.service.UsersService;
+import banking.user.dto.response.UserPublicInfoDto;
+import banking.user.entity.User;
+import banking.user.service.UserService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,13 +49,13 @@ public class PaymentServiceUnitTest {
     TransferService transferService;
 
 	@Mock
-	UsersService userService;
+	UserService userService;
 
     @Test
     @DisplayName("[결제 성공 테스트] 결제 처리 시 TransferService에 의존")
     void payment_test () {
 		// given
-		Users user = UserFixture.USER_FIXTURE_1.createUser();
+		User user = UserFixture.USER_FIXTURE_1.createUser();
 		Account withdrawalAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
 		Account depositAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_2.createAccount(user);
 
@@ -115,7 +115,7 @@ public class PaymentServiceUnitTest {
     @DisplayName("[결제 실패 테스트] 송신 계좌와 수신 계좌 동일하면 결제 불가")
     void payment_fail_when_same_account () {
         // given
-		Users user = UserFixture.USER_FIXTURE_1.createUser();
+		User user = UserFixture.USER_FIXTURE_1.createUser();
 		Account account = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
 
 		PaymentRequestDto paymentRequest = PaymentRequestDto.builder()
@@ -140,7 +140,7 @@ public class PaymentServiceUnitTest {
     @DisplayName("[결제 취소 실패 테스트] 이미 결제 취소된 상태는 처리하지 않음")
     void refund_payment_fail_when_already_cancelled () {
         // given
-		Users user = UserFixture.USER_FIXTURE_1.createUser();
+		User user = UserFixture.USER_FIXTURE_1.createUser();
 
 		Payment mockPayment = Payment.builder()
 			.id(1L)

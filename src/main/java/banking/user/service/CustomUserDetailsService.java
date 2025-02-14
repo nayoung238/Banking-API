@@ -1,10 +1,10 @@
-package banking.users.service;
+package banking.user.service;
 
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
-import banking.users.entity.CustomUserDetails;
-import banking.users.entity.Users;
-import banking.users.repository.UsersRepository;
+import banking.user.entity.CustomUserDetails;
+import banking.user.entity.User;
+import banking.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,11 +15,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UsersRepository usersRepository;
+    private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users user = usersRepository.findById(Long.valueOf(username))
+        User user = userRepository.findById(Long.valueOf(username))
             .orElseThrow(()-> new CustomException(ErrorCode.NOT_FOUND_USER));
 
         return new CustomUserDetails(user);

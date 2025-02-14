@@ -1,6 +1,6 @@
 package banking.fixture.dto;
 
-import banking.users.dto.UserCreationRequestDto;
+import banking.user.dto.request.UserCreationRequestDto;
 
 public enum UserCreationRequestDtoFixture {
 

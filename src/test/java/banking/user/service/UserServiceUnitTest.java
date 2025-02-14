@@ -1,8 +1,8 @@
-package banking.users.service;
+package banking.user.service;
 
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
-import banking.users.repository.UsersRepository;
+import banking.user.repository.UserRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,17 +21,17 @@ import static org.mockito.Mockito.*;
 public class UserServiceUnitTest {
 
     @InjectMocks
-    UsersService userService;
+	UserService userService;
 
     @Mock
-    UsersRepository usersRepository;
+	UserRepository userRepository;
 
     @Test
     @DisplayName("[유저 조회 실패 테스트] 유저 존재하지 않으면 NOT_FOUND_USER 에러 코드 예외 발생")
     public void find_user_details_when_user_dose_not_exist_test (){
         // given
         final Long userId  = 1L;
-        when(usersRepository.findById(userId)).thenReturn(Optional.empty());
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         // when & then
 		Assertions.assertThatThrownBy(() -> userService.findUserDetails(userId))

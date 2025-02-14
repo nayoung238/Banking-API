@@ -1,6 +1,6 @@
-package banking.users.dto.response;
+package banking.user.dto.response;
 
-import banking.users.entity.Users;
+import banking.user.entity.User;
 import lombok.Builder;
 
 @Builder
@@ -10,7 +10,7 @@ public record UserPublicInfoDto(
 	String name
 ) {
 
-	public static UserPublicInfoDto of(Users user) {
+	public static UserPublicInfoDto of(User user) {
 		return UserPublicInfoDto.builder()
 			.id(user.getId())
 			.name(user.getName())

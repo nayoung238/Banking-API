@@ -1,6 +1,6 @@
 package banking.fixture.testEntity;
 
-import banking.users.entity.Users;
+import banking.user.entity.User;
 
 public enum UserFixture {
 
@@ -47,8 +47,8 @@ public enum UserFixture {
 		this.password = password;
 	}
 
-	public Users createUser() {
-		return Users.builder()
+	public User createUser() {
+		return User.builder()
 			.id(id)
 			.name(name)
 			.loginId(loginId)

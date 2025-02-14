@@ -1,6 +1,6 @@
-package banking.users.dto;
+package banking.user.dto.response;
 
-import banking.users.entity.Users;
+import banking.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -17,7 +17,7 @@ public record UserResponseDto (
     @Schema(description = "로그인 ID",example = "abc123")
     String loginId
 ) {
-    public static UserResponseDto of(Users user){
+    public static UserResponseDto of(User user){
         return UserResponseDto.builder()
             .userId(user.getId())
             .name(user.getName())

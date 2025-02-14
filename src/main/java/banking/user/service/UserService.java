@@ -1,14 +1,14 @@
-package banking.users.service;
+package banking.user.service;
 
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
-import banking.users.dto.response.UserPublicInfoDto;
-import banking.users.entity.Role;
-import banking.users.entity.Users;
-import banking.users.dto.LoginRequestDto;
-import banking.users.dto.UserCreationRequestDto;
-import banking.users.dto.UserResponseDto;
-import banking.users.repository.UsersRepository;
+import banking.user.dto.response.UserPublicInfoDto;
+import banking.user.entity.Role;
+import banking.user.entity.User;
+import banking.user.dto.request.LoginRequestDto;
+import banking.user.dto.request.UserCreationRequestDto;
+import banking.user.dto.response.UserResponseDto;
+import banking.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,9 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class UsersService {
+public class UserService {
 
-    private final UsersRepository userRepository;
+    private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Transactional
@@ -31,7 +31,7 @@ public class UsersService {
         //String encodedPassword = bCryptPasswordEncoder.encode(usersRequestDto.getPassword());
 
         try {
-            Users user = Users.builder()
+            User user = User.builder()
                 .name(userCreationRequestDto.name())
                 .loginId(userCreationRequestDto.loginId())
                 .password(userCreationRequestDto.password())
@@ -49,11 +49,11 @@ public class UsersService {
         if (userId == null) {
             throw new CustomException(ErrorCode.NULL_PARAMETER);
         }
-        Users user = findUserEntity(userId);
+        User user = findUserEntity(userId);
         return UserResponseDto.of(user);
     }
 
-    public Users findUserEntity(Long userId) {
+    public User findUserEntity(Long userId) {
         return userRepository.findById(userId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
@@ -63,7 +63,7 @@ public class UsersService {
     }
 
     public Long login(LoginRequestDto loginRequestDto) {
-        Users user = userRepository.findByLoginId(loginRequestDto.loginId())
+        User user = userRepository.findByLoginId(loginRequestDto.loginId())
             .orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAIL));
 
         /*if (!bCryptPasswordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
@@ -77,14 +77,14 @@ public class UsersService {
     }
 
     public UserPublicInfoDto findUserPublicInfo(Long userId, Long accountId) {
-        Users user = userRepository.findByIdAndAccountId(userId, accountId)
+        User user = userRepository.findByIdAndAccountId(userId, accountId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
         return UserPublicInfoDto.of(user);
     }
 
     public UserPublicInfoDto findUserPublicInfo(Long accountId) {
-        Users user = userRepository.findByAccountId(accountId)
+        User user = userRepository.findByAccountId(accountId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
         return UserPublicInfoDto.of(user);

@@ -2,7 +2,6 @@ package banking.transfer.service;
 
 import banking.account.dto.response.AccountPublicInfoDto;
 import banking.account.entity.Account;
-import banking.account.repository.AccountRepository;
 import banking.account.service.AccountService;
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
@@ -11,8 +10,7 @@ import banking.fixture.testEntity.AccountFixture;
 import banking.fixture.testEntity.UserFixture;
 import banking.transfer.dto.request.TransferRequestDto;
 import banking.transfer.entity.Transfer;
-import banking.transfer.repository.TransferRepository;
-import banking.users.entity.Users;
+import banking.user.entity.User;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,13 +34,7 @@ class TransferServiceUnitTest {
     TransferService transferService;
 
     @Mock
-    TransferRepository transferRepository;
-
-    @Mock
     AccountService accountService;
-
-    @Mock
-    AccountRepository accountRepository;
 
     @Mock
     ExchangeRateService exchangeRateService;
@@ -51,7 +43,7 @@ class TransferServiceUnitTest {
     @DisplayName("[이체 성공 테스트] executeTransfer 메서드 검증")
     void execute_transfer_succeed_test () {
         // given
-        Users user = UserFixture.USER_FIXTURE_1.createUser();
+        User user = UserFixture.USER_FIXTURE_1.createUser();
         Account withdrawalAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
         Account depositAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_2.createAccount(user);
 
@@ -85,7 +77,7 @@ class TransferServiceUnitTest {
     @DisplayName("[이체 실패 테스트] 송신 계좌와 수신 계좌 동일하면 이체 실패")
     void transfer_fail_when_same_account () {
         // given
-        Users user = UserFixture.USER_FIXTURE_1.createUser();
+        User user = UserFixture.USER_FIXTURE_1.createUser();
         Account account = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
 
         TransferRequestDto transferRequest = TransferRequestDto.builder()

@@ -1,4 +1,4 @@
-package banking.users.entity;
+package banking.user.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

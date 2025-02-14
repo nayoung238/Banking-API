@@ -7,8 +7,8 @@ import banking.account.repository.AccountRepository;
 import banking.account.entity.Account;
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
-import banking.users.entity.Users;
-import banking.users.service.UsersService;
+import banking.user.entity.User;
+import banking.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.annotation.Backoff;
@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class AccountService {
 
     private final AccountRepository accountRepository;
-    private final UsersService userService;
+    private final UserService userService;
 
     @Retryable (
         retryFor = DataIntegrityViolationException.class,
@@ -34,7 +34,7 @@ public class AccountService {
     )
     @Transactional
     public AccountResponseDto createAccount(Long userId, AccountCreationRequestDto request) {
-        Users user = userService.findUserEntity(userId);
+        User user = userService.findUserEntity(userId);
         String accountName = request.accountName() != null ? request.accountName() : "은행 계좌명";
 
         Account account = Account.builder()
@@ -81,7 +81,7 @@ public class AccountService {
     }
 
     public List<AccountResponseDto> findAllAccounts(Long userId) {
-        Users user = userService.findUserEntity(userId);
+        User user = userService.findUserEntity(userId);
 
         List<Account> accounts = accountRepository.findByUser(user);
         return accounts.stream()
