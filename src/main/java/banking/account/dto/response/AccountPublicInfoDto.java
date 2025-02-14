@@ -5,8 +5,10 @@ import banking.account.enums.Currency;
 import lombok.Builder;
 
 @Builder
-public record AccountPublicInfoDto(
+public record AccountPublicInfoDto (
 
+	Long id,
+	Long ownerUserId,
 	String ownerName,
 	String accountNumber,
 	String accountName,
@@ -15,6 +17,8 @@ public record AccountPublicInfoDto(
 
 	public static AccountPublicInfoDto of(Account account) {
 		return AccountPublicInfoDto.builder()
+			.id(account.getId())
+			.ownerUserId(account.getUser().getId())
 			.ownerName(account.getUser().getName())
 			.accountNumber(account.getAccountNumber())
 			.accountName(account.getAccountName())
