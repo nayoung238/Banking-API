@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class PaymentController {
     /**
      * 결제 요청을 처리하고 결과를 반환
      *
-     * @param request 결제 요청 데이터를 담은 DTO
+     * @param paymentRequest 결제 요청 데이터를 담은 DTO
      * @return paymentId를 담은 응답 DTO
      */
     @Operation(summary = "결제", description = "바디에 {withdrawAccountNumber, depositAccountNumber,amount, password}을 json 형식으로 보내주세요.")
@@ -40,15 +41,16 @@ public class PaymentController {
     })
     @PostMapping
     @Decrypt
-    public ResponseEntity<?> processPayment(@Valid @RequestBody PaymentRequestDto request) {
-        PaymentResponseDto response = paymentService.processPayment(request);
+    public ResponseEntity<?> processPayment(@Valid @RequestBody PaymentRequestDto paymentRequest, HttpServletRequest httpServletRequest) {
+        Long requesterId = Long.valueOf(httpServletRequest.getHeader("X-User-Id"));
+        PaymentResponseDto response = paymentService.processPayment(requesterId, paymentRequest);
         return ResponseEntity.ok(response);
     }
 
     /**
      * 결제 내역을 기반으로 환불 처리
      *
-     * @param request 환불하려는 결제 내역 ID
+     * @param refundRequest 환불하려는 결제 내역 ID
      * @return 결제 취소 결과 DTO
      */
     @Operation(summary = "결제 취소", description = "바디에 {paymentId, password}을 json 형식으로 보내주세요.")
@@ -59,8 +61,9 @@ public class PaymentController {
     })
     @PostMapping("/cancel")
     @Decrypt
-    public ResponseEntity<?> refundPayment(@Valid @RequestBody PaymentRefundRequestDto request) {
-        RefundPaymentResponseDto response = paymentService.refundPayment(request);
+    public ResponseEntity<?> refundPayment(@Valid @RequestBody PaymentRefundRequestDto refundRequest, HttpServletRequest httpServletRequest) {
+        Long requesterId = Long.valueOf(httpServletRequest.getHeader("X-User-Id"));
+        RefundPaymentResponseDto response = paymentService.refundPayment(requesterId, refundRequest);
         return ResponseEntity.ok(response);
     }
 
@@ -76,8 +79,9 @@ public class PaymentController {
         @ApiResponse(responseCode = "404", description = "결제 내역이 존재하지 않습니다.", content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping("/{paymentId}")
-    public ResponseEntity<?> findPaymentDetail(@PathVariable("paymentId") Long paymentId) {
-        PaymentResponseDto response = paymentService.findPaymentById(paymentId);
+    public ResponseEntity<?> findPaymentDetail(@PathVariable("paymentId") Long paymentId, HttpServletRequest httpServletRequest) {
+        Long requesterId = Long.valueOf(httpServletRequest.getHeader("X-User-Id"));
+        PaymentResponseDto response = paymentService.findPaymentById(requesterId, paymentId);
         return ResponseEntity.ok(response);
     }
 

@@ -16,7 +16,13 @@ public class Payment {
     private Long id;
 
     @Column(nullable = false)
-    private Long transferId;
+    private Long payerId;
+
+    @Column(nullable = false)
+    private Long payeeId;
+
+    @Column(nullable = false, unique = true)
+    private String transferGroupId;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;

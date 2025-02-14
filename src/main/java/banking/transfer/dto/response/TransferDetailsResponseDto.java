@@ -1,6 +1,6 @@
 package banking.transfer.dto.response;
 
-import banking.account.entity.Account;
+import banking.account.dto.response.AccountPublicInfoDto;
 import banking.transfer.entity.Transfer;
 import banking.transfer.enums.TransferType;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -51,19 +51,19 @@ public record TransferDetailsResponseDto (
 
 ) {
     public static TransferDetailsResponseDto of(Transfer transfer, TransferType transferType,
-                                                Account withdrawalAccount, Account depositAccount) {
+                                                AccountPublicInfoDto withdrawalAccountPublicInfo, AccountPublicInfoDto depositAccountPublicInfo) {
         return TransferDetailsResponseDto.builder()
             .transferId(transfer.getId())
-            .withdrawalAccountNumber(withdrawalAccount.getAccountNumber())
-            .senderName(withdrawalAccount.getUser().getName())
-            .depositAccountNumber(depositAccount.getAccountNumber())
-            .receiverName(depositAccount.getUser().getName())
+            .withdrawalAccountNumber(withdrawalAccountPublicInfo.accountNumber())
+            .senderName(withdrawalAccountPublicInfo.ownerName())
+            .depositAccountNumber(depositAccountPublicInfo.accountNumber())
+            .receiverName(depositAccountPublicInfo.ownerName())
             .transferType(transferType)
             .exchangeRate(stripZeros(transfer.getExchangeRate()))
             .currency(transfer.getCurrency())
             .createdAt(transfer.getCreatedAt())
-            .amount(stripZeros(transfer.getTransferDetails().get(transferType).getAmount()))
-            .balancePostTransaction(stripZeros(transfer.getTransferDetails().get(transferType).getBalancePostTransaction()))
+            .amount(stripZeros(transfer.getAmount()))
+            .balancePostTransaction(stripZeros(transfer.getBalancePostTransaction()))
             .build();
     }
 

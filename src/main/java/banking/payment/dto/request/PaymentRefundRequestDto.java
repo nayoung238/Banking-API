@@ -10,7 +10,7 @@ import lombok.Builder;
 public record PaymentRefundRequestDto (
 
     @NotNull
-    @Schema(description = "결제 DB ID", example = "1")
+    @Schema(description = "결제 DB PK", example = "1")
     Long paymentId,
 
     @NotBlank

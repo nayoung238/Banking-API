@@ -1,15 +1,11 @@
 package banking.transfer.entity;
 
 import banking.common.entity.BaseTimeEntity;
-import banking.common.exception.CustomException;
-import banking.common.exception.ErrorCode;
 import banking.transfer.enums.TransferType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Entity
 @Getter
@@ -21,6 +17,15 @@ public class Transfer extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String transferGroupId;
+
+    @Column(nullable = false)
+    private Long transferOwnerId;
+
+    @Column(nullable = false)
+    private TransferType transferType;
 
     @Column(nullable = false)
     private Long withdrawalAccountId;
@@ -35,17 +40,8 @@ public class Transfer extends BaseTimeEntity {
     private BigDecimal exchangeRate;
 
     @Column(nullable = false)
-    @Builder.Default
-    @OneToMany(mappedBy = "transfer", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @MapKey(name = "type")
-    private Map<TransferType, TransferDetails> transferDetails = new ConcurrentHashMap<>();
+    private BigDecimal amount;
 
-    public void addTransferDetails(TransferType type, TransferDetails transferDetails) {
-        this.transferDetails.computeIfAbsent(type, key -> {
-            if (this.transferDetails.containsKey(key)) {
-                throw new CustomException(ErrorCode.DUPLICATE_TRANSFER_TYPE);
-            }
-            return transferDetails;
-        });
-    }
+    @Column(nullable = false)
+    private BigDecimal balancePostTransaction;
 }

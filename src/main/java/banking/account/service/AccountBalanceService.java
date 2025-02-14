@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class AccountBalanceService {
@@ -24,7 +26,7 @@ public class AccountBalanceService {
 	 */
 	@Transactional
 	public AccountResponseDto atmDeposit(DepositRequestDto request) {
-		Account account = accountRepository.findByAccountNumberWithPessimisticLock(request.accountNumber())
+		Account account = accountRepository.findByAccountNumberWithLock(request.accountNumber())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
 		if(!account.getPassword().equals(request.accountPassword())) {
@@ -41,7 +43,7 @@ public class AccountBalanceService {
 	 * @return 출금 계좌 상태
 	 */
 	public AccountResponseDto atmWithdraw(WithdrawalRequestDto request) {
-		Account account = accountRepository.findByAccountNumberWithPessimisticLock(request.accountNumber())
+		Account account = accountRepository.findByAccountNumberWithLock(request.accountNumber())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
 		if(account.getPassword().equals(request.accountPassword())) {
@@ -50,5 +52,13 @@ public class AccountBalanceService {
 
 		account.decreaseBalance(request.amount());
 		return AccountResponseDto.of(account);
+	}
+
+	@Transactional
+	public void increaseBalance(Long accountId, BigDecimal amount) {
+		Account depositAccount = accountRepository.findById(accountId)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+
+		depositAccount.increaseBalance(amount);
 	}
 }

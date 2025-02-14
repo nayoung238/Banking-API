@@ -2,6 +2,7 @@ package banking.account.service;
 
 import banking.account.dto.request.AccountCreationRequestDto;
 import banking.account.dto.response.AccountResponseDto;
+import banking.account.dto.response.AccountPublicInfoDto;
 import banking.account.repository.AccountRepository;
 import banking.account.entity.Account;
 import banking.common.exception.CustomException;
@@ -34,7 +35,6 @@ public class AccountService {
     @Transactional
     public AccountResponseDto createAccount(Long userId, AccountCreationRequestDto request) {
         Users user = userService.findUserEntity(userId);
-
         String accountName = request.accountName() != null ? request.accountName() : "은행 계좌명";
 
         Account account = Account.builder()
@@ -87,5 +87,60 @@ public class AccountService {
         return accounts.stream()
                 .map(AccountResponseDto::of)
                 .toList();
+    }
+
+    public AccountPublicInfoDto findAccountPublicInfo(Long accountId) {
+        Account account = accountRepository.findById(accountId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+
+        return AccountPublicInfoDto.of(account);
+    }
+
+    public AccountPublicInfoDto findAccountPublicInfo(String accountNumber) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+
+        return AccountPublicInfoDto.of(account);
+    }
+
+    public Account findAuthorizedAccountWithLock(Long requesterId, String accountNumber, String password) {
+        Account account = accountRepository.findByAccountNumberWithLock(accountNumber)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT));
+
+        if(requesterId != null && !account.getUser().getId().equals(requesterId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
+        }
+
+        if(!account.getPassword().equals(password)) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        return account;
+    }
+
+    public Account findAuthorizedAccountWithLock(Long requesterId, Long accountId, String password) {
+        Account account = accountRepository.findByIdWithLock(accountId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_WITHDRAWAL_ACCOUNT));
+
+        if(requesterId != null && !account.getUser().getId().equals(requesterId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
+        }
+
+        if(!account.getPassword().equals(password)) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        return account;
+    }
+
+    // TODO: 상대 계좌 접근 권한
+    public Account findAccountWithLock(Long accountId) {
+        return accountRepository.findByIdWithLock(accountId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+    }
+
+    public void verifyAccountOwner(Long accountId, Long userId) {
+        if(!accountRepository.existsByAccountIdAndUserId(accountId, userId))
+            throw new CustomException(ErrorCode.NOT_FOUND_ACCOUNT);
     }
 }

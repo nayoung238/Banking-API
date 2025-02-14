@@ -3,7 +3,6 @@ package banking.payment.dto.response;
 import banking.payment.entity.Payment;
 import banking.payment.enums.PaymentStatus;
 import banking.transfer.entity.Transfer;
-import banking.transfer.enums.TransferType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -24,8 +23,8 @@ public record PaymentResponseDto (
     @Schema(description = "결제하는 계좌 번호", example = "5792214-80232581")
     String withdrawAccountNumber,
 
-    @Schema(description = "입금자명", example = "홍길동")
-    String receiverName,
+    @Schema(description = "수취인 이름", example = "홍길동")
+    String payeeName,
 
     @Schema(description = "결제 금액", example = "50000")
     BigDecimal amount,
@@ -39,13 +38,13 @@ public record PaymentResponseDto (
     @Schema(description = "결제일", example = "2019.05.20")
     LocalDateTime paidAt
 ) {
-    public static PaymentResponseDto of(Payment payment, Transfer transfer, String withdrawAccountNumber, String receiverName) {
+    public static PaymentResponseDto of(Payment payment, Transfer transfer, String withdrawAccountNumber, String payeeName) {
         return PaymentResponseDto.builder()
             .paymentId(payment.getId())
             .paymentStatus(payment.getPaymentStatus())
             .withdrawAccountNumber(withdrawAccountNumber)
-            .receiverName(receiverName)
-            .amount(stripZeros(transfer.getTransferDetails().get(TransferType.WITHDRAWAL).getAmount()))
+            .payeeName(payeeName)
+            .amount(stripZeros(transfer.getAmount()))
             .exchangeRate(stripZeros(transfer.getExchangeRate()))
             .currency(transfer.getCurrency())
             .paidAt(transfer.getCreatedAt())

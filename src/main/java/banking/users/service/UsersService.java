@@ -2,6 +2,7 @@ package banking.users.service;
 
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
+import banking.users.dto.response.UserPublicInfoDto;
 import banking.users.entity.Role;
 import banking.users.entity.Users;
 import banking.users.dto.LoginRequestDto;
@@ -73,5 +74,19 @@ public class UsersService {
             throw new CustomException(ErrorCode.LOGIN_FAIL);
         }
         return user.getId();
+    }
+
+    public UserPublicInfoDto findUserPublicInfo(Long userId, Long accountId) {
+        Users user = userRepository.findByIdAndAccountId(userId, accountId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+
+        return UserPublicInfoDto.of(user);
+    }
+
+    public UserPublicInfoDto findUserPublicInfo(Long accountId) {
+        Users user = userRepository.findByAccountId(accountId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+
+        return UserPublicInfoDto.of(user);
     }
 }

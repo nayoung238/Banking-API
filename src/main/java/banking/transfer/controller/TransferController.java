@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,12 +36,11 @@ public class TransferController {
         @ApiResponse(responseCode = "500", description = "환율 값은 0보다 커야 합니다.", content = @Content(schema = @Schema(implementation = String.class)))
     })
     @PostMapping
-    public ResponseEntity<?> transfer(HttpSession session, @RequestBody @Valid TransferRequestDto request) {
-        Long userId = (Long) session.getAttribute("user");
-
+    public ResponseEntity<?> transfer(@RequestBody @Valid TransferRequestDto transferRequest, HttpServletRequest httpServletRequest) {
+        Long requesterId = Long.valueOf(httpServletRequest.getHeader("X-User-Id"));
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(transferService.transfer(userId, request));
+                .body(transferService.transfer(requesterId, transferRequest));
     }
 
     @Operation(summary = "계좌의 모든 거래 내역 조회", description = "url 변수에 계좌의 id를 보내주세요. 세션에 연결되어 있어야합니다.")
@@ -51,12 +50,11 @@ public class TransferController {
         @ApiResponse(responseCode = "403", description = "해당 계좌에 대한 접근 권한이 없습니다.", content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping("/history/{accountId}")
-    public ResponseEntity<?> findAllTransferSimple(HttpSession session, @PathVariable("accountId") Long accountId) {
-        Long userId = (Long) session.getAttribute("user");
-
+    public ResponseEntity<?> findAllTransferSimple(@PathVariable("accountId") Long accountId, HttpServletRequest httpServletRequest) {
+        Long requesterId = Long.valueOf(httpServletRequest.getHeader("X-User-Id"));
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(transferService.findAllTransferSimple(userId, accountId));
+                .body(transferService.findAllTransferSimple(requesterId, accountId));
     }
 
     @Operation(summary = "거래 상세 내역 조회", description = "바디에 {accountId, transactionId}을 json 형식으로 보내주세요. 세션에 연결되어 있어야합니다.")
@@ -66,11 +64,10 @@ public class TransferController {
         @ApiResponse(responseCode = "403", description = "해당 계좌에 대한 접근 권한이 없습니다.", content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping
-    public ResponseEntity<?> findTransferDetails(HttpSession session, @RequestBody @Valid TransferDetailsRequestDto request) {
-        Long userId = (Long) session.getAttribute("user");
-
+    public ResponseEntity<?> findTransferDetails( @RequestBody @Valid TransferDetailsRequestDto request, HttpServletRequest httpServletRequest) {
+        Long requesterId = Long.valueOf(httpServletRequest.getHeader("X-User-Id"));
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(transferService.findTransferDetails(userId, request));
+                .body(transferService.findTransferDetails(requesterId, request));
     }
 }

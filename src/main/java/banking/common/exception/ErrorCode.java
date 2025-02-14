@@ -24,8 +24,10 @@ public enum ErrorCode {
     // Transfer
     SAME_ACCOUNT_TRANSFER_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "같은 계좌 간 거래는 불가합니다."),
     NOT_FOUND_TRANSFER(HttpStatus.NOT_FOUND, "존재하지 않는 거래내역입니다."),
+    NOT_FOUND_WITHDRAWAL_TRANSFER(HttpStatus.NOT_FOUND, "존재하지 않는 출금 거래입니다."),
     UNAUTHORIZED_TRANSFER_ACCESS(HttpStatus.FORBIDDEN, "해당 이체 내역에 대한 접근 권한이 없습니다."),
     DUPLICATE_TRANSFER_TYPE(HttpStatus.BAD_REQUEST, "이미 존재하는 이체 타입입니다."),
+    UNSUPPORTED_TRANSFER_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 이체 타입입니다."),
     
     // ExchangeRate
     EXCHANGE_RATE_FETCH_FAIL(HttpStatus.SERVICE_UNAVAILABLE, "환율 데이터를 가져올 수 없습니다."),
@@ -35,6 +37,7 @@ public enum ErrorCode {
     // Payment
     PAYMENT_ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "이미 결제 취소된 내역입니다."),
     NOT_FOUND_PAYMENT(HttpStatus.BAD_REQUEST,"결제내역이 존재하지 않습니다."),
+    UNAUTHORIZED_PAYMENT_ACCESS(HttpStatus.FORBIDDEN, "해당 결제에 대한 접근 권한이 없습니다."),
 
     // Data
     DECRYPTION_FAIL(HttpStatus.BAD_REQUEST, "복호화에 실패했습니다. 올바른 암호화 키를 사용하고 있는지 확인해주세요."),

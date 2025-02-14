@@ -40,8 +40,8 @@ public record TransferSimpleResponseDto (
             .transferType(transferType)
             .peerName(peerName)
             .transactedAt(transfer.getCreatedAt())
-            .amount(stripZeros(transfer.getTransferDetails().get(transferType).getAmount()))
-            .balancePostTransaction(stripZeros(transfer.getTransferDetails().get(transferType).getBalancePostTransaction()))
+            .amount(stripZeros(transfer.getAmount()))
+            .balancePostTransaction(stripZeros(transfer.getBalancePostTransaction()))
             .build();
     }
 

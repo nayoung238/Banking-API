@@ -125,8 +125,9 @@ class PaymentControllerIntegrationTest {
         // When & then
         mockMvc.perform(
             post("/payment")
-                .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
+                .header("X-User-Id", senderUserResponse.userId())
+                .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.paymentId").isNumber())
@@ -229,11 +230,12 @@ class PaymentControllerIntegrationTest {
             .depositAccountNumber(receiverAccountResponse.accountNumber())
             .amount(paymentAmount)
             .build();
-        PaymentResponseDto paymentResponse = paymentService.processPayment(paymentRequest);
+        PaymentResponseDto paymentResponse = paymentService.processPayment(senderUserResponse.userId(), paymentRequest);
 
         // When & Then
         mockMvc.perform(
             get("/payment/{paymentId}", paymentResponse.paymentId())
+                .header("X-User-Id", senderUserResponse.userId())
                 .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isOk())
