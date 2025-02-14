@@ -1,4 +1,4 @@
-package banking.payment.controller;
+package banking.payment.api;
 
 import banking.account.dto.request.AccountCreationRequestDto;
 import banking.account.dto.request.DepositRequestDto;
@@ -15,10 +15,10 @@ import banking.payment.repository.PaymentRepository;
 import banking.account.repository.AccountRepository;
 import banking.payment.service.PaymentService;
 import banking.transfer.repository.TransferRepository;
-import banking.users.dto.UserCreationRequestDto;
-import banking.users.dto.UserResponseDto;
-import banking.users.repository.UsersRepository;
-import banking.users.service.UsersService;
+import banking.user.dto.request.UserCreationRequestDto;
+import banking.user.dto.response.UserResponseDto;
+import banking.user.repository.UserRepository;
+import banking.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,10 +49,10 @@ class PaymentControllerIntegrationTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    UsersService userService;
+    UserService userService;
 
     @Autowired
-    UsersRepository userRepository;
+    UserRepository userRepository;
 
     @Autowired
     AccountService accountService;

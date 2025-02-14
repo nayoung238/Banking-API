@@ -1,4 +1,4 @@
-package banking.account.controller;
+package banking.account.api;
 
 import banking.account.dto.request.AccountCreationRequestDto;
 import banking.account.dto.response.AccountResponseDto;
@@ -9,10 +9,10 @@ import banking.account.enums.Currency;
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
 import banking.fixture.dto.UserCreationRequestDtoFixture;
-import banking.users.dto.UserCreationRequestDto;
-import banking.users.dto.UserResponseDto;
-import banking.users.repository.UsersRepository;
-import banking.users.service.UsersService;
+import banking.user.dto.request.UserCreationRequestDto;
+import banking.user.dto.response.UserResponseDto;
+import banking.user.repository.UserRepository;
+import banking.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
@@ -50,10 +50,10 @@ class AccountControllerIntegrationTest {
     AccountRepository accountRepository;
 
     @Autowired
-    private UsersService userService;
+    private UserService userService;
 
     @Autowired
-    private UsersRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     ObjectMapper objectMapper;

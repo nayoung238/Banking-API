@@ -1,10 +1,10 @@
-package banking.users.controller;
+package banking.user.api;
 
-import banking.users.dto.UserResponseDto;
-import banking.users.dto.LoginRequestDto;
-import banking.users.dto.UserCreationRequestDto;
-import banking.users.repository.UsersRepository;
-import banking.users.service.UsersService;
+import banking.user.dto.response.UserResponseDto;
+import banking.user.dto.request.LoginRequestDto;
+import banking.user.dto.request.UserCreationRequestDto;
+import banking.user.repository.UserRepository;
+import banking.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -30,10 +30,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserControllerIntegrationTest {
 
     @Autowired
-    UsersService usersService;
+    UserService userService;
 
     @Autowired
-    UsersRepository userRepository;
+    UserRepository userRepository;
 
     @Autowired
     MockMvc mockMvc;
@@ -79,7 +79,7 @@ public class UserControllerIntegrationTest {
             .password("test-password")
             .build();
 
-        usersService.register(userCreationRequest1);
+        userService.register(userCreationRequest1);
 
         UserCreationRequestDto userCreationRequest2 = UserCreationRequestDto.builder()
             .name("test-name")
@@ -149,7 +149,7 @@ public class UserControllerIntegrationTest {
             .loginId("test-login-id")
             .password("test-password")
             .build();
-        UserResponseDto userResponse = usersService.register(userCreationRequest);
+        UserResponseDto userResponse = userService.register(userCreationRequest);
 
         LoginRequestDto loginRequest = LoginRequestDto.builder()
             .loginId(userCreationRequest.loginId())
@@ -181,7 +181,7 @@ public class UserControllerIntegrationTest {
             .loginId("test-login-id")
             .password("test-password")
             .build();
-        usersService.register(userCreationRequest);
+        userService.register(userCreationRequest);
 
         LoginRequestDto loginRequest = LoginRequestDto.builder()
             .loginId(userCreationRequest.loginId() + "1234")
@@ -212,7 +212,7 @@ public class UserControllerIntegrationTest {
             .loginId("test-login-id")
             .password("test-password")
             .build();
-        usersService.register(userCreationRequest);
+        userService.register(userCreationRequest);
 
         LoginRequestDto loginRequest = LoginRequestDto.builder()
             .loginId(userCreationRequest.loginId())
@@ -243,7 +243,7 @@ public class UserControllerIntegrationTest {
             .loginId("test-login-id")
             .password("test-password")
             .build();
-        UserResponseDto userResponse = usersService.register(userCreationRequest);
+        UserResponseDto userResponse = userService.register(userCreationRequest);
 
         LoginRequestDto loginRequest = LoginRequestDto.builder()
             .loginId(userCreationRequest.loginId())
@@ -301,7 +301,7 @@ public class UserControllerIntegrationTest {
             .loginId("test-login-id")
             .password("test-password")
             .build();
-        UserResponseDto userResponse = usersService.register(userCreationRequest);
+        UserResponseDto userResponse = userService.register(userCreationRequest);
 
         LoginRequestDto loginRequest = LoginRequestDto.builder()
             .loginId(userCreationRequest.loginId())

@@ -1,4 +1,4 @@
-package banking.payment.controller;
+package banking.payment.api;
 
 import banking.common.aop.Decrypt;
 import banking.payment.dto.request.PaymentRefundRequestDto;

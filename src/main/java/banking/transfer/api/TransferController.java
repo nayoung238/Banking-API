@@ -1,4 +1,4 @@
-package banking.transfer.controller;
+package banking.transfer.api;
 
 import banking.transfer.dto.request.TransferDetailsRequestDto;
 import banking.transfer.dto.request.TransferRequestDto;

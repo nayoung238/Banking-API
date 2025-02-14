@@ -1,4 +1,4 @@
-package banking.account.conroller;
+package banking.account.api;
 
 import banking.account.dto.request.AccountCreationRequestDto;
 import banking.account.dto.response.AccountResponseDto;

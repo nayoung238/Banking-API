@@ -1,4 +1,4 @@
-package banking.notification.controller;
+package banking.notification.api;
 
 import banking.notification.dto.NotificationRequestDto;
 import banking.notification.dto.TokenRequest;

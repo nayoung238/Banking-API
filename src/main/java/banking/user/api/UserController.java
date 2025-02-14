@@ -1,10 +1,10 @@
-package banking.users.controller;
+package banking.user.api;
 
-import banking.users.dto.LoginRequestDto;
-import banking.users.dto.UserCreationRequestDto;
-import banking.users.dto.UserResponseDto;
-import banking.users.entity.CustomUserDetails;
-import banking.users.service.UsersService;
+import banking.user.dto.request.LoginRequestDto;
+import banking.user.dto.request.UserCreationRequestDto;
+import banking.user.dto.response.UserResponseDto;
+import banking.user.entity.CustomUserDetails;
+import banking.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,9 +24,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 @RequestMapping("/users")
-public class UsersController {
+public class UserController {
 
-    private final UsersService userService;
+    private final UserService userService;
 
     @Operation(summary = "회원가입" ,description = "바디에 {name, loginId, password}을 json 형식으로 보내주세요. 성공 시 가입 된 회원의 데이터베이스 아이디 값이 보내집니다.")
     @ApiResponses({

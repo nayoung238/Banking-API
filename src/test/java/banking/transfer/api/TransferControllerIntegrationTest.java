@@ -1,4 +1,4 @@
-package banking.transfer.controller;
+package banking.transfer.api;
 
 import banking.account.dto.request.AccountCreationRequestDto;
 import banking.account.dto.request.DepositRequestDto;
@@ -14,10 +14,10 @@ import banking.transfer.dto.response.TransferDetailsResponseDto;
 import banking.transfer.enums.TransferType;
 import banking.transfer.repository.TransferRepository;
 import banking.transfer.service.TransferService;
-import banking.users.dto.UserCreationRequestDto;
-import banking.users.dto.UserResponseDto;
-import banking.users.repository.UsersRepository;
-import banking.users.service.UsersService;
+import banking.user.dto.request.UserCreationRequestDto;
+import banking.user.dto.response.UserResponseDto;
+import banking.user.repository.UserRepository;
+import banking.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
@@ -45,10 +45,10 @@ class TransferControllerIntegrationTest {
     MockMvc mockMvc;
 
     @Autowired
-    UsersService userService;
+    UserService userService;
 
     @Autowired
-    UsersRepository userRepository;
+    UserRepository userRepository;
 
     @Autowired
     AccountService accountService;
