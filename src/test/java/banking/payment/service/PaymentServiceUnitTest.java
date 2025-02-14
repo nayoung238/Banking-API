@@ -1,16 +1,19 @@
 package banking.payment.service;
 
+import banking.account.dto.response.AccountPublicInfoDto;
 import banking.account.entity.Account;
-import banking.account.repository.AccountRepository;
+import banking.account.service.AccountService;
 import banking.fixture.testEntity.AccountFixture;
 import banking.fixture.testEntity.UserFixture;
 import banking.payment.dto.request.PaymentRequestDto;
 import banking.payment.enums.PaymentStatus;
 import banking.payment.repository.PaymentRepository;
 import banking.transfer.entity.Transfer;
-import banking.transfer.repository.TransferRepository;
+import banking.transfer.enums.TransferType;
 import banking.transfer.service.TransferService;
+import banking.users.dto.response.UserPublicInfoDto;
 import banking.users.entity.Users;
+import banking.users.service.UsersService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,7 +40,7 @@ public class PaymentServiceUnitTest {
     PaymentService paymentService;
 
     @Mock
-    AccountRepository accountRepository;
+	AccountService accountService;
 
     @Mock
     PaymentRepository paymentRepository;
@@ -45,8 +48,8 @@ public class PaymentServiceUnitTest {
     @Mock
     TransferService transferService;
 
-    @Mock
-    TransferRepository transferRepository;
+	@Mock
+	UsersService userService;
 
     @Test
     @DisplayName("[결제 성공 테스트] 결제 처리 시 TransferService에 의존")
@@ -65,16 +68,39 @@ public class PaymentServiceUnitTest {
 
 		Transfer mockTransfer = Transfer.builder()
 			.id(1L)
+			.transferGroupId("173234Ad2D")
+			.transferOwnerId(user.getId())
+			.transferType(TransferType.WITHDRAWAL)
+			.withdrawalAccountId(withdrawalAccount.getId())
 			.exchangeRate(BigDecimal.ONE)
 			.amount(BigDecimal.valueOf(200))
 			.build();
 
-		Payment mockPayment = Payment.builder().id(1L).build();
+		Payment mockPayment = Payment.builder()
+			.id(1L)
+			.payerId(withdrawalAccount.getId())
+			.payeeId(depositAccount.getId())
+			.build();
+
+		AccountPublicInfoDto mockAccountPublicInfoDto = AccountPublicInfoDto.builder()
+			.ownerName(user.getName())
+			.accountNumber(withdrawalAccount.getAccountNumber())
+			.accountName(withdrawalAccount.getAccountName())
+			.currency(withdrawalAccount.getCurrency())
+			.build();
+
+		UserPublicInfoDto mockUserPublicInfoDto = UserPublicInfoDto.builder()
+			.id(user.getId())
+			.name(user.getName())
+			.build();
+
 
 		when(transferService.transfer(any())).thenReturn(mockTransfer);
 		when(paymentRepository.findById(any())).thenReturn(Optional.ofNullable(mockPayment));
-		when(transferRepository.findByTransferGroupIdAndTransferType(any(), any())).thenReturn(Optional.of(mockTransfer));
-		when(accountRepository.findById(any())).thenReturn(Optional.of(withdrawalAccount));
+		when(transferService.findTransferEntity(any(), any())).thenReturn(mockTransfer);
+		when(accountService.findAccountPublicInfo(anyLong())).thenReturn(mockAccountPublicInfoDto);
+		when(userService.findUserPublicInfo(any(), any())).thenReturn(mockUserPublicInfoDto);
+		when(userService.findUserPublicInfo(any())).thenReturn(mockUserPublicInfoDto);
 
 		// when
 		paymentService.processPayment(user.getId(), paymentRequest);
@@ -114,24 +140,17 @@ public class PaymentServiceUnitTest {
     @DisplayName("[결제 취소 실패 테스트] 이미 결제 취소된 상태는 처리하지 않음")
     void refund_payment_fail_when_already_cancelled () {
         // given
+		Users user = UserFixture.USER_FIXTURE_1.createUser();
+
 		Payment mockPayment = Payment.builder()
 			.id(1L)
+			.payerId(user.getId())
+			.payeeId(12L)
 			.transferGroupId("173234Ad2D")
 			.paymentStatus(PaymentStatus.PAYMENT_CANCELLED)
 			.build();
 
-		Transfer mockTransfer = Transfer.builder()
-			.id(1L)
-			.withdrawalAccountId(1L)
-			.exchangeRate(BigDecimal.ONE)
-			.build();
-
-		Users user = UserFixture.USER_FIXTURE_1.createUser();
-		Account withdrawalAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
-
 		when(paymentRepository.findById(anyLong())).thenReturn(Optional.ofNullable(mockPayment));
-		when(transferRepository.findByTransferGroupIdAndTransferType(any(), any())).thenReturn(Optional.of(mockTransfer));
-		when(accountRepository.findById(anyLong())).thenReturn(Optional.of(withdrawalAccount));
 
         PaymentRefundRequestDto refundRequest = PaymentRefundRequestDto.builder()
 			.paymentId(1L)
@@ -149,8 +168,6 @@ public class PaymentServiceUnitTest {
 			});
 
         verify(paymentRepository, times(1)).findById(anyLong());
-		verify(transferRepository, times(1)).findByTransferGroupIdAndTransferType(any(), any());
-		verify(accountRepository, times(1)).findById(anyLong());
-		verify(transferService, times(0)).transferForRefund(any(), any());
+		verify(transferService, times(0)).transferForRefund(any(), any(), any());
     }
 }
