@@ -7,7 +7,7 @@ import banking.notification.dto.NotificationRequestDto;
 import banking.notification.dto.TokenRequest;
 import banking.notification.entity.FCMToken;
 import banking.notification.repository.FCMTokenRepository;
-import banking.users.service.UsersService;
+import banking.user.service.UserService;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationService {
 
     private final FCMTokenRepository fcmTokenRepository;
-    private final UsersService usersService;
+    private final UserService userService;
 
     public String sendNotification(NotificationRequestDto notificationRequestDto) {
         Notification notification = Notification.builder()
@@ -53,7 +53,7 @@ public class NotificationService {
 
     @Transactional
     public String saveToken(TokenRequest tokenRequest) {
-        if(!usersService.isExistUser(tokenRequest.userId())) {
+        if(!userService.isExistUser(tokenRequest.userId())) {
             throw new CustomException(ErrorCode.NOT_FOUND_USER);
         }
         if(fcmTokenRepository.existsByToken(tokenRequest.token())) {

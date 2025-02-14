@@ -1,7 +1,7 @@
 package banking.account.repository;
 
 import banking.account.entity.Account;
-import banking.users.entity.Users;
+import banking.user.entity.User;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -18,7 +18,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     boolean existsByAccountNumber(String accountNumber);
 
-    List<Account> findByUser(Users user);
+    List<Account> findByUser(User user);
 
     Optional<Account> findByAccountNumber(String accountNumber);
 

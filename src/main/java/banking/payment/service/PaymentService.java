@@ -15,8 +15,8 @@ import banking.transfer.dto.request.TransferRequestDto;
 import banking.transfer.entity.Transfer;
 import banking.transfer.enums.TransferType;
 import banking.transfer.service.TransferService;
-import banking.users.dto.response.UserPublicInfoDto;
-import banking.users.service.UsersService;
+import banking.user.dto.response.UserPublicInfoDto;
+import banking.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final TransferService transferService;
     private final AccountService accountService;
-    private final UsersService usersService;
+    private final UserService userService;
 
     @Transactional
     public PaymentResponseDto processPayment(Long requesterId, PaymentRequestDto request) {
@@ -38,7 +38,7 @@ public class PaymentService {
         Transfer transfer = transferService.transfer(TransferRequestDto.of(request));
 
         // TODO: 상대 정보를 가져올 수 있는 권한
-        UserPublicInfoDto payeeUserPublicInfo = usersService.findUserPublicInfo(transfer.getDepositAccountId());
+        UserPublicInfoDto payeeUserPublicInfo = userService.findUserPublicInfo(transfer.getDepositAccountId());
 
         Payment payment = Payment.builder()
             .payerId(requesterId)
@@ -104,7 +104,7 @@ public class PaymentService {
         AccountPublicInfoDto accountPublicInfo = accountService.findAccountPublicInfo(requesterAccountId);
 
         // 공개용 사용자 정보 GET
-        UserPublicInfoDto userPublicInfo = usersService.findUserPublicInfo(requesterId, requesterAccountId);
+        UserPublicInfoDto userPublicInfo = userService.findUserPublicInfo(requesterId, requesterAccountId);
 
         return PaymentResponseDto.of(payment, transfer, accountPublicInfo.accountNumber(), userPublicInfo.name());
     }

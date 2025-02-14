@@ -2,7 +2,7 @@ package banking.common.config;
 
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
-import banking.users.service.CustomUserDetailsService;
+import banking.user.service.CustomUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

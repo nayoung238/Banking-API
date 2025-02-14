@@ -2,7 +2,7 @@ package banking.fixture.testEntity;
 
 import banking.account.entity.Account;
 import banking.account.enums.Currency;
-import banking.users.entity.Users;
+import banking.user.entity.User;
 
 import java.math.BigDecimal;
 
@@ -58,7 +58,7 @@ public enum AccountFixture {
 		this.currency = currency;
 	}
 
-	public Account createAccount(Users user) {
+	public Account createAccount(User user) {
 		return Account.builder()
 			.id(id)
 			.user(user)

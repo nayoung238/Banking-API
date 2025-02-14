@@ -15,8 +15,8 @@ import banking.transfer.dto.response.TransferDetailsResponseDto;
 import banking.transfer.entity.Transfer;
 import banking.transfer.enums.TransferType;
 import banking.transfer.repository.TransferRepository;
-import banking.users.dto.response.UserPublicInfoDto;
-import banking.users.service.UsersService;
+import banking.user.dto.response.UserPublicInfoDto;
+import banking.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.annotation.Backoff;
@@ -36,7 +36,7 @@ public class TransferService {
 
     private final TransferRepository transferRepository;
     private final ExchangeRateService exchangeRateService;
-    private final UsersService usersService;
+    private final UserService userService;
     private final AccountService accountService;
     private final AccountBalanceService accountBalanceService;
     private final AccountRepository accountRepository;
@@ -248,9 +248,9 @@ public class TransferService {
             .map(transfer -> {
                 UserPublicInfoDto peerUserPublicInfo;
                 if (transfer.getTransferType().equals(TransferType.WITHDRAWAL)) {
-                    peerUserPublicInfo = usersService.findUserPublicInfo(transfer.getDepositAccountId());
+                    peerUserPublicInfo = userService.findUserPublicInfo(transfer.getDepositAccountId());
                 } else if (transfer.getTransferType().equals(TransferType.DEPOSIT)) {
-                    peerUserPublicInfo = usersService.findUserPublicInfo(transfer.getWithdrawalAccountId());
+                    peerUserPublicInfo = userService.findUserPublicInfo(transfer.getWithdrawalAccountId());
                 } else {
                     // TODO: 관리자에게 알림하고, 클라이언트에게는 응답
                     throw new CustomException(ErrorCode.UNSUPPORTED_TRANSFER_TYPE);

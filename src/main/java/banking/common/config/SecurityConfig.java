@@ -2,7 +2,7 @@ package banking.common.config;
 
 import banking.common.exception.CustomAccessDeniedHandler;
 import banking.common.exception.CustomAuthenticationEntryPoint;
-import banking.users.service.CustomUserDetailsService;
+import banking.user.service.CustomUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
