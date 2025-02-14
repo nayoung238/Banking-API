@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -110,15 +109,12 @@ class TransferControllerIntegrationTest {
             .amount(withdrawalAmount)
             .build();
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", senderUserResponse.userId());
-
         // when & then
         mockMvc.perform(
             post("/transfer")
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session)
                 .content(objectMapper.writeValueAsString(transferRequest))
+                .header("X-User-Id", senderUserResponse.userId())
+                .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.transferId").isNumber())
@@ -130,8 +126,6 @@ class TransferControllerIntegrationTest {
             .andExpect(jsonPath("$.amount").value(comparesEqualTo(transferRequest.amount().intValue())))
             .andExpect(jsonPath("$.balancePostTransaction").value(comparesEqualTo(currentBalance.subtract(withdrawalAmount).intValue())))
             .andDo(print());
-
-        session.invalidate();
     }
 
     @Test
@@ -168,21 +162,16 @@ class TransferControllerIntegrationTest {
             .amount(withdrawalAmount)
             .build();
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", senderUserResponse.userId());
-
         // when & then
         mockMvc.perform(
             post("/transfer")
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session)
                 .content(objectMapper.writeValueAsString(transferRequest))
+                .header("X-User-Id", senderUserResponse.userId())
+                .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isBadRequest())
             .andExpect(content().string(containsString("잔액이 부족합니다.")))
             .andDo(print());
-
-        session.invalidate();
     }
 
     @Test
@@ -226,15 +215,12 @@ class TransferControllerIntegrationTest {
             .transferId(transferDetailsResponse.transferId())
             .build();
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", senderUserResponse.userId());
-
         // when & then
         mockMvc.perform(
             get("/transfer")
-                .contentType(MediaType.APPLICATION_JSON)
-                .session(session)
                 .content(objectMapper.writeValueAsString(transferDetailsRequest))
+                .header("X-User-Id", senderUserResponse.userId())
+                .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.transferId").value(transferDetailsResponse.transferId()))
@@ -246,8 +232,6 @@ class TransferControllerIntegrationTest {
             .andExpect(jsonPath("$.amount").value(comparesEqualTo(transferRequest.amount().intValue())))
             .andExpect(jsonPath("$.balancePostTransaction").value(comparesEqualTo(currentBalance.subtract(withdrawalAmount).intValue())))
             .andDo(print());
-
-        session.invalidate();
     }
 
     @Test
@@ -288,13 +272,10 @@ class TransferControllerIntegrationTest {
         transferService.transfer(senderUserResponse.userId(), transferRequest);
         transferService.transfer(senderUserResponse.userId(), transferRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", senderUserResponse.userId());
-
         mockMvc.perform(
             get("/transfer/history/{accountId}", senderAccountResponse.accountId())
+                .header("X-User-Id", senderUserResponse.userId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .session(session)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(3))
