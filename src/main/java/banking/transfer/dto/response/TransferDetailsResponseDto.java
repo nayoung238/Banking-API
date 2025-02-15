@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 public record TransferDetailsResponseDto (
 
-    @Schema(description = "거래 DB PK", example = "1")
+    @Schema(description = "이체 DB PK", example = "1")
     Long transferId,
 
     @Schema(description = "출금 계좌번호", example = "5792214-80232581")

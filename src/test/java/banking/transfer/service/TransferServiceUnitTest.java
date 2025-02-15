@@ -54,16 +54,16 @@ class TransferServiceUnitTest {
         AccountPublicInfoDto mockDepositAccountPublicInfo = AccountPublicInfoDto.of(depositAccount);
 
         TransferRequestDto transferRequest = TransferRequestDto.builder()
-            .withdrawalAccountNumber(withdrawalAccount.getAccountNumber())
+            .withdrawalAccountId(withdrawalAccount.getId())
             .withdrawalAccountPassword(AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user).getPassword())
             .depositAccountNumber(depositAccount.getAccountNumber())
             .amount(BigDecimal.valueOf(1000))
             .build();
 
-        when(accountService.findAuthorizedAccountWithLock(anyLong(), anyString(), anyString())).thenReturn(withdrawalAccount);
+        when(accountService.findAccountWithLock(anyLong(), anyLong(), anyString())).thenReturn(withdrawalAccount);
         when(accountService.findAccountPublicInfo(anyString())).thenReturn(mockDepositAccountPublicInfo);
         when(exchangeRateService.getExchangeRate(any(), any())).thenReturn(BigDecimal.ONE);
-        when(accountService.findAccountWithLock(anyLong())).thenReturn(depositAccount);
+        when(accountService.findAccountWithLock(anyLong(), any(Transfer.class))).thenReturn(depositAccount);
 
         TransferService.TransferResultHandler<Transfer> resultHandler = (transfer, wAc, dAc) -> transfer;
 
@@ -72,7 +72,7 @@ class TransferServiceUnitTest {
 
         // then
         assertNotNull(result);
-        verify(accountService, times(1)).findAuthorizedAccountWithLock(anyLong(), anyString(), anyString());
+        verify(accountService, times(1)).findAccountWithLock(anyLong(), anyLong(), anyString());
         verify(accountService, times(1)).findAccountPublicInfo(depositAccount.getAccountNumber());
         verify(exchangeRateService, times(1)).getExchangeRate(depositAccount.getCurrency(), withdrawalAccount.getCurrency());
     }
@@ -85,11 +85,13 @@ class TransferServiceUnitTest {
         Account account = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
 
         TransferRequestDto transferRequest = TransferRequestDto.builder()
-            .withdrawalAccountNumber(account.getAccountNumber())
+            .withdrawalAccountId(account.getId())
             .withdrawalAccountPassword(AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user).getPassword())
             .depositAccountNumber(account.getAccountNumber())
             .amount(BigDecimal.valueOf(2000))
             .build();
+
+        when(accountService.findAccountWithLock(anyLong(), anyLong(), anyString())).thenReturn(account);
 
         // when & then
         Assertions.assertThatThrownBy(() -> transferService.transfer(user.getId(), transferRequest))
@@ -100,5 +102,7 @@ class TransferServiceUnitTest {
                 assertEquals(HttpStatus.BAD_REQUEST, customException.getErrorCode().getStatus());
                 assertEquals("같은 계좌 간 거래는 불가합니다.", customException.getErrorCode().getMessage());
             });
+
+        verify(transferRepository, times(0)).save(any(Transfer.class));
     }
 }

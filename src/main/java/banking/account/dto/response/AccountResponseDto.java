@@ -18,7 +18,7 @@ public record AccountResponseDto (
     @Schema(description = "계좌 번호", example = "5618752-3157985")
     String accountNumber,
 
-    @Schema(description = "화폐", example = "KRW")
+    @Schema(description = "통화", example = "KRW")
     Currency currency,
 
     @Schema(description = "잔액", example = "10000")

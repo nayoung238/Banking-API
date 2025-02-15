@@ -11,8 +11,7 @@ import banking.payment.entity.Payment;
 import banking.payment.enums.PaymentStatus;
 import banking.payment.repository.PaymentRepository;
 import banking.payment.dto.request.PaymentRequestDto;
-import banking.transfer.dto.request.TransferRequestDto;
-import banking.transfer.entity.Transfer;
+import banking.transfer.dto.response.TransferResponseForPaymentDto;
 import banking.transfer.enums.TransferType;
 import banking.transfer.service.TransferService;
 import banking.user.dto.response.UserPublicInfoDto;
@@ -32,18 +31,14 @@ public class PaymentService {
 
     @Transactional
     public PaymentResponseDto processPayment(Long requesterId, PaymentRequestDto request) {
-        //출금 계좌와 입금 계좌가 다른지 확인
-        validateDifferentAccounts(request.withdrawalAccountNumber(), request.depositAccountNumber());
+        TransferResponseForPaymentDto transferResponse = transferService.transfer(requesterId, request);
 
-        Transfer transfer = transferService.transfer(TransferRequestDto.of(request));
-
-        // TODO: 상대 정보를 가져올 수 있는 권한
-        UserPublicInfoDto payeeUserPublicInfo = userService.findUserPublicInfo(transfer.getDepositAccountId());
+        UserPublicInfoDto payeeUserPublicInfo = userService.findUserPublicInfo(transferResponse.depositAccountId());
 
         Payment payment = Payment.builder()
             .payerId(requesterId)
             .payeeId(payeeUserPublicInfo.id())
-            .transferGroupId(transfer.getTransferGroupId())
+            .transferGroupId(transferResponse.transferGroupId())
             .paymentStatus(PaymentStatus.PAYMENT_PENDING)
             .build();
 
@@ -63,15 +58,15 @@ public class PaymentService {
             throw new CustomException(ErrorCode.PAYMENT_ALREADY_CANCELLED);
         }
 
-        Transfer refundTransfer = transferService.transferForRefund(requesterId, payment.getTransferGroupId(), request.withdrawalAccountPassword());
+        TransferResponseForPaymentDto refundTransferResponse = transferService.transferForRefund(requesterId, payment.getTransferGroupId(), request.withdrawalAccountPassword());
 
         // Payment 상태 변경 (PENDING/COMPLETED -> CANCELLED)
         payment.updatePaymentStatus(PaymentStatus.PAYMENT_CANCELLED);
 
         // TODO: 결제 취소에 대한 입출금 계좌에 모두 알림
 
-        AccountPublicInfoDto depositAccountPublicInfo = accountService.findAccountPublicInfo(refundTransfer.getDepositAccountId());
-        return RefundPaymentResponseDto.of(depositAccountPublicInfo.accountNumber(), refundTransfer.getAmount());
+        AccountPublicInfoDto depositAccountPublicInfo = accountService.findAccountPublicInfo(refundTransferResponse.depositAccountId(), refundTransferResponse);
+        return RefundPaymentResponseDto.of(depositAccountPublicInfo.accountNumber(), refundTransferResponse.amount());
     }
 
     private void verifyRequesterOwnership(Payment payment, Long requesterId) {
@@ -84,38 +79,21 @@ public class PaymentService {
         return createPaymentResponseDto(requesterId, paymentId);
     }
 
-    private void validateDifferentAccounts(String withdrawalAccountNumber, String depositAccountNumber) {
-        if (withdrawalAccountNumber.equals(depositAccountNumber)) {
-            throw new CustomException(ErrorCode.SAME_ACCOUNT_TRANSFER_NOT_ALLOWED);
-        }
-    }
-
     private PaymentResponseDto createPaymentResponseDto(Long requesterId, Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PAYMENT));
 
-        TransferType transferType = findTransferType(requesterId, payment.getPayerId(), payment.getPayeeId());
-        Transfer transfer = transferService.findTransferEntity(payment.getTransferGroupId(), transferType);
+        TransferResponseForPaymentDto transferResponse = transferService.findTransfer(payment.getTransferGroupId(), requesterId);
 
-        Long requesterAccountId = (transferType.equals(TransferType.WITHDRAWAL)) ?
-            transfer.getWithdrawalAccountId() : transfer.getDepositAccountId();
+        Long requesterAccountId = (transferResponse.transferType().equals(TransferType.WITHDRAWAL)) ?
+            transferResponse.withdrawalAccountId() : transferResponse.depositAccountId();
 
         // 공개용 계좌 정보 GET
-        AccountPublicInfoDto accountPublicInfo = accountService.findAccountPublicInfo(requesterAccountId);
+        AccountPublicInfoDto accountPublicInfo = accountService.findAccountPublicInfo(requesterAccountId, transferResponse);
 
         // 공개용 사용자 정보 GET
         UserPublicInfoDto userPublicInfo = userService.findUserPublicInfo(requesterId, requesterAccountId);
 
-        return PaymentResponseDto.of(payment, transfer, accountPublicInfo.accountNumber(), userPublicInfo.name());
-    }
-
-    public TransferType findTransferType(Long requesterId, Long payerId, Long payeeId) {
-        if (payerId.equals(requesterId)) {
-            return TransferType.WITHDRAWAL;
-        }
-        if (payeeId.equals(requesterId)) {
-            return TransferType.DEPOSIT;
-        }
-        throw new CustomException(ErrorCode.UNAUTHORIZED_TRANSFER_ACCESS);
+        return PaymentResponseDto.of(payment, transferResponse, accountPublicInfo.accountNumber(), userPublicInfo.name());
     }
 }

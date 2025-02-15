@@ -7,8 +7,8 @@ import banking.account.entity.Account;
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
 import banking.account.enums.Currency;
-import banking.fixture.testEntity.AccountFixture;
 import banking.fixture.testEntity.UserFixture;
+import banking.transfer.entity.Transfer;
 import banking.user.entity.User;
 import banking.user.repository.UserRepository;
 import banking.user.service.UserService;
@@ -40,18 +40,17 @@ class AccountServiceUnitTest {
     UserService userService;
 
     @Test
-    @DisplayName("[계좌 조회 실패 테스트] 계좌 조회 시 자신의 계좌가 아니면 FORBIDDEN 에러 코드 예외 발생")
-    void account_owner_test () {
+    @DisplayName("[계좌 접근 실패 테스트] 소유자만 락으로 계좌 접근")
+    void should_lock_account_for_owner_only () {
         // given
-        User user = UserFixture.USER_FIXTURE_1.createUser();
-        Account account = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
+        final long userId = 1L;
+        final long accountId = 43L;
+        final String accountPassword = "password1234";
 
-        when(accountRepository.findById(anyLong())).thenReturn(Optional.ofNullable(account));
-        when(userService.isExistUser(anyLong())).thenReturn(true);
+        when(accountRepository.existsByIdAndUserId(anyLong(), anyLong())).thenReturn(false);
 
         // when & then
-        assert account != null;
-        org.assertj.core.api.Assertions.assertThatThrownBy(() -> accountService.findAccount(user.getId() + 1, account.getId()))
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> accountService.findAccountWithLock(userId, accountId, accountPassword))
             .isInstanceOf(CustomException.class)
             .satisfies(ex -> {
                 CustomException customException = (CustomException) ex;
@@ -59,6 +58,54 @@ class AccountServiceUnitTest {
                 assertEquals(HttpStatus.FORBIDDEN, customException.getErrorCode().getStatus());
                 assertEquals("해당 계좌에 대한 접근 권한이 없습니다.", customException.getErrorCode().getMessage());
             });
+
+        verify(accountRepository, times(0)).findByIdWithLock(any());
+    }
+
+    @Test
+    @DisplayName("[계좌 접근 성공 테스트] 거래 당사자만 상대 계좌에 락 사용 가능")
+    void should_allow_access_to_related_user_with_lock_success_test () {
+        // given
+        final long requesterAccountId = 43L;
+        final long payeeAccountId = 21L;
+        Transfer mockTransfer = Transfer.builder()
+            .withdrawalAccountId(requesterAccountId)
+            .depositAccountId(payeeAccountId)
+            .build();
+
+        when(accountRepository.findByIdWithLock(payeeAccountId)).thenReturn(Optional.of(new Account()));
+
+        // when
+        accountService.findAccountWithLock(payeeAccountId, mockTransfer);
+
+        // verify
+        verify(accountRepository, times(1)).findByIdWithLock(payeeAccountId);
+    }
+
+    @Test
+    @DisplayName("[계좌 접근 실패 테스트] 거래 당사자가 아니면 상대 계좌 접근 불가")
+    void should_allow_access_to_related_user_with_lock_failure_test () {
+        // given
+        final long requesterAccountId = 43L;
+        final long payeeAccountId = 21L;
+        Transfer mockTransfer = Transfer.builder()
+            .withdrawalAccountId(requesterAccountId)
+            .depositAccountId(payeeAccountId)
+            .build();
+
+        final long requestedAccountId = 1L;
+
+        // when & verify
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> accountService.findAccountWithLock(requestedAccountId, mockTransfer))
+            .isInstanceOf(CustomException.class)
+            .satisfies(ex -> {
+                CustomException customException = (CustomException) ex;
+                assertEquals(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS, customException.getErrorCode());
+                assertEquals(HttpStatus.FORBIDDEN, customException.getErrorCode().getStatus());
+                assertEquals("해당 계좌에 대한 접근 권한이 없습니다.", customException.getErrorCode().getMessage());
+            });
+
+        verify(accountRepository, times(0)).findByIdWithLock(payeeAccountId);
     }
 
     @Test

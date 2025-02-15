@@ -9,12 +9,12 @@ import lombok.Builder;
 import java.math.BigDecimal;
 
 @Builder
-@Schema(description = "거래 요청 Dto")
+@Schema(description = "거래 요청 DTO")
 public record TransferRequestDto(
 
     @NotNull
-    @Schema(description = "송금 계좌번호", example = "5792214-80232581")
-    String withdrawalAccountNumber,
+    @Schema(description = "송금 계좌 DB PK", example = "579")
+    Long withdrawalAccountId,
 
     @NotNull
     @Schema(description = "송금 계좌 비밀번호", example = "12345")
@@ -31,7 +31,7 @@ public record TransferRequestDto(
 ) {
     public static TransferRequestDto of(PaymentRequestDto paymentRequestDto) {
         return TransferRequestDto.builder()
-            .withdrawalAccountNumber(paymentRequestDto.withdrawalAccountNumber())
+            .withdrawalAccountId(paymentRequestDto.withdrawalAccountId())
             .withdrawalAccountPassword(paymentRequestDto.withdrawalAccountPassword())
             .depositAccountNumber(paymentRequestDto.depositAccountNumber())
             .amount(paymentRequestDto.amount())

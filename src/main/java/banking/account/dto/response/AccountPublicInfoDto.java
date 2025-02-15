@@ -7,7 +7,7 @@ import lombok.Builder;
 @Builder
 public record AccountPublicInfoDto (
 
-	Long id,
+	Long accountId,
 	Long ownerUserId,
 	String ownerName,
 	String accountNumber,
@@ -17,7 +17,7 @@ public record AccountPublicInfoDto (
 
 	public static AccountPublicInfoDto of(Account account) {
 		return AccountPublicInfoDto.builder()
-			.id(account.getId())
+			.accountId(account.getId())
 			.ownerUserId(account.getUser().getId())
 			.ownerName(account.getUser().getName())
 			.accountNumber(account.getAccountNumber())
