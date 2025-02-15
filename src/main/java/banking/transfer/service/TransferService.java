@@ -8,8 +8,10 @@ import banking.account.service.AccountService;
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
 import banking.exchangeRate.ExchangeRateService;
+import banking.payment.dto.request.PaymentRequestDto;
 import banking.transfer.dto.request.TransferDetailsRequestDto;
 import banking.transfer.dto.request.TransferRequestDto;
+import banking.transfer.dto.response.TransferResponseForPaymentDto;
 import banking.transfer.dto.response.TransferSimpleResponseDto;
 import banking.transfer.dto.response.TransferDetailsResponseDto;
 import banking.transfer.entity.Transfer;
@@ -45,27 +47,30 @@ public class TransferService {
 
     @Transactional
     public TransferDetailsResponseDto transfer(Long requesterId, TransferRequestDto request) {
-        return executeTransfer(requesterId, request, (transfer, withdrawalAccount, depositAccount) -> {
-                AccountPublicInfoDto withdrawalAccountPublicInfo = accountService.findAccountPublicInfo(withdrawalAccount.getId());
+        return executeTransfer(requesterId, request,
+            (transfer, withdrawalAccount, depositAccount) -> {
+                AccountPublicInfoDto withdrawalAccountPublicInfo = accountService.findAccountPublicInfo(withdrawalAccount.getId(), transfer);
                 return TransferDetailsResponseDto.of(transfer, TransferType.WITHDRAWAL, withdrawalAccountPublicInfo, depositAccount);
             }
         );
     }
 
     @Transactional
-    public Transfer transfer(TransferRequestDto request) {
-        return executeTransfer(null, request, (transfer, withdrawalAccount, depositAccount) -> transfer);
+    public TransferResponseForPaymentDto transfer(Long requesterId, PaymentRequestDto request) {
+        return executeTransfer(requesterId, TransferRequestDto.of(request),
+            (transfer, withdrawalAccount, depositAccount) ->  TransferResponseForPaymentDto.of(transfer));
     }
 
     public <T> T executeTransfer(Long requesterId, TransferRequestDto request, TransferResultHandler<T> resultHandler) {
-        if(request.withdrawalAccountNumber().equals(request.depositAccountNumber())) {
+        // 출금 계좌 Entity GET with Lock
+        Account withdrawalAccount = accountService.findAccountWithLock(requesterId, request.withdrawalAccountId(), request.withdrawalAccountPassword());
+
+        // 같은 계좌 간 이체 불가
+        if (withdrawalAccount.getAccountNumber().equals(request.depositAccountNumber())) {
             throw new CustomException(ErrorCode.SAME_ACCOUNT_TRANSFER_NOT_ALLOWED);
         }
 
-        // 송금 계좌 Entity GET with GET
-        Account withdrawalAccount = accountService.findAuthorizedAccountWithLock(requesterId, request.withdrawalAccountNumber(), request.withdrawalAccountPassword());
-
-        // 락 없이 Account DTO GET
+        // 입금 계좌 DTO GET
         AccountPublicInfoDto depositAccountPublicInfo = accountService.findAccountPublicInfo(request.depositAccountNumber());
 
         // 출금 (sync)
@@ -89,7 +94,7 @@ public class TransferService {
         CompletableFuture.runAsync(() -> {
             TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
             transactionTemplate.execute(status -> {
-                Account depositAccount = accountService.findAccountWithLock(withdrawalTransfer.getDepositAccountId());
+                Account depositAccount = accountService.findAccountWithLock(withdrawalTransfer.getDepositAccountId(), withdrawalTransfer);
 
                 // TODO: 소수점 정합성 확인 필요
                 BigDecimal withdrawalAmount = withdrawalTransfer.getAmount();
@@ -110,7 +115,7 @@ public class TransferService {
     }
 
     @Transactional
-    public Transfer transferForRefund(Long requesterId, String transferGroupId, String requesterAccountPassword) {
+    public TransferResponseForPaymentDto transferForRefund(Long requesterId, String transferGroupId, String requesterAccountPassword) {
         List<Transfer> transfers = transferRepository.findAllByTransferGroupId(transferGroupId);
         verifyTransfer(transfers, requesterId);
 
@@ -128,34 +133,41 @@ public class TransferService {
         Account originalWithdrawalAccount = null;
         Account originalDepositAccount = null;
         if(origianlWithdrawalTransfer.getWithdrawalAccountId().compareTo(origianlWithdrawalTransfer.getDepositAccountId()) < 0) {
-            originalWithdrawalAccount = accountService.findAuthorizedAccountWithLock(
-                requesterId, origianlWithdrawalTransfer.getWithdrawalAccountId(), requesterAccountPassword);
-            originalDepositAccount = accountService.findAccountWithLock(origianlWithdrawalTransfer.getDepositAccountId());
+            originalWithdrawalAccount = accountService.findAccountWithLock(origianlWithdrawalTransfer.getWithdrawalAccountId(),
+                                                                            requesterId,
+                                                                            requesterAccountPassword);
+
+            originalDepositAccount = accountService.findAccountWithLock(origianlWithdrawalTransfer.getDepositAccountId(),
+                                                                        originalDepositTransfer);
         } else {
-            originalDepositAccount = accountService.findAccountWithLock(origianlWithdrawalTransfer.getDepositAccountId());
-            originalWithdrawalAccount = accountService.findAuthorizedAccountWithLock(
-                requesterId, origianlWithdrawalTransfer.getWithdrawalAccountId(), requesterAccountPassword);
+            originalDepositAccount = accountService.findAccountWithLock(origianlWithdrawalTransfer.getDepositAccountId(),
+                                                                        originalDepositTransfer);
+
+            originalWithdrawalAccount = accountService.findAccountWithLock(origianlWithdrawalTransfer.getWithdrawalAccountId(),
+                                                                            requesterId,
+                                                                            requesterAccountPassword);
         }
 
         Account refundWithdrawalAccount = originalDepositAccount;
         Account refundDepositAccount = originalWithdrawalAccount;
-        AccountPublicInfoDto refundDepositAccountPublicInfo = accountService.findAccountPublicInfo(refundDepositAccount.getId());
+        AccountPublicInfoDto refundDepositAccountPublicInfo = accountService.findAccountPublicInfo(refundDepositAccount.getId(), origianlWithdrawalTransfer);
 
-        // 결제 취소로 인한 출금
+        // 결제 취소에 대한 출금
         processWithdrawal(refundWithdrawalAccount, refundDepositAccountPublicInfo, originalDepositTransfer.getAmount());
 
         // 결제 취소에 대한 출금 내역 생성
-        Transfer refundTransfer = saveTransferAndWithdrawalTransferDetails(
-            refundWithdrawalAccount, refundDepositAccountPublicInfo,
-            originalDepositTransfer.getExchangeRate(), originalDepositTransfer.getAmount());
+        Transfer refundTransfer = saveTransferAndWithdrawalTransferDetails(refundWithdrawalAccount,
+                                                                            refundDepositAccountPublicInfo,
+                                                                            originalDepositTransfer.getExchangeRate(),
+                                                                            originalDepositTransfer.getAmount());
 
-        // 결제 취소로 인한 입금 (결제 취소로 인한 출금 작업 완료 후 진행)
+        // 결제 취소로 인한 입금 (출금 작업 완료 후 진행)
         accountBalanceService.increaseBalance(refundDepositAccount.getId(), origianlWithdrawalTransfer.getAmount());
 
         // 결제 취소에 대한 입금 내역 생성
         saveDepositTransferDetails(refundTransfer, origianlWithdrawalTransfer.getAmount(), refundDepositAccount.getBalance());
 
-        return refundTransfer;
+        return TransferResponseForPaymentDto.of(refundTransfer);
     }
 
     private void verifyTransfer(List<Transfer> transfers, Long withdrawalUserId) {
@@ -199,7 +211,7 @@ public class TransferService {
             .transferOwnerId(withdrawalAccount.getId())
             .transferType(TransferType.WITHDRAWAL)
             .withdrawalAccountId(withdrawalAccount.getId())
-            .depositAccountId(depositAccountPublicInfo.id())
+            .depositAccountId(depositAccountPublicInfo.accountId())
             .currency(depositAccountPublicInfo.currency() + "/" + withdrawalAccount.getCurrency())
             .exchangeRate(exchangeRate)
             .amount(amount)
@@ -270,8 +282,8 @@ public class TransferService {
         Transfer transfer = transferRepository.findById(request.transferId())
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRANSFER));
 
-        AccountPublicInfoDto withdrawalAccountPublicInfo = accountService.findAccountPublicInfo(transfer.getWithdrawalAccountId());
-        AccountPublicInfoDto depositAccountPublicInfo = accountService.findAccountPublicInfo(transfer.getDepositAccountId());
+        AccountPublicInfoDto withdrawalAccountPublicInfo = accountService.findAccountPublicInfo(transfer.getWithdrawalAccountId(), transfer);
+        AccountPublicInfoDto depositAccountPublicInfo = accountService.findAccountPublicInfo(transfer.getDepositAccountId(), transfer);
 
         TransferType transferType = getTransferType(transfer, request.accountId());
         verifyTransferAccount(requesterId, transferType, withdrawalAccountPublicInfo, depositAccountPublicInfo);
@@ -305,9 +317,11 @@ public class TransferService {
         throw new CustomException(ErrorCode.NOT_FOUND_TRANSFER);
     }
 
-    public Transfer findTransferEntity(String transferGroupId, TransferType transferType) {
-        return transferRepository.findByTransferGroupIdAndTransferType(transferGroupId, TransferType.WITHDRAWAL)
+    public TransferResponseForPaymentDto findTransfer(String transferGroupId, Long requesterId) {
+        Transfer transfer =  transferRepository.findByTransferGroupIdAndTransferOwnerId(transferGroupId, requesterId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRANSFER));
+
+        return TransferResponseForPaymentDto.of(transfer);
     }
 
     @FunctionalInterface

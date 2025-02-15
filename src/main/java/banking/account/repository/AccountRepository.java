@@ -1,7 +1,6 @@
 package banking.account.repository;
 
 import banking.account.entity.Account;
-import banking.user.entity.User;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -18,7 +17,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     boolean existsByAccountNumber(String accountNumber);
 
-    List<Account> findByUser(User user);
+    List<Account> findAllByUserId(Long userId);
 
     Optional<Account> findByAccountNumber(String accountNumber);
 
@@ -26,7 +25,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     @Query("SELECT a FROM Account a WHERE a.accountNumber = :accountNumber")
     Optional<Account> findByAccountNumberWithLock(@Param("accountNumber") String accountNumber);
 
-    @Query("select case when exists " +
-        "(select 1 from Account a where a.id = :accountId and a.user.id = :userId) then true else false end")
-    boolean existsByAccountIdAndUserId(@Param("accountId") Long accountId, @Param("userId") Long userId);
+    Optional<Account> findByIdAndUserId(Long id, Long userId);
+
+    boolean existsByIdAndUserId(Long id, Long userId);
 }
