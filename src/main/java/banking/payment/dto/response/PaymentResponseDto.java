@@ -2,7 +2,7 @@ package banking.payment.dto.response;
 
 import banking.payment.entity.Payment;
 import banking.payment.enums.PaymentStatus;
-import banking.transfer.entity.Transfer;
+import banking.transfer.dto.response.TransferResponseForPaymentDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -38,16 +38,17 @@ public record PaymentResponseDto (
     @Schema(description = "결제일", example = "2019.05.20")
     LocalDateTime paidAt
 ) {
-    public static PaymentResponseDto of(Payment payment, Transfer transfer, String withdrawAccountNumber, String payeeName) {
+    public static PaymentResponseDto of(Payment payment, TransferResponseForPaymentDto transferResponse,
+                                        String withdrawAccountNumber, String payeeName) {
         return PaymentResponseDto.builder()
             .paymentId(payment.getId())
             .paymentStatus(payment.getPaymentStatus())
             .withdrawAccountNumber(withdrawAccountNumber)
             .payeeName(payeeName)
-            .amount(stripZeros(transfer.getAmount()))
-            .exchangeRate(stripZeros(transfer.getExchangeRate()))
-            .currency(transfer.getCurrency())
-            .paidAt(transfer.getCreatedAt())
+            .amount(stripZeros(transferResponse.amount()))
+            .exchangeRate(stripZeros(transferResponse.exchangeRate()))
+            .currency(transferResponse.currency())
+            .paidAt(transferResponse.createdAt())
             .build();
     }
 

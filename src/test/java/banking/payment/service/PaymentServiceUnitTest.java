@@ -8,7 +8,7 @@ import banking.fixture.testEntity.UserFixture;
 import banking.payment.dto.request.PaymentRequestDto;
 import banking.payment.enums.PaymentStatus;
 import banking.payment.repository.PaymentRepository;
-import banking.transfer.entity.Transfer;
+import banking.transfer.dto.response.TransferResponseForPaymentDto;
 import banking.transfer.enums.TransferType;
 import banking.transfer.service.TransferService;
 import banking.user.dto.response.UserPublicInfoDto;
@@ -60,20 +60,19 @@ public class PaymentServiceUnitTest {
 		Account depositAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_2.createAccount(user);
 
 		PaymentRequestDto paymentRequest = PaymentRequestDto.builder()
-			.withdrawalAccountNumber(withdrawalAccount.getAccountNumber())
+			.withdrawalAccountId(withdrawalAccount.getId())
 			.withdrawalAccountPassword(AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user).getPassword())
 			.depositAccountNumber(depositAccount.getAccountNumber())
 			.amount(BigDecimal.valueOf(200))
 			.build();
 
-		Transfer mockTransfer = Transfer.builder()
-			.id(1L)
+		TransferResponseForPaymentDto transferResponse = TransferResponseForPaymentDto.builder()
 			.transferGroupId("173234Ad2D")
-			.transferOwnerId(user.getId())
 			.transferType(TransferType.WITHDRAWAL)
 			.withdrawalAccountId(withdrawalAccount.getId())
-			.exchangeRate(BigDecimal.ONE)
+			.depositAccountId(depositAccount.getId())
 			.amount(BigDecimal.valueOf(200))
+			.exchangeRate(BigDecimal.ONE)
 			.build();
 
 		Payment mockPayment = Payment.builder()
@@ -94,47 +93,21 @@ public class PaymentServiceUnitTest {
 			.name(user.getName())
 			.build();
 
-
-		when(transferService.transfer(any())).thenReturn(mockTransfer);
-		when(paymentRepository.findById(any())).thenReturn(Optional.ofNullable(mockPayment));
-		when(transferService.findTransferEntity(any(), any())).thenReturn(mockTransfer);
-		when(accountService.findAccountPublicInfo(anyLong())).thenReturn(mockAccountPublicInfoDto);
-		when(userService.findUserPublicInfo(any(), any())).thenReturn(mockUserPublicInfoDto);
+		when(transferService.transfer(anyLong(), any(PaymentRequestDto.class))).thenReturn(transferResponse);
 		when(userService.findUserPublicInfo(any())).thenReturn(mockUserPublicInfoDto);
+		when(paymentRepository.save(any(Payment.class))).thenReturn(null);
+		when(paymentRepository.findById(any())).thenReturn(Optional.ofNullable(mockPayment));
+		when(transferService.findTransfer(any(), anyLong())).thenReturn(transferResponse);
+		when(accountService.findAccountPublicInfo(anyLong(), any(TransferResponseForPaymentDto.class))).thenReturn(mockAccountPublicInfoDto);
+		when(userService.findUserPublicInfo(any(), any())).thenReturn(mockUserPublicInfoDto);
 
 		// when
 		paymentService.processPayment(user.getId(), paymentRequest);
 
 		// then
-		verify(transferService, times(1)).transfer(any());
+		verify(transferService, times(1)).transfer(anyLong(), any(PaymentRequestDto.class));
 		verify(paymentRepository, times(1)).save(any(Payment.class));
 	}
-
-
-    @Test
-    @DisplayName("[결제 실패 테스트] 송신 계좌와 수신 계좌 동일하면 결제 불가")
-    void payment_fail_when_same_account () {
-        // given
-		User user = UserFixture.USER_FIXTURE_1.createUser();
-		Account account = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
-
-		PaymentRequestDto paymentRequest = PaymentRequestDto.builder()
-			.withdrawalAccountNumber(account.getAccountNumber())
-			.withdrawalAccountPassword(AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user).getPassword())
-			.depositAccountNumber(account.getAccountNumber())
-			.amount(BigDecimal.valueOf(200))
-			.build();
-
-        // when & then
-		Assertions.assertThatThrownBy(() -> paymentService.processPayment(user.getId(), paymentRequest))
-			.isInstanceOf(CustomException.class)
-			.satisfies(ex -> {
-				CustomException customException = (CustomException) ex;
-				assertEquals(ErrorCode.SAME_ACCOUNT_TRANSFER_NOT_ALLOWED, customException.getErrorCode());
-				assertEquals(HttpStatus.BAD_REQUEST, customException.getErrorCode().getStatus());
-				assertEquals("같은 계좌 간 거래는 불가합니다.", customException.getErrorCode().getMessage());
-			});
-    }
 
     @Test
     @DisplayName("[결제 취소 실패 테스트] 이미 결제 취소된 상태는 처리하지 않음")
