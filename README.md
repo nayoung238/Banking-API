@@ -18,15 +18,15 @@
 - 이슈 발생: 누구나 Account 접근 가능
 - 해결 방법: Account 접근 제한 설정
 - 기대: 민감한 정보 보호
-- [x] Account & User 엔티티 접근 제한
+- [x] [Account & User 엔티티 접근 제한](https://github.com/imzero238/Banking-API/blob/develop/src/main/java/banking/account/service/AccountService.java#L98)
 - [x] 공개용 xxPublicInfo DTO 생성
 
 ### 트랜잭션 분리
 - 이슈 발생: 한 트랜잭션에서 많은 락 점유 -> 데드락 발생, 응답 지연
 - 해결 방법: 트랜잭션 분리해 락 점유율 감소
 - 기대: 데드락 해결 및 응답 속도 개선
-- [X] 트랜잭션 분리 (async 기반)
-- [ ] 트랜잭션 분리 (kafka 기반)
+- [X] [@Async 트랜잭션 분리](https://github.com/imzero238/Banking-API/commit/a42134d891116b7636172e61a777794b61149e64) -> CallerRunsPolicy 설정, NIO 워커 스레드 지연 발생 (카프카 사용)
+- [ ] Kafka 트랜잭션 분리
 - [X] Ordered Locking -> 데드락 해결
 
 ### CompletableFuture 기반 Open API 설계
