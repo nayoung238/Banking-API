@@ -60,14 +60,13 @@ class PaymentControllerTransferIntegrationTest extends TransferIntegrationTestBa
         accountBalanceService.atmDeposit(depositRequest);
 
         // given2 - 계좌번호 및 비밀번호 암호화
-        String encryptedWithdrawAccountNumber = encryptionFacade.encrypt(senderKrwAccount.accountNumber());
         String encryptedDepositAccountNumber = encryptionFacade.encrypt(receiverKrwAccount.accountNumber());
         String encryptedPassword = encryptionFacade.encrypt(AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto().password());
 
         // given3 - 계좌 요청 DTO 생성
         final BigDecimal withdrawalBalance = BigDecimal.valueOf(10000);
         PaymentRequestDto request = PaymentRequestDto.builder()
-            .withdrawalAccountNumber(encryptedWithdrawAccountNumber)
+            .withdrawalAccountId(senderKrwAccount.accountId())
             .withdrawalAccountPassword(encryptedPassword)
             .depositAccountNumber(encryptedDepositAccountNumber)
             .amount(withdrawalBalance)
@@ -151,7 +150,7 @@ class PaymentControllerTransferIntegrationTest extends TransferIntegrationTestBa
         // given2 - 결제 요청 및 처리
         final BigDecimal paymentAmount = new BigDecimal(2000);
         PaymentRequestDto paymentRequest = PaymentRequestDto.builder()
-            .withdrawalAccountNumber(senderKrwAccount.accountNumber())
+            .withdrawalAccountId(senderKrwAccount.accountId())
             .withdrawalAccountPassword(senderKrwAccountPassword)
             .depositAccountNumber(receiverKrwAccount.accountNumber())
             .amount(paymentAmount)

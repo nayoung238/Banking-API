@@ -58,7 +58,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
         // given2 - 이체 요청 DTO 생성
         final BigDecimal withdrawalAmount = new BigDecimal("2000.0");
         TransferRequestDto transferRequest = TransferRequestDto.builder()
-            .withdrawalAccountNumber(senderKrwAccount.accountNumber())
+            .withdrawalAccountId(senderKrwAccount.accountId())
             .withdrawalAccountPassword(senderKrwAccountPassword)
             .depositAccountNumber(receiverKrwAccount.accountNumber())
             .amount(withdrawalAmount)
@@ -73,7 +73,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.transferId").isNumber())
-            .andExpect(jsonPath("$.withdrawalAccountNumber").value(transferRequest.withdrawalAccountNumber()))
+            .andExpect(jsonPath("$.withdrawalAccountNumber").value(senderKrwAccount.accountNumber()))
             .andExpect(jsonPath("$.depositAccountNumber").value(transferRequest.depositAccountNumber()))
             .andExpect(jsonPath("$.transferType").value(TransferType.WITHDRAWAL.name()))
             .andExpect(jsonPath("$.exchangeRate").value(comparesEqualTo(BigDecimal.ONE.intValue())))
@@ -98,7 +98,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
         // given2 - 이체 요청 DTO 생성
         final BigDecimal withdrawalAmount = currentBalance.multiply(new BigDecimal(2));
         TransferRequestDto transferRequest = TransferRequestDto.builder()
-            .withdrawalAccountNumber(senderKrwAccount.accountNumber())
+            .withdrawalAccountId(senderKrwAccount.accountId())
             .withdrawalAccountPassword(senderKrwAccountPassword)
             .depositAccountNumber(receiverKrwAccount.accountNumber())
             .amount(withdrawalAmount)
@@ -131,7 +131,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
         // given2 - 이체 요청
         final BigDecimal withdrawalAmount = new BigDecimal(2000);
         TransferRequestDto transferRequest = TransferRequestDto.builder()
-            .withdrawalAccountNumber(senderKrwAccount.accountNumber())
+            .withdrawalAccountId(senderKrwAccount.accountId())
             .withdrawalAccountPassword(senderKrwAccountPassword)
             .depositAccountNumber(receiverKrwAccount.accountNumber())
             .amount(withdrawalAmount)
@@ -153,7 +153,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.transferId").value(transferDetailsResponse.transferId()))
-            .andExpect(jsonPath("$.withdrawalAccountNumber").value(transferRequest.withdrawalAccountNumber()))
+            .andExpect(jsonPath("$.withdrawalAccountNumber").value(senderKrwAccount.accountNumber()))
             .andExpect(jsonPath("$.depositAccountNumber").value(transferRequest.depositAccountNumber()))
             .andExpect(jsonPath("$.transferType").value(TransferType.WITHDRAWAL.name()))
             .andExpect(jsonPath("$.exchangeRate").value(comparesEqualTo(BigDecimal.ONE.intValue())))
@@ -178,7 +178,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
         // given2 - 이체 요청
         final BigDecimal withdrawalAmount = new BigDecimal(2000);
         TransferRequestDto transferRequest = TransferRequestDto.builder()
-            .withdrawalAccountNumber(senderKrwAccount.accountNumber())
+            .withdrawalAccountId(senderKrwAccount.accountId())
             .withdrawalAccountPassword(senderKrwAccountPassword)
             .depositAccountNumber(receiverKrwAccount.accountNumber())
             .amount(withdrawalAmount)

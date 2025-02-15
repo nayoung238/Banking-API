@@ -23,16 +23,14 @@ public class DecryptionAspect {
 		Object[] args = joinPoint.getArgs();
 		for (int i = 0; i < args.length; i++) {
 			if (args[i] instanceof PaymentRequestDto request) {
-				String decryptedWithdrawAccountNumber = decryptionFacade.decrypt(request.withdrawalAccountNumber());
 				String decryptedDepositAccountNumber = decryptionFacade.decrypt(request.depositAccountNumber());
 				String decryptedPassword = decryptionFacade.decrypt(request.withdrawalAccountPassword());
 
-				log.info("[/payment] WithdrawAccountNumber {} -> {}", request.withdrawalAccountNumber(), decryptedWithdrawAccountNumber);
 				log.info("[/payment] DecryptedDepositAccountNumber {} -> {}", request.depositAccountNumber(), decryptedDepositAccountNumber);
 				log.info("[/payment] password {} -> {}", request.withdrawalAccountPassword(), decryptedPassword);
 
 				args[i] = PaymentRequestDto.builder()
-					.withdrawalAccountNumber(decryptedWithdrawAccountNumber)
+					.withdrawalAccountId(request.withdrawalAccountId())
 					.withdrawalAccountPassword(decryptedPassword)
 					.depositAccountNumber(decryptedDepositAccountNumber)
 					.amount(request.amount())
