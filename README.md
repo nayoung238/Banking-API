@@ -6,7 +6,6 @@
 - [X] 이체 기능
 - [X] 원화 및 외화 계좌 제공 (원화, 외화 간 거래에 실시간 환율 데이터 사용)
 - [X] 결제 관련 Open API 제공
-- [ ] 정기 결제
 - [ ] 무중단 데이터 정합성 체크 기능
 - [ ] 실시간 여러 환율 페이지 제공
 
@@ -15,21 +14,24 @@
 ## 📚 List of Refactoring Tasks
 
 ### IDOR (Insecure Direct Object Reference) 해결
-- 이슈 발생: 누구나 Account 접근 가능
-- 해결 방법: Account 접근 제한 설정
+![](/img/transfer-table-design.png)
+- 이슈 발생: 상대방 계좌 & 이체 내역 접근 가능
+- 해결 방법: Account 접근 제한 설정 및 테이블 설계 변경해 상대 이체 내역 접근 차단
 - 기대: 민감한 정보 보호
-- [x] [Account & User 엔티티 접근 제한](https://github.com/imzero238/Banking-API/blob/develop/src/main/java/banking/account/service/AccountService.java#L98)
-- [x] 공개용 xxPublicInfo DTO 생성
+- [x] Account & User 엔티티 접근 제한 (거래 당사자는 상대 정보 일부 접근 가능)
+- [x] 공개용 xxPublicInfo DTO 생성 (민감한 정보 제외하고 반환)
 
 ### 트랜잭션 분리
+![](/img/transaction-design.png)
 - 이슈 발생: 한 트랜잭션에서 많은 락 점유 -> 데드락 발생, 응답 지연
 - 해결 방법: 트랜잭션 분리해 락 점유율 감소
 - 기대: 데드락 해결 및 응답 속도 개선
-- [X] [@Async 트랜잭션 분리](https://github.com/imzero238/Banking-API/commit/a42134d891116b7636172e61a777794b61149e64) -> CallerRunsPolicy 설정, NIO 워커 스레드 지연 발생 (카프카 사용)
-- [ ] Kafka 트랜잭션 분리
+- [X] 트랜잭션 분리 (async 기반)
+- [ ] 트랜잭션 분리 (kafka 기반)
 - [X] Ordered Locking -> 데드락 해결
 
 ### CompletableFuture 기반 Open API 설계
+![](/img/exchange-rate-design.png)
 - 이슈 발생: 수많은 스레드의 상태 전환 문제 -> Context Switching 비용 문제
 - 해결 방법: Spin Lock, Sleep 등 여러 방법 중 CPU 사용률 낮고, RPS가 큰 방식 채택
 - 기대: 효율적인 CPU 사용
