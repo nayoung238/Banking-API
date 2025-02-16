@@ -55,10 +55,11 @@ public class AccountBalanceService {
 	}
 
 	@Transactional
-	public void increaseBalance(Long accountId, BigDecimal amount) {
-		Account depositAccount = accountRepository.findById(accountId)
+	public BigDecimal increaseBalance(Long accountId, BigDecimal amount) {
+		Account account = accountRepository.findById(accountId)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
-		depositAccount.increaseBalance(amount);
+		account.increaseBalance(amount);
+		return account.getBalance();
 	}
 }
