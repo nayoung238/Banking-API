@@ -38,6 +38,9 @@ class TransferServiceUnitTest {
     TransferRepository transferRepository;
 
     @Mock
+    DepositAsyncService depositAsyncService;
+
+    @Mock
     AccountService accountService;
 
     @Mock
@@ -75,6 +78,7 @@ class TransferServiceUnitTest {
         verify(accountService, times(1)).findAccountWithLock(anyLong(), anyLong(), anyString());
         verify(accountService, times(1)).findAccountPublicInfo(depositAccount.getAccountNumber());
         verify(exchangeRateService, times(1)).getExchangeRate(depositAccount.getCurrency(), withdrawalAccount.getCurrency());
+        verify(depositAsyncService, times(1)).processDepositAsync(any(Transfer.class));
     }
 
     @Test
