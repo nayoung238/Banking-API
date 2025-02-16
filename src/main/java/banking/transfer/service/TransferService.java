@@ -2,7 +2,6 @@ package banking.transfer.service;
 
 import banking.account.dto.response.AccountPublicInfoDto;
 import banking.account.entity.Account;
-import banking.account.repository.AccountRepository;
 import banking.account.service.AccountBalanceService;
 import banking.account.service.AccountService;
 import banking.common.exception.CustomException;
@@ -24,26 +23,21 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 public class TransferService {
 
     private final TransferRepository transferRepository;
+    private final DepositAsyncService depositAsyncService;
     private final ExchangeRateService exchangeRateService;
     private final UserService userService;
     private final AccountService accountService;
     private final AccountBalanceService accountBalanceService;
-    private final AccountRepository accountRepository;
-
-    private final PlatformTransactionManager transactionManager;
 
     @Transactional
     public TransferDetailsResponseDto transfer(Long requesterId, TransferRequestDto request) {
@@ -77,7 +71,7 @@ public class TransferService {
         Transfer withdrawalTransfer = processWithdrawal(withdrawalAccount, depositAccountPublicInfo, request.amount());
 
         // 입금 (async)
-        processDepositAsync(withdrawalTransfer);
+        depositAsyncService.processDepositAsync(withdrawalTransfer);
 
         return resultHandler.handle(withdrawalTransfer, withdrawalAccount, depositAccountPublicInfo);
     }
@@ -87,31 +81,6 @@ public class TransferService {
         BigDecimal convertedAmount = amount.multiply(exchangeRate);
         withdrawalAccount.decreaseBalance(convertedAmount);
         return saveTransferAndWithdrawalTransferDetails(withdrawalAccount, depositAccountPublicInfo, exchangeRate, convertedAmount);
-    }
-
-    // TODO: 비동기 트랜잭션 관리 & 실패 시 재시도 처리
-    public void processDepositAsync(Transfer withdrawalTransfer) {
-        CompletableFuture.runAsync(() -> {
-            TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
-            transactionTemplate.execute(status -> {
-                Account depositAccount = accountService.findAccountWithLock(withdrawalTransfer.getDepositAccountId(), withdrawalTransfer);
-
-                // TODO: 소수점 정합성 확인 필요
-                BigDecimal withdrawalAmount = withdrawalTransfer.getAmount();
-                BigDecimal depositAmount = withdrawalAmount.divide(withdrawalTransfer.getExchangeRate());
-
-                // 입금 계좌 잔액 변경
-                depositAccount.increaseBalance(depositAmount);
-                accountRepository.save(depositAccount);
-
-                // 이체 내역 (입금) 추가
-                saveDepositTransferDetails(withdrawalTransfer, depositAmount, depositAccount.getBalance());
-
-                // TODO: 입금 알림
-
-                return null;
-            });
-        });
     }
 
     @Transactional
