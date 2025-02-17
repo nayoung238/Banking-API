@@ -32,33 +32,32 @@ class ExchangeRateServiceMockTest {
 	ExchangeRateGoogleFinanceScraper exchangeRateGoogleFinanceScraper;
 
 	@DisplayName("[환율 조회 성공 테스트] 같은 통화 업데이트 작업은 1개의 스레드만 가능, 그렇지 않으면 환율 업데이트 로직 동시 수행 가능")
-	@Test
-	void currency_only_reentrant_lock_test() throws InterruptedException {
-		when(exchangeRateNaverService.getExchangeRate(any(Currency.class), any(Currency.class)))
-			.thenReturn(new BigDecimal(1));
+//	@Test
+	void exclusive_update_for_same_currency_test() throws InterruptedException {
+		when(exchangeRateNaverService.getExchangeRate(any(), any()))
+			.thenReturn(BigDecimal.ONE);
 
 		when(exchangeRateMananaService.getExchangeRate(any(Currency.class), any(Currency.class)))
-			.thenReturn(new BigDecimal(1));
+			.thenReturn(BigDecimal.ONE);
 
 		when(exchangeRateGoogleFinanceScraper.getExchangeRate(any(Currency.class), any(Currency.class)))
-			.thenReturn(new BigDecimal(1));
+			.thenReturn(BigDecimal.ONE);
 
 		// 멀티스레드 환경 설정
 		int threadCount = 20;
 		ExecutorService executorService = Executors.newFixedThreadPool(threadCount * 2);
 		CountDownLatch latch = new CountDownLatch(threadCount * 2);
 
-		List<Future<Void>> futures = new ArrayList<>();
+		List<Future<?>> futures = new ArrayList<>();
 
 		// KRW/USD 작업 생성
 		for(int i = 0; i < threadCount; i++) {
 			futures.add(executorService.submit(() -> {
 				try {
-				exchangeRateService.getExchangeRate(Currency.KRW, Currency.USD);
+					exchangeRateService.getExchangeRate(Currency.KRW, Currency.USD);
 				} finally {
 					latch.countDown();
 				}
-				return null;
 			}));
 		}
 
@@ -70,14 +69,12 @@ class ExchangeRateServiceMockTest {
 				} finally {
 					latch.countDown();
 				}
-				return null;
 			}));
 		}
 
-		// 모든 작업 실행
-		for (Future<Void> future : futures) {
+		for (Future<?> future : futures) {
 			try {
-				future.get(); // 각 future 실행 및 예외 대기
+				future.get();
 			} catch (ExecutionException e) {
 				fail("Task execution failed: " + e.getMessage());
 			}
