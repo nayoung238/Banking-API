@@ -9,6 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -18,27 +19,29 @@ class ExchangeRateMananaServiceTest {
 	@Autowired
 	ExchangeRateMananaService exchangeRateMananaService;
 
-	@DisplayName("Manana 서비스로 USD/KRW 요청 시 1 이상의 값을 반환해야 한다.")
+	@DisplayName("[Manana 환율 성공 테스트] Base Currency가 KRW이면 환율 데이터 1 미만 반환")
 	@Test
-	void USD_KRW_test() {
-		BigDecimal exchangeRate = exchangeRateMananaService.getExchangeRate(Currency.USD, Currency.KRW);
+	void base_currency_krw_test() {
+		BigDecimal exchangeRate = exchangeRateMananaService.getExchangeRate(Currency.KRW, Currency.EUR);
 
 		assertNotNull(exchangeRate);
-		assertTrue(exchangeRate.compareTo(BigDecimal.ONE) > 0);
-		assertEquals(2, exchangeRate.scale());
+		assertThat(exchangeRate.compareTo(BigDecimal.ZERO) > 0).isTrue();
+		assertThat(exchangeRate.compareTo(BigDecimal.ONE) < 0).isTrue();
+		assertEquals(5, exchangeRate.scale());
 
-		System.out.println("[Manana] USD/KRW " + exchangeRate);
+		System.out.println("[Manana] KRW/xxx 환율 결과: " + exchangeRate);
 	}
 
-	@DisplayName("Manana 서비스로 EUR/KRW 요청 시 1 이상의 값을 반환해야 한다.")
+	@DisplayName("[Manana 환율 성공 테스트] Quote Currency가 KRW이면 환율 데이터 1 이상 반환")
 	@Test
-	void EUR_KRW_test() {
+	void quote_currency_krw_test() {
 		BigDecimal exchangeRate = exchangeRateMananaService.getExchangeRate(Currency.EUR, Currency.KRW);
 
 		assertNotNull(exchangeRate);
-		assertTrue(exchangeRate.compareTo(BigDecimal.ONE) > 0);
+		assertThat(exchangeRate.compareTo(BigDecimal.ZERO) > 0).isTrue();
+		assertThat(exchangeRate.compareTo(BigDecimal.ONE) < 0).isFalse();
 		assertEquals(2, exchangeRate.scale());
 
-		System.out.println("[Manana] EUR/KRW " + exchangeRate);
+		System.out.println("[Manana] xxx/KRW 환율 결과: " + exchangeRate);
 	}
 }

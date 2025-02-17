@@ -1,6 +1,7 @@
 package banking.exchangeRate.openfeign;
 
 import banking.account.enums.Currency;
+import banking.common.config.FeignClientConfig;
 import banking.exchangeRate.dto.ExchangeRateNaverResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,7 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(
 	name = "naver-exchange-rate-service",
-	url = "${exchange-rate.naver.host}"
+	url = "${exchange-rate.naver.host}",
+	configuration = FeignClientConfig.class
 )
 public interface ExchangeRateNaverClient {
 

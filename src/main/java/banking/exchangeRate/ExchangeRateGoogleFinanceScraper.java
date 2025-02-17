@@ -15,6 +15,8 @@ import java.math.RoundingMode;
 @Slf4j
 public final class ExchangeRateGoogleFinanceScraper implements ExchangeRateOpenApiInterface {
 
+	private static final int TIMEOUT = 5000;
+
 	@Override
 	public BigDecimal getExchangeRate(Currency baseCurrency, Currency quoteCurrency) {
 		String url = "https://www.google.com/finance/quote/" + baseCurrency + "-" + quoteCurrency;
@@ -22,13 +24,16 @@ public final class ExchangeRateGoogleFinanceScraper implements ExchangeRateOpenA
 		try {
 			Document doc = Jsoup.connect(url)
 				.userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
-				.timeout(2000)
+				.timeout(TIMEOUT)
 				.get();
 
 			Element titleElement = doc.selectFirst("div.YMlKec.fxKbKc");
 			if (titleElement != null) {
 				log.info("Successfully received exchange rate information: {} to {} is {}", baseCurrency, quoteCurrency, titleElement.text());
-				return convertToBigDecimal(titleElement.text());
+				if(baseCurrency.equals(Currency.KRW)) {
+					return convertToBigDecimal(titleElement.text(), 5);
+				}
+				return convertToBigDecimal(titleElement.text(), 2);
 			} else {
 				log.warn("No exchange rate information found for: {} to {}", baseCurrency, quoteCurrency);
 				throw new IllegalArgumentException("No exchange rate information found for: " + baseCurrency + " to " + quoteCurrency);
@@ -41,9 +46,8 @@ public final class ExchangeRateGoogleFinanceScraper implements ExchangeRateOpenA
 		}
 	}
 
-	private BigDecimal convertToBigDecimal(String text) {
-		// 1,458.3890 -> 1458.39
+	private BigDecimal convertToBigDecimal(String text, int scale) {
 		String exchangeRate = text.replace(",", "");
-		return new BigDecimal(exchangeRate).setScale(2, RoundingMode.CEILING);
+		return new BigDecimal(exchangeRate).setScale(scale, RoundingMode.CEILING);
 	}
 }
