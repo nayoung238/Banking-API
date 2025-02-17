@@ -21,6 +21,9 @@ public final class ExchangeRateMananaService implements ExchangeRateOpenApiInter
 	@Override
 	public BigDecimal getExchangeRate(Currency baseCurrency, Currency quoteCurrency) {
 		List<ExchangeRateMananaResponseDto> result = exchangeRateMananaClient.getExchangeRate(quoteCurrency, baseCurrency);
+		if(baseCurrency.equals(Currency.KRW)) {
+			return result.get(0).rate().setScale(5, RoundingMode.CEILING);
+		}
 		return result.get(0).rate().setScale(2, RoundingMode.CEILING);
 	}
 }

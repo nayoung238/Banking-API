@@ -1,8 +1,6 @@
 package banking.exchangeRate;
 
 import banking.account.enums.Currency;
-import banking.common.exception.CustomException;
-import banking.common.exception.ErrorCode;
 import banking.exchangeRate.dto.ExchangeRateNaverResponseDto;
 import banking.exchangeRate.openfeign.ExchangeRateNaverClient;
 import lombok.RequiredArgsConstructor;
@@ -47,8 +45,12 @@ public final class ExchangeRateNaverService implements ExchangeRateOpenApiInterf
 
 	@Override
 	public BigDecimal getExchangeRate(Currency baseCurrency, Currency quoteCurrency) {
-		if(!quoteCurrency.equals(Currency.KRW)) {
-			throw new CustomException(ErrorCode.INVALID_QUOTE_CURRENCY_ERROR);
+		boolean isInverse = false;
+		if(baseCurrency.equals(Currency.KRW)) {
+			Currency temp = baseCurrency;
+			baseCurrency = quoteCurrency;
+			quoteCurrency = temp;
+			isInverse = true;
 		}
 
 		ExchangeRateNaverResponseDto result = exchangeRateNaverClient.getExchangeRate(
@@ -65,7 +67,11 @@ public final class ExchangeRateNaverService implements ExchangeRateOpenApiInterf
 			u2
 		);
 
-		return convertToBigDecimal(result.country().get(1).value());
+		BigDecimal exchangeRate = convertToBigDecimal(result.country().get(1).value());
+		if(isInverse) {
+			exchangeRate = BigDecimal.ONE.divide(exchangeRate, 5, RoundingMode.DOWN);
+		}
+		return exchangeRate;
 	}
 
 	private BigDecimal convertToBigDecimal(String value) {
