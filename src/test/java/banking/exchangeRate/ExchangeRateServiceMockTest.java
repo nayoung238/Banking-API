@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
@@ -26,20 +25,32 @@ class ExchangeRateServiceMockTest {
 	@Mock
 	ExchangeRateNaverService exchangeRateNaverService;
 
-	@DisplayName("같은 currency 업데이트 작업은 1개의 스레드만 가능하며, currency가 다른 경우 동시에 환율 업데이트 로직을 수행해도 된다.")
+	@Mock
+	ExchangeRateMananaService exchangeRateMananaService;
+
+	@Mock
+	ExchangeRateGoogleFinanceScraper exchangeRateGoogleFinanceScraper;
+
+	@DisplayName("[환율 조회 성공 테스트] 같은 통화 업데이트 작업은 1개의 스레드만 가능, 그렇지 않으면 환율 업데이트 로직 동시 수행 가능")
 	@Test
 	void currency_only_reentrant_lock_test() throws InterruptedException {
-		Mockito.when(exchangeRateNaverService.getExchangeRate(any(), any()))
+		when(exchangeRateNaverService.getExchangeRate(any(Currency.class), any(Currency.class)))
+			.thenReturn(new BigDecimal(1));
+
+		when(exchangeRateMananaService.getExchangeRate(any(Currency.class), any(Currency.class)))
+			.thenReturn(new BigDecimal(1));
+
+		when(exchangeRateGoogleFinanceScraper.getExchangeRate(any(Currency.class), any(Currency.class)))
 			.thenReturn(new BigDecimal(1));
 
 		// 멀티스레드 환경 설정
 		int threadCount = 20;
-		ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-		CountDownLatch latch = new CountDownLatch(threadCount);
+		ExecutorService executorService = Executors.newFixedThreadPool(threadCount * 2);
+		CountDownLatch latch = new CountDownLatch(threadCount * 2);
 
 		List<Future<Void>> futures = new ArrayList<>();
 
-		// USD/KRW 작업 생성
+		// KRW/USD 작업 생성
 		for(int i = 0; i < threadCount; i++) {
 			futures.add(executorService.submit(() -> {
 				try {
@@ -55,7 +66,7 @@ class ExchangeRateServiceMockTest {
 		for(int i = 0; i < threadCount; i++) {
 			futures.add(executorService.submit(() -> {
 				try {
-					exchangeRateService.getExchangeRate(Currency.KRW, Currency.EUR);
+					exchangeRateService.getExchangeRate(Currency.EUR, Currency.KRW);
 				} finally {
 					latch.countDown();
 				}
@@ -71,12 +82,12 @@ class ExchangeRateServiceMockTest {
 				fail("Task execution failed: " + e.getMessage());
 			}
 		}
-		latch.await(5, TimeUnit.SECONDS);
+		latch.await(20, TimeUnit.SECONDS);
 		executorService.shutdown();
 
-		// USD/KRW 환율 업데이트 1회 작업 확인
+		// KRW/USD 환율 업데이트 1회 작업 확인
 		verify(exchangeRateNaverService, times(1))
-			.getExchangeRate(Currency.USD, Currency.KRW);
+			.getExchangeRate(Currency.KRW, Currency.USD);
 
 		// EUR/KRW 환율 업데이트 1회 작업 확인
 		verify(exchangeRateNaverService, times(1))
