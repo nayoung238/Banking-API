@@ -77,7 +77,7 @@ public class TransferService {
     }
 
     public Transfer processWithdrawal(Account withdrawalAccount, AccountPublicInfoDto depositAccountPublicInfo, BigDecimal amount) {
-        BigDecimal exchangeRate = exchangeRateService.getExchangeRate(withdrawalAccount.getCurrency(), depositAccountPublicInfo.currency());
+        BigDecimal exchangeRate = exchangeRateService.getExchangeRate(depositAccountPublicInfo.currency(), withdrawalAccount.getCurrency());
         BigDecimal convertedAmount = amount.multiply(exchangeRate);
         withdrawalAccount.decreaseBalance(convertedAmount);
         return saveTransferAndWithdrawalTransferDetails(withdrawalAccount, depositAccountPublicInfo, exchangeRate, convertedAmount);
