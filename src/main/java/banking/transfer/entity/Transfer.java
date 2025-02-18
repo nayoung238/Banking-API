@@ -18,13 +18,14 @@ public class Transfer extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String transferGroupId;
 
     @Column(nullable = false)
     private Long transferOwnerId;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private TransferType transferType;
 
     @Column(nullable = false)
