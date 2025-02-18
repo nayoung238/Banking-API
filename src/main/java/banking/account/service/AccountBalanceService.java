@@ -42,7 +42,7 @@ public class AccountBalanceService {
 	 * @param request - 출금 계좌번호, 출금 계좌 비밀번호, 출금 금액
 	 * @return 출금 계좌 상태
 	 */
-	public AccountResponseDto atmWithdraw(WithdrawalRequestDto request) {
+	public AccountResponseDto atmWithdrawal(WithdrawalRequestDto request) {
 		Account account = accountRepository.findByAccountNumberWithLock(request.accountNumber())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
