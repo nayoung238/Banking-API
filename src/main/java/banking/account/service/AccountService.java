@@ -162,6 +162,15 @@ public class AccountService {
             || transferResponse.depositAccountId().equals(accountId);
     }
 
+    public void verifyAccountActiveStatus(Account account) {
+        switch (account.getAccountStatus()) {
+            case ACTIVE -> {}
+            case SUSPENDED, RESTRICTED -> throw new CustomException(ErrorCode.ACCOUNT_RESTRICTED);
+            case CLOSED -> throw new CustomException(ErrorCode.ACCOUNT_CLOSED);
+            default -> throw new CustomException(ErrorCode.ACCOUNT_UNAVAILABLE);
+        }
+    }
+
     public AccountResponseDto findAccount(Long userId, Long accountId) {
         Account account = accountRepository.findByIdAndUserId(accountId, userId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));

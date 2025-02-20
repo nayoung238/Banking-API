@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 public class AccountBalanceService {
 
 	private final AccountRepository accountRepository;
+	private final AccountService accountService;
 
 	/**
 	 * ATM 전용 입금
@@ -56,8 +57,10 @@ public class AccountBalanceService {
 
 	@Transactional
 	public BigDecimal increaseBalance(Long accountId, BigDecimal amount) {
-		Account account = accountRepository.findById(accountId)
+		Account account = accountRepository.findByIdWithLock(accountId)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
+
+		accountService.verifyAccountActiveStatus(account);
 
 		account.increaseBalance(amount);
 		return account.getBalance();

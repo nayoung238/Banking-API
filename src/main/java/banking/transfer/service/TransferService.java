@@ -64,6 +64,9 @@ public class TransferService {
             throw new CustomException(ErrorCode.SAME_ACCOUNT_TRANSFER_NOT_ALLOWED);
         }
 
+        // 거래 계좌 Active 상태인지 파악
+        accountService.verifyAccountActiveStatus(withdrawalAccount);
+
         // 입금 계좌 DTO GET
         AccountPublicInfoDto depositAccountPublicInfo = accountService.findAccountPublicInfo(request.depositAccountNumber());
 
