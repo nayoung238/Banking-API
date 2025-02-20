@@ -27,14 +27,14 @@ public class DepositAsyncService {
 
 		try {
 			// 입금 계좌 잔액 변경
-			BigDecimal balancePostTransfer = accountBalanceService.increaseBalance(withdrawalTransfer.getDepositAccountId(), depositAmount);
+			BigDecimal balancePostTransfer = accountBalanceService.increaseBalanceWithLock(withdrawalTransfer.getDepositAccountId(), depositAmount);
 
 			// 이체 내역 (입금) 추가
 			saveDepositTransferDetails(withdrawalTransfer, depositAmount, balancePostTransfer);
 
 			// TODO: 입금 알림
 		} catch (CustomException e) {
-			// TODO: 출금(withdrawalTransfer) 취소 트랜잭션 시작
+			// TODO: 출금(withdrawalTransfer) 취소 보상 트랜잭션 시작
 		}
 	}
 

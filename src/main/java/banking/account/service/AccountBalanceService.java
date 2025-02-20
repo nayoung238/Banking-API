@@ -56,7 +56,7 @@ public class AccountBalanceService {
 	}
 
 	@Transactional
-	public BigDecimal increaseBalance(Long accountId, BigDecimal amount) {
+	public BigDecimal increaseBalanceWithLock(Long accountId, BigDecimal amount) {
 		Account account = accountRepository.findByIdWithLock(accountId)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 

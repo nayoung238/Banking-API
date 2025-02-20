@@ -129,7 +129,7 @@ public class TransferService {
                                                                             originalDepositTransfer.getAmount());
 
         // 결제 취소로 인한 입금 (출금 작업 완료 후 진행)
-        accountBalanceService.increaseBalance(refundDepositAccount.getId(), origianlWithdrawalTransfer.getAmount());
+        accountBalanceService.increaseBalanceWithLock(refundDepositAccount.getId(), origianlWithdrawalTransfer.getAmount());
 
         // 결제 취소에 대한 입금 내역 생성
         saveDepositTransferDetails(refundTransfer, origianlWithdrawalTransfer.getAmount(), refundDepositAccount.getBalance());
