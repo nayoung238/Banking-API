@@ -13,6 +13,7 @@ import banking.payment.repository.PaymentRepository;
 import banking.payment.dto.request.PaymentRequestDto;
 import banking.transfer.dto.response.TransferResponseForPaymentDto;
 import banking.transfer.enums.TransferType;
+import banking.transfer.service.TransferQueryService;
 import banking.transfer.service.TransferService;
 import banking.user.dto.response.UserPublicInfoDto;
 import banking.user.service.UserService;
@@ -26,6 +27,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final TransferService transferService;
+    private final TransferQueryService transferQueryService;
     private final AccountService accountService;
     private final UserService userService;
 
@@ -83,7 +85,7 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(paymentId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PAYMENT));
 
-        TransferResponseForPaymentDto transferResponse = transferService.findTransfer(payment.getTransferGroupId(), requesterId);
+        TransferResponseForPaymentDto transferResponse = transferQueryService.findTransfer(payment.getTransferGroupId(), requesterId);
 
         Long requesterAccountId = (transferResponse.transferType().equals(TransferType.WITHDRAWAL)) ?
             transferResponse.withdrawalAccountId() : transferResponse.depositAccountId();

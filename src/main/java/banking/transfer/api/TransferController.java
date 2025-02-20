@@ -4,6 +4,7 @@ import banking.transfer.dto.request.TransferDetailsRequestDto;
 import banking.transfer.dto.request.TransferRequestDto;
 import banking.transfer.dto.response.TransferSimpleResponseDto;
 import banking.transfer.dto.response.TransferDetailsResponseDto;
+import banking.transfer.service.TransferQueryService;
 import banking.transfer.service.TransferService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class TransferController {
 
     private final TransferService transferService;
+    private final TransferQueryService transferQueryService;
 
     @Operation(summary = "이체", description = "바디에 {senderAccountId, receiverAccountId,amount, accountPassword}을 json 형식으로 보내주세요. 세션에 연결되어 있어야합니다.")
     @ApiResponses({
@@ -54,7 +56,7 @@ public class TransferController {
         Long requesterId = Long.valueOf(httpServletRequest.getHeader("X-User-Id"));
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(transferService.findAllTransferSimple(requesterId, accountId));
+                .body(transferQueryService.findAllTransferSimple(requesterId, accountId));
     }
 
     @Operation(summary = "거래 상세 내역 조회", description = "바디에 {accountId, transactionId}을 json 형식으로 보내주세요. 세션에 연결되어 있어야합니다.")
@@ -68,6 +70,6 @@ public class TransferController {
         Long requesterId = Long.valueOf(httpServletRequest.getHeader("X-User-Id"));
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(transferService.findTransferDetails(requesterId, request));
+                .body(transferQueryService.findTransferDetails(requesterId, request));
     }
 }

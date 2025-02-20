@@ -8,16 +8,12 @@ import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
 import banking.exchangeRate.ExchangeRateService;
 import banking.payment.dto.request.PaymentRequestDto;
-import banking.transfer.dto.request.TransferDetailsRequestDto;
 import banking.transfer.dto.request.TransferRequestDto;
 import banking.transfer.dto.response.TransferResponseForPaymentDto;
-import banking.transfer.dto.response.TransferSimpleResponseDto;
 import banking.transfer.dto.response.TransferDetailsResponseDto;
 import banking.transfer.entity.Transfer;
 import banking.transfer.enums.TransferType;
 import banking.transfer.repository.TransferRepository;
-import banking.user.dto.response.UserPublicInfoDto;
-import banking.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.annotation.Backoff;
@@ -35,7 +31,6 @@ public class TransferService {
     private final TransferRepository transferRepository;
     private final DepositAsyncService depositAsyncService;
     private final ExchangeRateService exchangeRateService;
-    private final UserService userService;
     private final AccountService accountService;
     private final AccountBalanceService accountBalanceService;
 
@@ -217,83 +212,6 @@ public class TransferService {
             uuidPart = UUID.randomUUID().toString().replace("-", "").substring(0, 4);
         } while (transferRepository.existsByTransferGroupId(transactionId + uuidPart));
         return transactionId + uuidPart;
-    }
-
-    /**
-     * 이체 내역 전체 조회
-     */
-    // TODO: PAGE 적용
-    public List<TransferSimpleResponseDto> findAllTransferSimple(Long requesterId, Long accountId) {
-        // 계좌 소유자 검증
-        accountService.verifyAccountOwner(accountId, requesterId);
-
-        return transferRepository.findAllByTransferOwnerId(accountId)
-            .stream()
-            .map(transfer -> {
-                UserPublicInfoDto peerUserPublicInfo;
-                if (transfer.getTransferType().equals(TransferType.WITHDRAWAL)) {
-                    peerUserPublicInfo = userService.findUserPublicInfo(transfer.getDepositAccountId());
-                } else if (transfer.getTransferType().equals(TransferType.DEPOSIT)) {
-                    peerUserPublicInfo = userService.findUserPublicInfo(transfer.getWithdrawalAccountId());
-                } else {
-                    // TODO: 관리자에게 알림하고, 클라이언트에게는 응답
-                    throw new CustomException(ErrorCode.UNSUPPORTED_TRANSFER_TYPE);
-                }
-                return TransferSimpleResponseDto.of(transfer, TransferType.WITHDRAWAL, peerUserPublicInfo.name());
-            })
-            .toList();
-    }
-
-    /**
-     * 이체 내역 단건 조회
-     */
-    public TransferDetailsResponseDto findTransferDetails(Long requesterId, TransferDetailsRequestDto request) {
-        // 계좌 소유자 검증
-        accountService.verifyAccountOwner(request.accountId(), requesterId);
-
-        Transfer transfer = transferRepository.findById(request.transferId())
-            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRANSFER));
-
-        AccountPublicInfoDto withdrawalAccountPublicInfo = accountService.findAccountPublicInfo(transfer.getWithdrawalAccountId(), transfer);
-        AccountPublicInfoDto depositAccountPublicInfo = accountService.findAccountPublicInfo(transfer.getDepositAccountId(), transfer);
-
-        TransferType transferType = getTransferType(transfer, request.accountId());
-        verifyTransferAccount(requesterId, transferType, withdrawalAccountPublicInfo, depositAccountPublicInfo);
-
-        return TransferDetailsResponseDto.of(transfer, transferType, withdrawalAccountPublicInfo, depositAccountPublicInfo);
-    }
-
-    private void verifyTransferAccount(Long requestedId, TransferType transferType,
-                                       AccountPublicInfoDto withdrawalAccountPublicInfo, AccountPublicInfoDto depositAccountPublicInfo) {
-
-        if (transferType.equals(TransferType.WITHDRAWAL)) {
-            if (!withdrawalAccountPublicInfo.ownerUserId().equals(requestedId)) {
-                throw new CustomException(ErrorCode.UNAUTHORIZED_TRANSFER_ACCESS);
-            }
-        } else if (transferType.equals(TransferType.DEPOSIT)) {
-            if (!depositAccountPublicInfo.ownerUserId().equals(requestedId)) {
-                throw new CustomException(ErrorCode.UNAUTHORIZED_TRANSFER_ACCESS);
-            }
-        } else {
-            throw new CustomException(ErrorCode.UNAUTHORIZED_TRANSFER_ACCESS);
-        }
-    }
-
-    private TransferType getTransferType(Transfer transfer, Long accountId) {
-        if (Objects.equals(transfer.getWithdrawalAccountId(), accountId)) {
-            return TransferType.WITHDRAWAL;
-        } else if (Objects.equals(transfer.getDepositAccountId(), accountId)) {
-            return TransferType.DEPOSIT;
-        }
-
-        throw new CustomException(ErrorCode.NOT_FOUND_TRANSFER);
-    }
-
-    public TransferResponseForPaymentDto findTransfer(String transferGroupId, Long requesterId) {
-        Transfer transfer =  transferRepository.findByTransferGroupIdAndTransferOwnerId(transferGroupId, requesterId)
-            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRANSFER));
-
-        return TransferResponseForPaymentDto.of(transfer);
     }
 
     @FunctionalInterface
