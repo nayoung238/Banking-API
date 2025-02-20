@@ -1,5 +1,6 @@
 package banking.account.entity;
 
+import banking.account.enums.AccountStatus;
 import banking.account.enums.Currency;
 import banking.common.entity.BaseTimeEntity;
 import banking.common.exception.CustomException;
@@ -41,6 +42,10 @@ public class Account extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Currency currency;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AccountStatus accountStatus;
 
     public void decreaseBalance(BigDecimal amount) {
         if (this.balance.compareTo(amount) < 0) {
