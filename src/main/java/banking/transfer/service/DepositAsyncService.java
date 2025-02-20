@@ -2,6 +2,9 @@ package banking.transfer.service;
 
 import banking.account.service.AccountBalanceService;
 import banking.common.exception.CustomException;
+import banking.kafka.config.TopicConfig;
+import banking.kafka.dto.TransferFailedEvent;
+import banking.kafka.service.KafkaProducerService;
 import banking.transfer.entity.Transfer;
 import banking.transfer.enums.TransferType;
 import banking.transfer.repository.TransferRepository;
@@ -18,6 +21,7 @@ public class DepositAsyncService {
 
 	private final AccountBalanceService accountBalanceService;
 	private final TransferRepository transferRepository;
+	private final KafkaProducerService kafkaProducerService;
 
 	@Async("depositExecutor")
 	@Transactional
@@ -33,8 +37,8 @@ public class DepositAsyncService {
 			saveDepositTransferDetails(withdrawalTransfer, depositAmount, balancePostTransfer);
 
 			// TODO: 입금 알림
-		} catch (CustomException e) {
-			// TODO: 출금(withdrawalTransfer) 취소 보상 트랜잭션 시작
+		} catch (CustomException e) {	// 입금 계좌 !active 상태로, 입금 불가능
+			kafkaProducerService.send(TopicConfig.TRANSFER_FAILED_TOPIC, TransferFailedEvent.of(withdrawalTransfer.getTransferGroupId(), TransferType.DEPOSIT));
 		}
 	}
 
