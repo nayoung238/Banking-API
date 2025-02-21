@@ -20,6 +20,32 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      zookeeper:
+        image: confluentinc/cp-zookeeper
+        ports:
+          - 2181:2181
+        options: >-
+          --health-cmd "echo ruok | nc localhost 2181 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+      kafka:
+        image: confluentinc/cp-kafka
+        ports:
+          - 9092:9092
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+        options: >-
+          --health-cmd "kafka-topics --list --bootstrap-server localhost:9092 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
