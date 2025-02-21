@@ -20,6 +20,9 @@ public enum ErrorCode {
     UNAUTHORIZED_ACCOUNT_ACCESS(HttpStatus.FORBIDDEN, "해당 계좌에 대한 접근 권한이 없습니다."),
     INSUFFICIENT_BALANCE(HttpStatus.BAD_REQUEST,"잔액이 부족합니다."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
+    ACCOUNT_UNAVAILABLE(HttpStatus.BAD_REQUEST, "계좌 거래가 불가능합니다."),
+    ACCOUNT_RESTRICTED(HttpStatus.FORBIDDEN, "계좌 거래가 제한되었습니다."),
+    ACCOUNT_CLOSED(HttpStatus.FORBIDDEN, "해지된 계좌입니다."),
 
     // Transfer
     SAME_ACCOUNT_TRANSFER_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "같은 계좌 간 거래는 불가합니다."),

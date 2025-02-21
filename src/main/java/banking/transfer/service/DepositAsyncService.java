@@ -1,6 +1,10 @@
 package banking.transfer.service;
 
 import banking.account.service.AccountBalanceService;
+import banking.common.exception.CustomException;
+import banking.kafka.config.TopicConfig;
+import banking.kafka.dto.TransferFailedEvent;
+import banking.kafka.service.KafkaProducerService;
 import banking.transfer.entity.Transfer;
 import banking.transfer.enums.TransferType;
 import banking.transfer.repository.TransferRepository;
@@ -17,22 +21,25 @@ public class DepositAsyncService {
 
 	private final AccountBalanceService accountBalanceService;
 	private final TransferRepository transferRepository;
+	private final KafkaProducerService kafkaProducerService;
 
-	// TODO: 비동기 트랜잭션 관리 & 실패 시 재시도 처리
 	@Async("depositExecutor")
 	@Transactional
 	public void processDepositAsync(Transfer withdrawalTransfer) {
-		// TODO: 소수점 정합성 확인 필요
 		BigDecimal withdrawalAmount = withdrawalTransfer.getAmount();
 		BigDecimal depositAmount = withdrawalAmount.divide(withdrawalTransfer.getExchangeRate());
 
-		// 입금 계좌 잔액 변경
-		BigDecimal balancePostTransfer = accountBalanceService.increaseBalance(withdrawalTransfer.getDepositAccountId(), depositAmount);
+		try {
+			// 입금 계좌 잔액 변경
+			BigDecimal balancePostTransfer = accountBalanceService.increaseBalanceWithLock(withdrawalTransfer.getDepositAccountId(), depositAmount);
 
-		// 이체 내역 (입금) 추가
-		saveDepositTransferDetails(withdrawalTransfer, depositAmount, balancePostTransfer);
+			// 이체 내역 (입금) 추가
+			saveDepositTransferDetails(withdrawalTransfer, depositAmount, balancePostTransfer);
 
-		// TODO: 입금 알림
+			// TODO: 입금 알림
+		} catch (CustomException e) {	// 입금 계좌 !active 상태로, 입금 불가능
+			kafkaProducerService.send(TopicConfig.TRANSFER_FAILED_TOPIC, TransferFailedEvent.of(withdrawalTransfer.getTransferGroupId(), TransferType.DEPOSIT));
+		}
 	}
 
 	public void saveDepositTransferDetails(Transfer withdrawalTransfer, BigDecimal amount, BigDecimal balancePostTransaction) {

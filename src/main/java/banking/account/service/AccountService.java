@@ -3,6 +3,7 @@ package banking.account.service;
 import banking.account.dto.request.AccountCreationRequestDto;
 import banking.account.dto.response.AccountResponseDto;
 import banking.account.dto.response.AccountPublicInfoDto;
+import banking.account.enums.AccountStatus;
 import banking.account.repository.AccountRepository;
 import banking.account.entity.Account;
 import banking.common.exception.CustomException;
@@ -46,6 +47,7 @@ public class AccountService {
             .balance(BigDecimal.valueOf(0, 2))
             .accountName(accountName)
             .currency(request.currency())
+            .accountStatus(AccountStatus.ACTIVE)
             .build();
 
         accountRepository.save(account);
@@ -158,6 +160,15 @@ public class AccountService {
     private boolean isRelatedAccount(Long accountId, TransferResponseForPaymentDto transferResponse) {
         return transferResponse.withdrawalAccountId().equals(accountId)
             || transferResponse.depositAccountId().equals(accountId);
+    }
+
+    public void verifyAccountActiveStatus(Account account) {
+        switch (account.getAccountStatus()) {
+            case ACTIVE -> {}
+            case SUSPENDED, RESTRICTED -> throw new CustomException(ErrorCode.ACCOUNT_RESTRICTED);
+            case CLOSED -> throw new CustomException(ErrorCode.ACCOUNT_CLOSED);
+            default -> throw new CustomException(ErrorCode.ACCOUNT_UNAVAILABLE);
+        }
     }
 
     public AccountResponseDto findAccount(Long userId, Long accountId) {

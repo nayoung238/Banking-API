@@ -10,6 +10,7 @@ import banking.payment.enums.PaymentStatus;
 import banking.payment.repository.PaymentRepository;
 import banking.transfer.dto.response.TransferResponseForPaymentDto;
 import banking.transfer.enums.TransferType;
+import banking.transfer.service.TransferQueryService;
 import banking.transfer.service.TransferService;
 import banking.user.dto.response.UserPublicInfoDto;
 import banking.user.entity.User;
@@ -47,6 +48,9 @@ public class PaymentServiceUnitTest {
 
     @Mock
     TransferService transferService;
+
+	@Mock
+	TransferQueryService transferQueryService;
 
 	@Mock
 	UserService userService;
@@ -97,7 +101,7 @@ public class PaymentServiceUnitTest {
 		when(userService.findUserPublicInfo(any())).thenReturn(mockUserPublicInfoDto);
 		when(paymentRepository.save(any(Payment.class))).thenReturn(null);
 		when(paymentRepository.findById(any())).thenReturn(Optional.ofNullable(mockPayment));
-		when(transferService.findTransfer(any(), anyLong())).thenReturn(transferResponse);
+		when(transferQueryService.findTransfer(any(), anyLong())).thenReturn(transferResponse);
 		when(accountService.findAccountPublicInfo(anyLong(), any(TransferResponseForPaymentDto.class))).thenReturn(mockAccountPublicInfoDto);
 		when(userService.findUserPublicInfo(any(), any())).thenReturn(mockUserPublicInfoDto);
 
