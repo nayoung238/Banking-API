@@ -47,7 +47,7 @@ class TransferCompensationServiceTest {
 	@Autowired
 	UserRepository userRepository;
 
-//	@Test
+	@Test
 	@DisplayName("[보상 트랜잭션 성공 테스트] 카프카 이벤트 소비 후 보상 트랜잭션 시작")
 	void compensation_transaction_start_test () {
 		// given
