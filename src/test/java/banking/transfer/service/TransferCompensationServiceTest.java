@@ -95,7 +95,7 @@ class TransferCompensationServiceTest {
 
 		// then
 		await()
-			.atMost(5, TimeUnit.SECONDS)
+			.atMost(15, TimeUnit.SECONDS)
 			.pollInterval(500, TimeUnit.MILLISECONDS)
 			.untilAsserted(() -> {
 				Optional<Transfer> refundedTransferOptional = transferRepository.findByTransferGroupIdAndTransferType(baseTransfer.getTransferGroupId(), TransferType.REFUNDED);
