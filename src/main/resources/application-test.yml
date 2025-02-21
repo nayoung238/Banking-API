@@ -7,11 +7,19 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop # 테스트 후 데이터 삭제
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: backingServiceGroup
+      auto-offset-reset: earliest
+    listener:
+      ack-mode: manual
 
 server:
   servlet:
