@@ -20,6 +20,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
+import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -94,46 +97,50 @@ class PaymentControllerTransferIntegrationTest extends TransferIntegrationTestBa
 
     }
 
-//    @Test
-//    @DisplayName("[결제 취소 성공 테스트] 결제 취소 시 입금 계좌번호와 환불 금액 반환")
-//    void refund_succeed_test () throws Exception {
-//        // given1 - 송금 계좌에 입금
-//        final BigDecimal currentBalance = BigDecimal.valueOf(10000);
-//        DepositRequestDto depositRequest = DepositRequestDto.builder()
-//            .accountNumber(senderKrwAccount.accountNumber())
-//            .accountPassword(senderKrwAccountPassword)
-//            .amount(currentBalance)
-//            .build();
-//        accountBalanceService.atmDeposit(depositRequest);
-//
-//        // given3 - 결제 요청 및 처리
-//        final BigDecimal paymentAmount = BigDecimal.valueOf(2000);
-//        PaymentRequestDto paymentRequest = PaymentRequestDto.builder()
-//            .withdrawalAccountNumber(senderKrwAccount.accountNumber())
-//            .withdrawalAccountPassword(senderKrwAccountPassword)
-//            .depositAccountNumber(receiverKrwAccount.accountNumber())
-//            .amount(paymentAmount)
-//            .build();
-//        PaymentResponseDto paymentResponse = paymentService.processPayment(senderUser.userId(), paymentRequest);
-//
-//        // given4 - 결제 취소 요청 DTO 생성
-//        PaymentRefundRequestDto refundRequest = PaymentRefundRequestDto.builder()
-//            .paymentId(paymentResponse.paymentId())
-//            .withdrawalAccountPassword(encryptionFacade.encrypt(AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto().password()))
-//            .build();
-//
-//        // When & Then
-//        mockMvc.perform(
-//            post("/payment/cancel")
-//                .content(objectMapper.writeValueAsString(refundRequest))
-//                .header("X-User-Id", senderUser.userId())
-//                .contentType(MediaType.APPLICATION_JSON)
-//            )
-//            .andExpect(status().isOk())
-//            .andExpect(jsonPath("$.depositAccountNumber").value(senderKrwAccount.accountNumber()))
-//            .andExpect(jsonPath("$.refundAmount").value(comparesEqualTo(paymentAmount.intValue())))
-//            .andDo(print());
-//    }
+    @Test
+    @DisplayName("[결제 취소 성공 테스트] 결제 취소 시 입금 계좌번호와 환불 금액 반환")
+    void refund_succeed_test () {
+        // given1 - 송금 계좌에 입금
+        final BigDecimal currentBalance = BigDecimal.valueOf(10000);
+        DepositRequestDto depositRequest = DepositRequestDto.builder()
+            .accountNumber(senderKrwAccount.accountNumber())
+            .accountPassword(senderKrwAccountPassword)
+            .amount(currentBalance)
+            .build();
+        accountBalanceService.atmDeposit(depositRequest);
+
+        // given3 - 결제 요청 및 처리
+        final BigDecimal paymentAmount = BigDecimal.valueOf(2000);
+        PaymentRequestDto paymentRequest = PaymentRequestDto.builder()
+            .withdrawalAccountId(senderKrwAccount.accountId())
+            .withdrawalAccountPassword(senderKrwAccountPassword)
+            .depositAccountNumber(receiverKrwAccount.accountNumber())
+            .amount(paymentAmount)
+            .build();
+        PaymentResponseDto paymentResponse = paymentService.processPayment(senderUser.userId(), paymentRequest);
+
+        // given4 - 결제 취소 요청 DTO 생성
+        PaymentRefundRequestDto refundRequest = PaymentRefundRequestDto.builder()
+            .paymentId(paymentResponse.paymentId())
+            .withdrawalAccountPassword(encryptionFacade.encrypt(AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto().password()))
+            .build();
+
+        // When & Then
+        await()
+            .atMost(15, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                mockMvc.perform(
+                        post("/payment/cancel")
+                            .content(objectMapper.writeValueAsString(refundRequest))
+                            .header("X-User-Id", senderUser.userId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.depositAccountNumber").value(senderKrwAccount.accountNumber()))
+                    .andExpect(jsonPath("$.refundAmount").value(comparesEqualTo(paymentAmount.intValue())))
+                    .andDo(print());
+            });
+    }
 
     @Test
     @DisplayName("[결제 조회 성공 테스트] 특정 결제 내역 조회 시 상세 내역 반환")
