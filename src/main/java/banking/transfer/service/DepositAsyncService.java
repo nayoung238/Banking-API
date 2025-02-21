@@ -37,7 +37,7 @@ public class DepositAsyncService {
 			saveDepositTransferDetails(withdrawalTransfer, depositAmount, balancePostTransfer);
 
 			// TODO: 입금 알림
-		} catch (CustomException e) {	// 입금 계좌 !active 상태로, 입금 불가능
+		} catch (CustomException e) {	// 입금 계좌 !active 상태로 입금 불가능 -> 보상 트랜잭션 생성
 			kafkaProducerService.send(TopicConfig.TRANSFER_FAILED_TOPIC, TransferFailedEvent.of(withdrawalTransfer.getTransferGroupId(), TransferType.DEPOSIT));
 		}
 	}
