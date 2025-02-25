@@ -28,7 +28,7 @@ jobs:
         env:
           ZOOKEEPER_CLIENT_PORT: "2181"
         options: >-
-          --health-cmd "echo ruok | nc zookeeper 2181 || exit 1"
+          --health-cmd "echo ruok | nc localhost 2181 || exit 1"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -44,7 +44,7 @@ jobs:
           KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092"
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
         options: >-
-          --health-cmd "kafka-topics --list --bootstrap-server kafka:9092 || exit 1"
+          --health-cmd "kafka-topics --list --bootstrap-server localhost:9092 || exit 1"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -54,7 +54,7 @@ jobs:
         run: |
           echo "Waiting for Zookeeper..."
           for i in {1..10}; do
-            if echo ruok | nc zookeeper 2181 | grep imok; then
+            if echo ruok | nc localhost 2181 | grep imok; then
               echo "Zookeeper is up!"
               break
             fi
@@ -66,7 +66,7 @@ jobs:
         run: |
           echo "Waiting for Kafka..."
           for i in {1..10}; do
-            if kafka-broker-api-versions --bootstrap-server kafka:9092 >/dev/null 2>&1; then
+            if kafka-broker-api-versions --bootstrap-server localhost:9092 >/dev/null 2>&1; then
               echo "Kafka is up!"
               break
             fi
