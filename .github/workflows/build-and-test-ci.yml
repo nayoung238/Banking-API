@@ -54,7 +54,7 @@ jobs:
         run: |
           echo "Waiting for Zookeeper..."
           for i in {1..10}; do
-            if echo ruok | nc zookeeper 2181 | grep imok; then
+            if echo ruok | nc localhost 2181 | grep imok; then
               echo "Zookeeper is up!"
               break
             fi
@@ -66,7 +66,7 @@ jobs:
         run: |
           echo "Waiting for Kafka..."
           for i in {1..10}; do
-            if kafka-broker-api-versions --bootstrap-server kafka:9092 >/dev/null 2>&1; then
+            if kafka-broker-api-versions --bootstrap-server localhost:9092 >/dev/null 2>&1; then
               echo "Kafka is up!"
               break
             fi
