@@ -29,6 +29,7 @@ public class TransferCompensationService {
 
 		Transfer refundTransfer = Transfer.builder()
 			.transferGroupId(transferGroupId)
+			.transferOwnerId(baseTransfer.getTransferOwnerId())
 			.transferType(TransferType.REFUNDED)
 			.withdrawalAccountId(baseTransfer.getDepositAccountId())
 			.depositAccountId(baseTransfer.getWithdrawalAccountId())
