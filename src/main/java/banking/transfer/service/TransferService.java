@@ -78,7 +78,7 @@ public class TransferService {
         BigDecimal exchangeRate = exchangeRateService.getExchangeRate(depositAccountPublicInfo.currency(), withdrawalAccount.getCurrency());
         BigDecimal convertedAmount = amount.multiply(exchangeRate);
         withdrawalAccount.decreaseBalance(convertedAmount);
-        return saveTransferAndWithdrawalTransferDetails(withdrawalAccount, depositAccountPublicInfo, exchangeRate, convertedAmount);
+        return saveWithdrawalTransferDetail(withdrawalAccount, depositAccountPublicInfo, exchangeRate, convertedAmount);
     }
 
     @Transactional
@@ -123,7 +123,7 @@ public class TransferService {
         processWithdrawal(refundWithdrawalAccount, refundDepositAccountPublicInfo, originalDepositTransfer.getAmount());
 
         // 결제 취소에 대한 출금 내역 생성
-        Transfer refundTransfer = saveTransferAndWithdrawalTransferDetails(refundWithdrawalAccount,
+        Transfer refundTransfer = saveWithdrawalTransferDetail(refundWithdrawalAccount,
                                                                             refundDepositAccountPublicInfo,
                                                                             originalDepositTransfer.getExchangeRate(),
                                                                             originalDepositTransfer.getAmount());
@@ -132,7 +132,7 @@ public class TransferService {
         accountBalanceService.increaseBalanceWithLock(refundDepositAccount.getId(), origianlWithdrawalTransfer.getAmount());
 
         // 결제 취소에 대한 입금 내역 생성
-        saveDepositTransferDetails(refundTransfer, origianlWithdrawalTransfer.getAmount(), refundDepositAccount.getBalance());
+        saveDepositTransferDetail(refundTransfer, origianlWithdrawalTransfer.getAmount(), refundDepositAccount.getBalance());
 
         return PaymentTransferDetailResponse.of(refundTransfer);
     }
@@ -172,7 +172,7 @@ public class TransferService {
         maxAttempts = 5,
         backoff = @Backoff(delay = 500)
     )
-    public Transfer saveTransferAndWithdrawalTransferDetails(Account withdrawalAccount, AccountPublicInfoResponse depositAccountPublicInfo, BigDecimal exchangeRate, BigDecimal amount) {
+    public Transfer saveWithdrawalTransferDetail(Account withdrawalAccount, AccountPublicInfoResponse depositAccountPublicInfo, BigDecimal exchangeRate, BigDecimal amount) {
         Transfer transfer = Transfer.builder()
             .transferGroupId(createTransferGroupId(withdrawalAccount.getAccountNumber(), depositAccountPublicInfo.accountNumber()))
             .transferOwnerId(withdrawalAccount.getId())
@@ -189,7 +189,7 @@ public class TransferService {
         return transfer;
     }
 
-    public void saveDepositTransferDetails(Transfer withdrawalTransfer, BigDecimal amount, BigDecimal balancePostTransaction) {
+    public void saveDepositTransferDetail(Transfer withdrawalTransfer, BigDecimal amount, BigDecimal balancePostTransaction) {
         Transfer transfer = Transfer.builder()
             .transferGroupId(withdrawalTransfer.getTransferGroupId())
             .transferOwnerId(withdrawalTransfer.getDepositAccountId())
