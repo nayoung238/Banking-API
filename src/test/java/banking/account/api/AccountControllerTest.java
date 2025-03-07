@@ -8,9 +8,11 @@ import banking.account.service.AccountService;
 import banking.account.enums.Currency;
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
+import banking.common.jwt.TestJwtUtil;
 import banking.fixture.dto.UserCreationRequestDtoFixture;
 import banking.user.dto.request.UserCreationRequest;
 import banking.user.dto.response.UserResponse;
+import banking.user.entity.Role;
 import banking.user.repository.UserRepository;
 import banking.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -38,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class AccountControllerIntegrationTest {
+class AccountControllerTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -71,9 +72,6 @@ class AccountControllerIntegrationTest {
         UserCreationRequest userCreationRequest = UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_1.createUserCreationRequestDto();
         UserResponse userResponse = userService.register(userCreationRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", userResponse.userId());
-
         AccountCreationRequest request = AccountCreationRequest.builder()
             .password("62324")
             .currency(Currency.KRW)
@@ -83,7 +81,7 @@ class AccountControllerIntegrationTest {
         // when & then
         mockMvc.perform(
             post("/accounts")
-                .session(session)
+                .header("Authorization", "Bearer " + TestJwtUtil.generateTestAccessToken(userResponse.userId(), Role.USER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
             )
@@ -94,8 +92,6 @@ class AccountControllerIntegrationTest {
             .andExpect(jsonPath("$.balance").value(comparesEqualTo(BigDecimal.ZERO.intValue())))
             .andExpect(jsonPath("$.accountName").value(request.accountName()))
             .andDo(print());
-
-        session.invalidate();
     }
 
     @Test
@@ -104,9 +100,6 @@ class AccountControllerIntegrationTest {
         // given
         UserCreationRequest userCreationRequest = UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_1.createUserCreationRequestDto();
         UserResponse userResponse = userService.register(userCreationRequest);
-
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", userResponse.userId());
 
         AccountCreationRequest request = AccountCreationRequest.builder()
             .password("62324")
@@ -120,15 +113,13 @@ class AccountControllerIntegrationTest {
 
         // when & then
         mockMvc.perform(get("/accounts/{id}", account.getId())
-                .session(session)
+                .header("Authorization", "Bearer " + TestJwtUtil.generateTestAccessToken(userResponse.userId(), Role.USER))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.accountId").value(account.getId()))
             .andExpect(jsonPath("$.accountNumber").value(account.getAccountNumber()))
             .andExpect(jsonPath("$.currency").value(request.currency().toString()))
             .andDo(print());
-
-        session.invalidate();
     }
 
     @Test
@@ -137,9 +128,6 @@ class AccountControllerIntegrationTest {
         // given
         UserCreationRequest userCreationRequest = UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_1.createUserCreationRequestDto();
         UserResponse userResponse = userService.register(userCreationRequest);
-
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", userResponse.userId());
 
         AccountCreationRequest requestKrwAccount = AccountCreationRequest.builder()
             .password("62324")
@@ -157,14 +145,14 @@ class AccountControllerIntegrationTest {
         accountService.createAccount(userResponse.userId(), requestUsdAccount);
 
         // when & then
-        mockMvc.perform(get("/accounts")
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(
+            get("/accounts")
+                .header("Authorization", "Bearer " + TestJwtUtil.generateTestAccessToken(userResponse.userId(), Role.USER))
+                .contentType(MediaType.APPLICATION_JSON)
+            )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[*].currency").value(Matchers.containsInAnyOrder("KRW", "USD")))
             .andDo(print());
-
-        session.invalidate();
     }
 }
