@@ -37,9 +37,9 @@ public class TransferService {
     @Transactional
     public TransferDetailResponse transfer(Long userId, TransferRequest request) {
         return executeTransfer(userId, request,
-            (transfer, withdrawalAccount, depositAccount) -> {
+            (transfer, withdrawalAccount, depositAccountPublicInfo) -> {
                 AccountPublicInfoResponse withdrawalAccountPublicInfo = accountService.findAccountPublicInfo(withdrawalAccount.getId(), transfer);
-                return TransferDetailResponse.of(transfer, TransferType.WITHDRAWAL, withdrawalAccountPublicInfo, depositAccount);
+                return TransferDetailResponse.of(transfer, withdrawalAccountPublicInfo, depositAccountPublicInfo);
             }
         );
     }
@@ -47,7 +47,7 @@ public class TransferService {
     @Transactional
     public PaymentTransferDetailResponse transfer(Long userId, PaymentRequest request) {
         return executeTransfer(userId, TransferRequest.of(request),
-            (transfer, withdrawalAccount, depositAccount) ->  PaymentTransferDetailResponse.of(transfer));
+            (transfer, withdrawalAccount, depositAccountPublicInfo) ->  PaymentTransferDetailResponse.of(transfer));
     }
 
     public <T> T executeTransfer(Long userId, TransferRequest request, TransferResultHandler<T> resultHandler) {
