@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 
 @Builder
 @Schema(description = "결제 요청 DTO")
-public record PaymentRequestDto (
+public record PaymentRequest (
 
     @NotNull
     @Schema(description = "결제 계좌 DB PK", example = "579")

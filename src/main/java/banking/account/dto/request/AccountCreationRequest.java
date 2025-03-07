@@ -8,7 +8,7 @@ import lombok.Builder;
 
 @Builder
 @Schema(description = "계좌 생성 요청 DTO")
-public record AccountCreationRequestDto (
+public record AccountCreationRequest (
 
     @NotEmpty
     @Schema(description = "비밀번호", example = "12345")

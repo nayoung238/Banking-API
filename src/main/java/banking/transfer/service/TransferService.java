@@ -1,16 +1,16 @@
 package banking.transfer.service;
 
-import banking.account.dto.response.AccountPublicInfoDto;
+import banking.account.dto.response.AccountPublicInfoResponse;
 import banking.account.entity.Account;
 import banking.account.service.AccountBalanceService;
 import banking.account.service.AccountService;
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
 import banking.exchangeRate.ExchangeRateService;
-import banking.payment.dto.request.PaymentRequestDto;
-import banking.transfer.dto.request.TransferRequestDto;
-import banking.transfer.dto.response.TransferResponseForPaymentDto;
-import banking.transfer.dto.response.TransferDetailsResponseDto;
+import banking.payment.dto.request.PaymentRequest;
+import banking.transfer.dto.request.TransferRequest;
+import banking.transfer.dto.response.PaymentTransferDetailResponse;
+import banking.transfer.dto.response.TransferDetailResponse;
 import banking.transfer.entity.Transfer;
 import banking.transfer.enums.TransferType;
 import banking.transfer.repository.TransferRepository;
@@ -35,22 +35,22 @@ public class TransferService {
     private final AccountBalanceService accountBalanceService;
 
     @Transactional
-    public TransferDetailsResponseDto transfer(Long userId, TransferRequestDto request) {
+    public TransferDetailResponse transfer(Long userId, TransferRequest request) {
         return executeTransfer(userId, request,
             (transfer, withdrawalAccount, depositAccount) -> {
-                AccountPublicInfoDto withdrawalAccountPublicInfo = accountService.findAccountPublicInfo(withdrawalAccount.getId(), transfer);
-                return TransferDetailsResponseDto.of(transfer, TransferType.WITHDRAWAL, withdrawalAccountPublicInfo, depositAccount);
+                AccountPublicInfoResponse withdrawalAccountPublicInfo = accountService.findAccountPublicInfo(withdrawalAccount.getId(), transfer);
+                return TransferDetailResponse.of(transfer, TransferType.WITHDRAWAL, withdrawalAccountPublicInfo, depositAccount);
             }
         );
     }
 
     @Transactional
-    public TransferResponseForPaymentDto transfer(Long userId, PaymentRequestDto request) {
-        return executeTransfer(userId, TransferRequestDto.of(request),
-            (transfer, withdrawalAccount, depositAccount) ->  TransferResponseForPaymentDto.of(transfer));
+    public PaymentTransferDetailResponse transfer(Long userId, PaymentRequest request) {
+        return executeTransfer(userId, TransferRequest.of(request),
+            (transfer, withdrawalAccount, depositAccount) ->  PaymentTransferDetailResponse.of(transfer));
     }
 
-    public <T> T executeTransfer(Long userId, TransferRequestDto request, TransferResultHandler<T> resultHandler) {
+    public <T> T executeTransfer(Long userId, TransferRequest request, TransferResultHandler<T> resultHandler) {
         // 출금 계좌 Entity GET with Lock
         Account withdrawalAccount = accountService.findAccountWithLock(userId, request.withdrawalAccountId(), request.withdrawalAccountPassword());
 
@@ -63,7 +63,7 @@ public class TransferService {
         accountService.verifyAccountActiveStatus(withdrawalAccount);
 
         // 입금 계좌 DTO GET
-        AccountPublicInfoDto depositAccountPublicInfo = accountService.findAccountPublicInfo(request.depositAccountNumber());
+        AccountPublicInfoResponse depositAccountPublicInfo = accountService.findAccountPublicInfo(request.depositAccountNumber());
 
         // 출금 (sync)
         Transfer withdrawalTransfer = processWithdrawal(withdrawalAccount, depositAccountPublicInfo, request.amount());
@@ -74,7 +74,7 @@ public class TransferService {
         return resultHandler.handle(withdrawalTransfer, withdrawalAccount, depositAccountPublicInfo);
     }
 
-    public Transfer processWithdrawal(Account withdrawalAccount, AccountPublicInfoDto depositAccountPublicInfo, BigDecimal amount) {
+    public Transfer processWithdrawal(Account withdrawalAccount, AccountPublicInfoResponse depositAccountPublicInfo, BigDecimal amount) {
         BigDecimal exchangeRate = exchangeRateService.getExchangeRate(depositAccountPublicInfo.currency(), withdrawalAccount.getCurrency());
         BigDecimal convertedAmount = amount.multiply(exchangeRate);
         withdrawalAccount.decreaseBalance(convertedAmount);
@@ -82,7 +82,7 @@ public class TransferService {
     }
 
     @Transactional
-    public TransferResponseForPaymentDto transferForRefund(Long userId, String transferGroupId, String requesterAccountPassword) {
+    public PaymentTransferDetailResponse transferForRefund(Long userId, String transferGroupId, String requesterAccountPassword) {
         List<Transfer> transfers = transferRepository.findAllByTransferGroupId(transferGroupId);
         verifyTransfer(transfers, userId);
 
@@ -117,7 +117,7 @@ public class TransferService {
 
         Account refundWithdrawalAccount = originalDepositAccount;
         Account refundDepositAccount = originalWithdrawalAccount;
-        AccountPublicInfoDto refundDepositAccountPublicInfo = accountService.findAccountPublicInfo(refundDepositAccount.getId(), origianlWithdrawalTransfer);
+        AccountPublicInfoResponse refundDepositAccountPublicInfo = accountService.findAccountPublicInfo(refundDepositAccount.getId(), origianlWithdrawalTransfer);
 
         // 결제 취소에 대한 출금
         processWithdrawal(refundWithdrawalAccount, refundDepositAccountPublicInfo, originalDepositTransfer.getAmount());
@@ -134,7 +134,7 @@ public class TransferService {
         // 결제 취소에 대한 입금 내역 생성
         saveDepositTransferDetails(refundTransfer, origianlWithdrawalTransfer.getAmount(), refundDepositAccount.getBalance());
 
-        return TransferResponseForPaymentDto.of(refundTransfer);
+        return PaymentTransferDetailResponse.of(refundTransfer);
     }
 
     private void verifyTransfer(List<Transfer> transfers, Long withdrawalUserId) {
@@ -172,7 +172,7 @@ public class TransferService {
         maxAttempts = 5,
         backoff = @Backoff(delay = 500)
     )
-    public Transfer saveTransferAndWithdrawalTransferDetails(Account withdrawalAccount, AccountPublicInfoDto depositAccountPublicInfo, BigDecimal exchangeRate, BigDecimal amount) {
+    public Transfer saveTransferAndWithdrawalTransferDetails(Account withdrawalAccount, AccountPublicInfoResponse depositAccountPublicInfo, BigDecimal exchangeRate, BigDecimal amount) {
         Transfer transfer = Transfer.builder()
             .transferGroupId(createTransferGroupId(withdrawalAccount.getAccountNumber(), depositAccountPublicInfo.accountNumber()))
             .transferOwnerId(withdrawalAccount.getId())
@@ -216,6 +216,6 @@ public class TransferService {
 
     @FunctionalInterface
     public interface TransferResultHandler<T> {
-        T handle(Transfer transfer, Account withdrawalAccount, AccountPublicInfoDto depositAccountPublicInfo);
+        T handle(Transfer transfer, Account withdrawalAccount, AccountPublicInfoResponse depositAccountPublicInfo);
     }
 }

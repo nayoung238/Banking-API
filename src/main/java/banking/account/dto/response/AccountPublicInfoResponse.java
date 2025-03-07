@@ -5,7 +5,7 @@ import banking.account.enums.Currency;
 import lombok.Builder;
 
 @Builder
-public record AccountPublicInfoDto (
+public record AccountPublicInfoResponse (
 
 	Long accountId,
 	Long ownerUserId,
@@ -15,8 +15,8 @@ public record AccountPublicInfoDto (
 	Currency currency
 ) {
 
-	public static AccountPublicInfoDto of(Account account) {
-		return AccountPublicInfoDto.builder()
+	public static AccountPublicInfoResponse of(Account account) {
+		return AccountPublicInfoResponse.builder()
 			.accountId(account.getId())
 			.ownerUserId(account.getUser().getId())
 			.ownerName(account.getUser().getName())

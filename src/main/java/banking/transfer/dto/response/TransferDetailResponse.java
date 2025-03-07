@@ -1,6 +1,6 @@
 package banking.transfer.dto.response;
 
-import banking.account.dto.response.AccountPublicInfoDto;
+import banking.account.dto.response.AccountPublicInfoResponse;
 import banking.transfer.entity.Transfer;
 import banking.transfer.enums.TransferType;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 @Schema(description = "이체 응답 DTO")
 @Builder
-public record TransferDetailsResponseDto (
+public record TransferDetailResponse (
 
     @Schema(description = "이체 DB PK", example = "1")
     Long transferId,
@@ -50,9 +50,9 @@ public record TransferDetailsResponseDto (
     LocalDateTime createdAt
 
 ) {
-    public static TransferDetailsResponseDto of(Transfer transfer, TransferType transferType,
-                                                AccountPublicInfoDto withdrawalAccountPublicInfo, AccountPublicInfoDto depositAccountPublicInfo) {
-        return TransferDetailsResponseDto.builder()
+    public static TransferDetailResponse of(Transfer transfer, TransferType transferType,
+                                            AccountPublicInfoResponse withdrawalAccountPublicInfo, AccountPublicInfoResponse depositAccountPublicInfo) {
+        return TransferDetailResponse.builder()
             .transferId(transfer.getId())
             .withdrawalAccountNumber(withdrawalAccountPublicInfo.accountNumber())
             .senderName(withdrawalAccountPublicInfo.ownerName())

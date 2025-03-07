@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Schema(description = "이체 조회 목록용 응답 DTO")
 @Builder
-public record TransferSimpleResponseDto (
+public record TransferSummaryResponse (
 
     @Schema(description = "이체 DB PK", example = "1")
     Long transferId,
@@ -34,8 +34,8 @@ public record TransferSimpleResponseDto (
     BigDecimal balancePostTransaction
 ) {
 
-    public static TransferSimpleResponseDto of(Transfer transfer, TransferType transferType, String peerName) {
-        return TransferSimpleResponseDto.builder()
+    public static TransferSummaryResponse of(Transfer transfer, TransferType transferType, String peerName) {
+        return TransferSummaryResponse.builder()
             .transferId(transfer.getId())
             .transferType(transferType)
             .peerName(peerName)

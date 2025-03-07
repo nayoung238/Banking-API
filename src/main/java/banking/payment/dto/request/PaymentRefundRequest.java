@@ -7,7 +7,7 @@ import lombok.Builder;
 
 @Schema(description = "결제 취소 요청 DTO")
 @Builder
-public record PaymentRefundRequestDto (
+public record PaymentRefundRequest (
 
     @NotNull
     @Schema(description = "결제 DB PK", example = "1")

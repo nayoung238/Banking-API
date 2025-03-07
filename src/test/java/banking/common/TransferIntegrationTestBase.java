@@ -1,15 +1,15 @@
 package banking.common;
 
-import banking.account.dto.request.AccountCreationRequestDto;
-import banking.account.dto.response.AccountResponseDto;
+import banking.account.dto.request.AccountCreationRequest;
+import banking.account.dto.response.AccountDetailResponse;
 import banking.account.repository.AccountRepository;
 import banking.account.service.AccountService;
 import banking.fixture.dto.AccountCreationRequestDtoFixture;
 import banking.fixture.dto.UserCreationRequestDtoFixture;
 import banking.payment.repository.PaymentRepository;
 import banking.transfer.repository.TransferRepository;
-import banking.user.dto.request.UserCreationRequestDto;
-import banking.user.dto.response.UserResponseDto;
+import banking.user.dto.request.UserCreationRequest;
+import banking.user.dto.response.UserResponse;
 import banking.user.repository.UserRepository;
 import banking.user.service.UserService;
 import org.junit.jupiter.api.AfterEach;
@@ -42,28 +42,28 @@ public class TransferIntegrationTestBase {
 	@Autowired
 	PaymentRepository paymentRepository;
 
-	public UserResponseDto senderUser;
-	public UserResponseDto receiverUser;
+	public UserResponse senderUser;
+	public UserResponse receiverUser;
 
-	public AccountResponseDto senderKrwAccount;
+	public AccountDetailResponse senderKrwAccount;
 	public String senderKrwAccountPassword;
 
-	public AccountResponseDto receiverKrwAccount;
+	public AccountDetailResponse receiverKrwAccount;
 	public String receiverKrwAccountPassword;
 
 	@BeforeEach
 	void setUp() {
-		UserCreationRequestDto sendUserRequest = UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_1.createUserCreationRequestDto();
+		UserCreationRequest sendUserRequest = UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_1.createUserCreationRequestDto();
 		senderUser = userService.register(sendUserRequest);
 
-		UserCreationRequestDto receiverUserRequest = UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_2.createUserCreationRequestDto();
+		UserCreationRequest receiverUserRequest = UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_2.createUserCreationRequestDto();
 		receiverUser = userService.register(receiverUserRequest);
 
-		AccountCreationRequestDto senderAKrwAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto();
+		AccountCreationRequest senderAKrwAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto();
 		senderKrwAccount = accountService.createAccount(senderUser.userId(), senderAKrwAccountRequest);
 		senderKrwAccountPassword = senderAKrwAccountRequest.password();
 
-		AccountCreationRequestDto receiverKrwAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_2.createAccountCreationRequestDto();
+		AccountCreationRequest receiverKrwAccountRequest = AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_2.createAccountCreationRequestDto();
 		receiverKrwAccount = accountService.createAccount(receiverUser.userId(), receiverKrwAccountRequest);
 		receiverKrwAccountPassword = receiverKrwAccountRequest.password();
 	}

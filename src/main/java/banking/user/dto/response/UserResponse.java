@@ -6,7 +6,7 @@ import lombok.Builder;
 
 @Schema(description = "회원정보 응답 DTO")
 @Builder
-public record UserResponseDto (
+public record UserResponse (
 
     @Schema(description = "유저 DB PK", example = "1")
     Long userId,
@@ -17,8 +17,8 @@ public record UserResponseDto (
     @Schema(description = "로그인 ID",example = "abc123")
     String loginId
 ) {
-    public static UserResponseDto of(User user){
-        return UserResponseDto.builder()
+    public static UserResponse of(User user){
+        return UserResponse.builder()
             .userId(user.getId())
             .name(user.getName())
             .loginId(user.getLoginId())

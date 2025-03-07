@@ -2,12 +2,11 @@ package banking.user.service;
 
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
-import banking.user.dto.response.UserPublicInfoDto;
+import banking.user.dto.response.UserPublicInfoResponse;
 import banking.user.entity.Role;
 import banking.user.entity.User;
-import banking.user.dto.request.LoginRequestDto;
-import banking.user.dto.request.UserCreationRequestDto;
-import banking.user.dto.response.UserResponseDto;
+import banking.user.dto.request.UserCreationRequest;
+import banking.user.dto.response.UserResponse;
 import banking.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,8 +22,8 @@ public class UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Transactional
-    public UserResponseDto register(UserCreationRequestDto userCreationRequestDto){
-        if(userRepository.existsByLoginId(userCreationRequestDto.loginId())){
+    public UserResponse register(UserCreationRequest userCreationRequest){
+        if(userRepository.existsByLoginId(userCreationRequest.loginId())){
             throw new CustomException(ErrorCode.DUPLICATE_LOGIN_ID);
         }
 
@@ -32,25 +31,25 @@ public class UserService {
 
         try {
             User user = User.builder()
-                .name(userCreationRequestDto.name())
-                .loginId(userCreationRequestDto.loginId())
-                .password(userCreationRequestDto.password())
-                .role(Role.ROLE_USER)
+                .name(userCreationRequest.name())
+                .loginId(userCreationRequest.loginId())
+                .password(userCreationRequest.password())
+                .role(Role.USER)
                 .build();
 
             userRepository.save(user);
-            return UserResponseDto.of(user);
+            return UserResponse.of(user);
         } catch (DataIntegrityViolationException e) {
             throw new CustomException(ErrorCode.DUPLICATE_LOGIN_ID);
         }
     }
 
-    public UserResponseDto findUserDetails(Long userId) {
+    public UserResponse findUserDetails(Long userId) {
         if (userId == null) {
             throw new CustomException(ErrorCode.NULL_PARAMETER);
         }
         User user = findUserEntity(userId);
-        return UserResponseDto.of(user);
+        return UserResponse.of(user);
     }
 
     public User findUserEntity(Long userId) {
@@ -58,35 +57,26 @@ public class UserService {
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
 
+    public User findUserEntity(String loginId) {
+        return userRepository.findByLoginId(loginId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+    }
+
     public boolean isExistUser(Long userId) {
         return userRepository.existsById(userId);
     }
 
-    public Long login(LoginRequestDto loginRequestDto) {
-        User user = userRepository.findByLoginId(loginRequestDto.loginId())
-            .orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAIL));
-
-        /*if (!bCryptPasswordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
-            throw new CustomException(ErrorCode.LOGIN_FAIL);
-        }*/
-
-        if (!user.getPassword().equals(loginRequestDto.password())) {
-            throw new CustomException(ErrorCode.LOGIN_FAIL);
-        }
-        return user.getId();
-    }
-
-    public UserPublicInfoDto findUserPublicInfo(Long userId, Long accountId) {
+    public UserPublicInfoResponse findUserPublicInfo(Long userId, Long accountId) {
         User user = userRepository.findByIdAndAccountId(userId, accountId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
-        return UserPublicInfoDto.of(user);
+        return UserPublicInfoResponse.of(user);
     }
 
-    public UserPublicInfoDto findUserPublicInfo(Long accountId) {
+    public UserPublicInfoResponse findUserPublicInfo(Long accountId) {
         User user = userRepository.findByAccountId(accountId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
-        return UserPublicInfoDto.of(user);
+        return UserPublicInfoResponse.of(user);
     }
 }

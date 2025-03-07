@@ -1,6 +1,6 @@
 package banking.transfer.dto.request;
 
-import banking.payment.dto.request.PaymentRequestDto;
+import banking.payment.dto.request.PaymentRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 
 @Builder
 @Schema(description = "거래 요청 DTO")
-public record TransferRequestDto(
+public record TransferRequest (
 
     @NotNull
     @Schema(description = "송금 계좌 DB PK", example = "579")
@@ -29,12 +29,12 @@ public record TransferRequestDto(
     @Schema(description = "거래액", example = "50000")
     BigDecimal amount // Deposit Account 통화 기준
 ) {
-    public static TransferRequestDto of(PaymentRequestDto paymentRequestDto) {
-        return TransferRequestDto.builder()
-            .withdrawalAccountId(paymentRequestDto.withdrawalAccountId())
-            .withdrawalAccountPassword(paymentRequestDto.withdrawalAccountPassword())
-            .depositAccountNumber(paymentRequestDto.depositAccountNumber())
-            .amount(paymentRequestDto.amount())
+    public static TransferRequest of(PaymentRequest paymentRequest) {
+        return TransferRequest.builder()
+            .withdrawalAccountId(paymentRequest.withdrawalAccountId())
+            .withdrawalAccountPassword(paymentRequest.withdrawalAccountPassword())
+            .depositAccountNumber(paymentRequest.depositAccountNumber())
+            .amount(paymentRequest.amount())
             .build();
     }
 }

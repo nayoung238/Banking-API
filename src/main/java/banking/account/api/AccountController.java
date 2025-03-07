@@ -1,7 +1,7 @@
 package banking.account.api;
 
-import banking.account.dto.request.AccountCreationRequestDto;
-import banking.account.dto.response.AccountResponseDto;
+import banking.account.dto.request.AccountCreationRequest;
+import banking.account.dto.response.AccountDetailResponse;
 import banking.account.service.AccountService;
 import banking.auth.entity.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,11 +27,11 @@ public class AccountController {
 
     @Operation(summary = "계좌 생성", description = "바디에 {accountName, currency, password} json 형식으로 추가 & Request Header에 Access Token 설정")
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "계좌 생성 성공", content = @Content(schema = @Schema(implementation = AccountResponseDto.class))),
+        @ApiResponse(responseCode = "201", description = "계좌 생성 성공", content = @Content(schema = @Schema(implementation = AccountDetailResponse.class))),
         @ApiResponse(responseCode = "400", description = "존재하지 않는 유저", content = @Content(schema = @Schema(implementation = String.class)))
     })
     @PostMapping
-    public ResponseEntity<?> createAccount(@RequestBody @Valid AccountCreationRequestDto request,
+    public ResponseEntity<?> createAccount(@RequestBody @Valid AccountCreationRequest request,
                                            @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -40,7 +40,7 @@ public class AccountController {
 
     @Operation(summary = "사용자의 단일 계좌 조회", description = "url 변수에 계좌 ID 설정 & Request Header에 Access Token 설정")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "사용자의 단일 계좌 조회 성공", content = @Content(schema = @Schema(implementation = AccountResponseDto.class))),
+        @ApiResponse(responseCode = "200", description = "사용자의 단일 계좌 조회 성공", content = @Content(schema = @Schema(implementation = AccountDetailResponse.class))),
         @ApiResponse(responseCode = "404", description = "존재하지 않는 계좌", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "404", description = "존재하지 않는 유저", content = @Content(schema = @Schema(implementation = String.class)))
     })
@@ -54,7 +54,7 @@ public class AccountController {
 
     @Operation(summary = "사용자의 모든 계좌 조회", description = "Request Header에 Access Token 설정")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "사용자의 모든 계좌 조회 성공", content = @Content(schema = @Schema(implementation = AccountResponseDto.class))),
+        @ApiResponse(responseCode = "200", description = "사용자의 모든 계좌 조회 성공", content = @Content(schema = @Schema(implementation = AccountDetailResponse.class))),
         @ApiResponse(responseCode = "404", description = "존재하지 않는 유저", content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping

@@ -1,13 +1,13 @@
 package banking.payment.api;
 
-import banking.account.dto.request.DepositRequestDto;
+import banking.account.dto.request.DepositRequest;
 import banking.account.service.AccountBalanceService;
 import banking.common.TransferIntegrationTestBase;
 import banking.common.data.EncryptionFacade;
 import banking.fixture.dto.AccountCreationRequestDtoFixture;
-import banking.payment.dto.request.PaymentRefundRequestDto;
-import banking.payment.dto.request.PaymentRequestDto;
-import banking.payment.dto.response.PaymentResponseDto;
+import banking.payment.dto.request.PaymentRefundRequest;
+import banking.payment.dto.request.PaymentRequest;
+import banking.payment.dto.response.PaymentResponse;
 import banking.payment.enums.PaymentStatus;
 import banking.payment.service.PaymentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,7 +55,7 @@ class PaymentControllerTransferIntegrationTest extends TransferIntegrationTestBa
     void payment_succeed_test () throws Exception {
         // given1 - 송금 계좌에 입금
         final BigDecimal currentBalance = BigDecimal.valueOf(10000);
-        DepositRequestDto depositRequest = DepositRequestDto.builder()
+        DepositRequest depositRequest = DepositRequest.builder()
             .accountNumber(senderKrwAccount.accountNumber())
             .accountPassword(senderKrwAccountPassword)
             .amount(currentBalance)
@@ -68,7 +68,7 @@ class PaymentControllerTransferIntegrationTest extends TransferIntegrationTestBa
 
         // given3 - 계좌 요청 DTO 생성
         final BigDecimal withdrawalBalance = BigDecimal.valueOf(10000);
-        PaymentRequestDto request = PaymentRequestDto.builder()
+        PaymentRequest request = PaymentRequest.builder()
             .withdrawalAccountId(senderKrwAccount.accountId())
             .withdrawalAccountPassword(encryptedPassword)
             .depositAccountNumber(encryptedDepositAccountNumber)
@@ -102,7 +102,7 @@ class PaymentControllerTransferIntegrationTest extends TransferIntegrationTestBa
     void refund_succeed_test () {
         // given1 - 송금 계좌에 입금
         final BigDecimal currentBalance = BigDecimal.valueOf(10000);
-        DepositRequestDto depositRequest = DepositRequestDto.builder()
+        DepositRequest depositRequest = DepositRequest.builder()
             .accountNumber(senderKrwAccount.accountNumber())
             .accountPassword(senderKrwAccountPassword)
             .amount(currentBalance)
@@ -111,16 +111,16 @@ class PaymentControllerTransferIntegrationTest extends TransferIntegrationTestBa
 
         // given3 - 결제 요청 및 처리
         final BigDecimal paymentAmount = BigDecimal.valueOf(2000);
-        PaymentRequestDto paymentRequest = PaymentRequestDto.builder()
+        PaymentRequest paymentRequest = PaymentRequest.builder()
             .withdrawalAccountId(senderKrwAccount.accountId())
             .withdrawalAccountPassword(senderKrwAccountPassword)
             .depositAccountNumber(receiverKrwAccount.accountNumber())
             .amount(paymentAmount)
             .build();
-        PaymentResponseDto paymentResponse = paymentService.processPayment(senderUser.userId(), paymentRequest);
+        PaymentResponse paymentResponse = paymentService.processPayment(senderUser.userId(), paymentRequest);
 
         // given4 - 결제 취소 요청 DTO 생성
-        PaymentRefundRequestDto refundRequest = PaymentRefundRequestDto.builder()
+        PaymentRefundRequest refundRequest = PaymentRefundRequest.builder()
             .paymentId(paymentResponse.paymentId())
             .withdrawalAccountPassword(encryptionFacade.encrypt(AccountCreationRequestDtoFixture.ACCOUNT_FIXTURE_KRW_1.createAccountCreationRequestDto().password()))
             .build();
@@ -147,7 +147,7 @@ class PaymentControllerTransferIntegrationTest extends TransferIntegrationTestBa
     void find_payment_details_test () throws Exception {
         // given1 - 송금 계좌에 입금
         final BigDecimal currentBalance = BigDecimal.valueOf(10000);
-        DepositRequestDto depositRequest = DepositRequestDto.builder()
+        DepositRequest depositRequest = DepositRequest.builder()
             .accountNumber(senderKrwAccount.accountNumber())
             .accountPassword(senderKrwAccountPassword)
             .amount(currentBalance)
@@ -156,13 +156,13 @@ class PaymentControllerTransferIntegrationTest extends TransferIntegrationTestBa
 
         // given2 - 결제 요청 및 처리
         final BigDecimal paymentAmount = new BigDecimal(2000);
-        PaymentRequestDto paymentRequest = PaymentRequestDto.builder()
+        PaymentRequest paymentRequest = PaymentRequest.builder()
             .withdrawalAccountId(senderKrwAccount.accountId())
             .withdrawalAccountPassword(senderKrwAccountPassword)
             .depositAccountNumber(receiverKrwAccount.accountNumber())
             .amount(paymentAmount)
             .build();
-        PaymentResponseDto paymentResponse = paymentService.processPayment(senderUser.userId(), paymentRequest);
+        PaymentResponse paymentResponse = paymentService.processPayment(senderUser.userId(), paymentRequest);
 
         // When & Then
         mockMvc.perform(

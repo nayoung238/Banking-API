@@ -1,11 +1,11 @@
 package banking.transfer.api;
 
-import banking.account.dto.request.DepositRequestDto;
+import banking.account.dto.request.DepositRequest;
 import banking.account.service.AccountBalanceService;
 import banking.common.TransferIntegrationTestBase;
-import banking.transfer.dto.request.TransferDetailsRequestDto;
-import banking.transfer.dto.request.TransferRequestDto;
-import banking.transfer.dto.response.TransferDetailsResponseDto;
+import banking.transfer.dto.request.TransferDetailsRequest;
+import banking.transfer.dto.request.TransferRequest;
+import banking.transfer.dto.response.TransferDetailResponse;
 import banking.transfer.enums.TransferType;
 import banking.transfer.service.TransferService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,7 +48,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
     void transfer_succeed_test () throws Exception {
         // given1 - 송금 계좌에 입금
         final BigDecimal currentBalance = new BigDecimal(10000);
-        DepositRequestDto depositRequest = DepositRequestDto.builder()
+        DepositRequest depositRequest = DepositRequest.builder()
             .accountNumber(senderKrwAccount.accountNumber())
             .accountPassword(senderKrwAccountPassword)
             .amount(currentBalance)
@@ -57,7 +57,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
 
         // given2 - 이체 요청 DTO 생성
         final BigDecimal withdrawalAmount = new BigDecimal("2000.0");
-        TransferRequestDto transferRequest = TransferRequestDto.builder()
+        TransferRequest transferRequest = TransferRequest.builder()
             .withdrawalAccountId(senderKrwAccount.accountId())
             .withdrawalAccountPassword(senderKrwAccountPassword)
             .depositAccountNumber(receiverKrwAccount.accountNumber())
@@ -88,7 +88,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
     void transfer_insufficient_balance_test () throws Exception {
         // given1 - 송금 계좌에 입금
         final BigDecimal currentBalance = new BigDecimal(1000);
-        DepositRequestDto depositRequest = DepositRequestDto.builder()
+        DepositRequest depositRequest = DepositRequest.builder()
             .accountNumber(senderKrwAccount.accountNumber())
             .accountPassword(senderKrwAccountPassword)
             .amount(currentBalance)
@@ -97,7 +97,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
 
         // given2 - 이체 요청 DTO 생성
         final BigDecimal withdrawalAmount = currentBalance.multiply(new BigDecimal(2));
-        TransferRequestDto transferRequest = TransferRequestDto.builder()
+        TransferRequest transferRequest = TransferRequest.builder()
             .withdrawalAccountId(senderKrwAccount.accountId())
             .withdrawalAccountPassword(senderKrwAccountPassword)
             .depositAccountNumber(receiverKrwAccount.accountNumber())
@@ -121,7 +121,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
     void findTransaction() throws Exception {
         // given1 - 송금 계좌에 입금
         final BigDecimal currentBalance = new BigDecimal(10000);
-        DepositRequestDto depositRequest = DepositRequestDto.builder()
+        DepositRequest depositRequest = DepositRequest.builder()
             .accountNumber(senderKrwAccount.accountNumber())
             .accountPassword(senderKrwAccountPassword)
             .amount(currentBalance)
@@ -130,18 +130,18 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
 
         // given2 - 이체 요청
         final BigDecimal withdrawalAmount = new BigDecimal(2000);
-        TransferRequestDto transferRequest = TransferRequestDto.builder()
+        TransferRequest transferRequest = TransferRequest.builder()
             .withdrawalAccountId(senderKrwAccount.accountId())
             .withdrawalAccountPassword(senderKrwAccountPassword)
             .depositAccountNumber(receiverKrwAccount.accountNumber())
             .amount(withdrawalAmount)
             .build();
 
-        TransferDetailsResponseDto transferDetailsResponse = transferService.transfer(senderUser.userId(), transferRequest);
+        TransferDetailResponse transferDetailResponse = transferService.transfer(senderUser.userId(), transferRequest);
 
-        TransferDetailsRequestDto transferDetailsRequest = TransferDetailsRequestDto.builder()
+        TransferDetailsRequest transferDetailsRequest = TransferDetailsRequest.builder()
             .accountId(senderKrwAccount.accountId())
-            .transferId(transferDetailsResponse.transferId())
+            .transferId(transferDetailResponse.transferId())
             .build();
 
         // when & then
@@ -152,7 +152,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
                 .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.transferId").value(transferDetailsResponse.transferId()))
+            .andExpect(jsonPath("$.transferId").value(transferDetailResponse.transferId()))
             .andExpect(jsonPath("$.withdrawalAccountNumber").value(senderKrwAccount.accountNumber()))
             .andExpect(jsonPath("$.depositAccountNumber").value(transferRequest.depositAccountNumber()))
             .andExpect(jsonPath("$.transferType").value(TransferType.WITHDRAWAL.name()))
@@ -168,7 +168,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
     void findAllTransaction() throws Exception {
         // given1 - 송금 계좌에 입금
         final BigDecimal currentBalance = new BigDecimal(10000);
-        DepositRequestDto depositRequest = DepositRequestDto.builder()
+        DepositRequest depositRequest = DepositRequest.builder()
             .accountNumber(senderKrwAccount.accountNumber())
             .accountPassword(senderKrwAccountPassword)
             .amount(currentBalance)
@@ -177,7 +177,7 @@ class TransferControllerTransferIntegrationTest extends TransferIntegrationTestB
 
         // given2 - 이체 요청
         final BigDecimal withdrawalAmount = new BigDecimal(2000);
-        TransferRequestDto transferRequest = TransferRequestDto.builder()
+        TransferRequest transferRequest = TransferRequest.builder()
             .withdrawalAccountId(senderKrwAccount.accountId())
             .withdrawalAccountPassword(senderKrwAccountPassword)
             .depositAccountNumber(receiverKrwAccount.accountNumber())

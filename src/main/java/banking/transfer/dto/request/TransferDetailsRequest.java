@@ -6,7 +6,7 @@ import lombok.Builder;
 
 @Builder
 @Schema(description = "거래 상세내역 조회 요청 DTO")
-public record TransferDetailsRequestDto (
+public record TransferDetailsRequest (
 
     @NotNull
     @Schema(description = "계좌 DB PK", example = "1")

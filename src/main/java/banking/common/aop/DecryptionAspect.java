@@ -1,8 +1,8 @@
 package banking.common.aop;
 
 import banking.common.data.DecryptionFacade;
-import banking.payment.dto.request.PaymentRefundRequestDto;
-import banking.payment.dto.request.PaymentRequestDto;
+import banking.payment.dto.request.PaymentRefundRequest;
+import banking.payment.dto.request.PaymentRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -22,23 +22,23 @@ public class DecryptionAspect {
 	public Object decrypt(ProceedingJoinPoint joinPoint) throws Throwable {
 		Object[] args = joinPoint.getArgs();
 		for (int i = 0; i < args.length; i++) {
-			if (args[i] instanceof PaymentRequestDto request) {
+			if (args[i] instanceof PaymentRequest request) {
 				String decryptedDepositAccountNumber = decryptionFacade.decrypt(request.depositAccountNumber());
 				String decryptedPassword = decryptionFacade.decrypt(request.withdrawalAccountPassword());
 
 				log.info("[/payment] DecryptedDepositAccountNumber {} -> {}", request.depositAccountNumber(), decryptedDepositAccountNumber);
 				log.info("[/payment] password {} -> {}", request.withdrawalAccountPassword(), decryptedPassword);
 
-				args[i] = PaymentRequestDto.builder()
+				args[i] = PaymentRequest.builder()
 					.withdrawalAccountId(request.withdrawalAccountId())
 					.withdrawalAccountPassword(decryptedPassword)
 					.depositAccountNumber(decryptedDepositAccountNumber)
 					.amount(request.amount())
 					.build();
 
-			} else if (args[i] instanceof PaymentRefundRequestDto request) {
+			} else if (args[i] instanceof PaymentRefundRequest request) {
 				String decryptedPassword = decryptionFacade.decrypt(request.withdrawalAccountPassword());
-				args[i] = PaymentRefundRequestDto.builder()
+				args[i] = PaymentRefundRequest.builder()
 					.paymentId(request.paymentId())
 					.withdrawalAccountPassword(decryptedPassword)
 					.build();

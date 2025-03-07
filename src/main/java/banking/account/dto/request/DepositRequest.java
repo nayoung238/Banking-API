@@ -8,14 +8,14 @@ import lombok.Builder;
 import java.math.BigDecimal;
 
 @Builder
-public record DepositRequestDto (
+public record DepositRequest (
 
 	@NotBlank(message = "입금 계좌번호는 필수입니다.")
 	@Schema(description = "입금 계좌번호",example = "5618752-3157985")
 	String accountNumber,
 
 	@NotBlank(message = "입금 계좌 비밀번호는 필수입니다.")
-	@Schema(description = "입금 계좌 비밀번호",example = "965618")
+	@Schema(description = "입금 계좌 비밀번호",example = "12345")
 	String accountPassword,
 
 	@NotNull(message = "입금 금액은 필수입니다.")

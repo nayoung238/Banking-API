@@ -2,7 +2,7 @@ package banking.payment.dto.response;
 
 import banking.payment.entity.Payment;
 import banking.payment.enums.PaymentStatus;
-import banking.transfer.dto.response.TransferResponseForPaymentDto;
+import banking.transfer.dto.response.PaymentTransferDetailResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Schema(description = "결제 응답 DTO")
 @Builder
-public record PaymentResponseDto (
+public record PaymentResponse (
 
     @Schema(description = "결제 DB PK", example = "1")
     Long paymentId,
@@ -38,9 +38,9 @@ public record PaymentResponseDto (
     @Schema(description = "결제일", example = "2019.05.20")
     LocalDateTime paidAt
 ) {
-    public static PaymentResponseDto of(Payment payment, TransferResponseForPaymentDto transferResponse,
-                                        String withdrawAccountNumber, String payeeName) {
-        return PaymentResponseDto.builder()
+    public static PaymentResponse of(Payment payment, PaymentTransferDetailResponse transferResponse,
+									 String withdrawAccountNumber, String payeeName) {
+        return PaymentResponse.builder()
             .paymentId(payment.getId())
             .paymentStatus(payment.getPaymentStatus())
             .withdrawAccountNumber(withdrawAccountNumber)

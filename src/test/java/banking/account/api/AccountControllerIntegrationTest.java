@@ -1,7 +1,7 @@
 package banking.account.api;
 
-import banking.account.dto.request.AccountCreationRequestDto;
-import banking.account.dto.response.AccountResponseDto;
+import banking.account.dto.request.AccountCreationRequest;
+import banking.account.dto.response.AccountDetailResponse;
 import banking.account.entity.Account;
 import banking.account.repository.AccountRepository;
 import banking.account.service.AccountService;
@@ -9,8 +9,8 @@ import banking.account.enums.Currency;
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
 import banking.fixture.dto.UserCreationRequestDtoFixture;
-import banking.user.dto.request.UserCreationRequestDto;
-import banking.user.dto.response.UserResponseDto;
+import banking.user.dto.request.UserCreationRequest;
+import banking.user.dto.response.UserResponse;
 import banking.user.repository.UserRepository;
 import banking.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,13 +68,13 @@ class AccountControllerIntegrationTest {
     @DisplayName("[계좌 개설 성공 테스트] 계좌 개설 성공 시 계좌 정보 반환")
     void create_account_succeed_test () throws Exception {
         // given
-        UserCreationRequestDto userCreationRequest = UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_1.createUserCreationRequestDto();
-        UserResponseDto userResponse = userService.register(userCreationRequest);
+        UserCreationRequest userCreationRequest = UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_1.createUserCreationRequestDto();
+        UserResponse userResponse = userService.register(userCreationRequest);
 
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("user", userResponse.userId());
 
-        AccountCreationRequestDto request = AccountCreationRequestDto.builder()
+        AccountCreationRequest request = AccountCreationRequest.builder()
             .password("62324")
             .currency(Currency.KRW)
             .accountName("Test Account")
@@ -102,19 +102,19 @@ class AccountControllerIntegrationTest {
     @DisplayName("[계좌 조회 성공 테스트] 단일 계좌 조회 시 계좌 정보 반환")
     void find_single_account_test () throws Exception {
         // given
-        UserCreationRequestDto userCreationRequest = UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_1.createUserCreationRequestDto();
-        UserResponseDto userResponse = userService.register(userCreationRequest);
+        UserCreationRequest userCreationRequest = UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_1.createUserCreationRequestDto();
+        UserResponse userResponse = userService.register(userCreationRequest);
 
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("user", userResponse.userId());
 
-        AccountCreationRequestDto request = AccountCreationRequestDto.builder()
+        AccountCreationRequest request = AccountCreationRequest.builder()
             .password("62324")
             .currency(Currency.KRW)
             .accountName("Test Account")
             .build();
 
-        AccountResponseDto response = accountService.createAccount(userResponse.userId(), request);
+        AccountDetailResponse response = accountService.createAccount(userResponse.userId(), request);
         Account account = accountRepository.findByAccountNumber(response.accountNumber())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
@@ -135,19 +135,19 @@ class AccountControllerIntegrationTest {
     @DisplayName("[계좌 조회 성공 테스트] 전체 계좌 조회 시 모든 계좌 정보 반환")
     void find_all_account_test () throws Exception {
         // given
-        UserCreationRequestDto userCreationRequest = UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_1.createUserCreationRequestDto();
-        UserResponseDto userResponse = userService.register(userCreationRequest);
+        UserCreationRequest userCreationRequest = UserCreationRequestDtoFixture.USER_CREATION_REQUEST_DTO_FIXTURE_1.createUserCreationRequestDto();
+        UserResponse userResponse = userService.register(userCreationRequest);
 
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("user", userResponse.userId());
 
-        AccountCreationRequestDto requestKrwAccount = AccountCreationRequestDto.builder()
+        AccountCreationRequest requestKrwAccount = AccountCreationRequest.builder()
             .password("62324")
             .currency(Currency.KRW)
             .accountName("Test KRW Account")
             .build();
 
-        AccountCreationRequestDto requestUsdAccount = AccountCreationRequestDto.builder()
+        AccountCreationRequest requestUsdAccount = AccountCreationRequest.builder()
             .password("95224")
             .currency(Currency.USD)
             .accountName("Test USD Account")

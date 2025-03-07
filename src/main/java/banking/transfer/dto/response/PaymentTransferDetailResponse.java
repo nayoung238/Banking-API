@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Builder
-public record TransferResponseForPaymentDto (
+public record PaymentTransferDetailResponse (
 
 	String transferGroupId,
 	TransferType transferType,
@@ -20,8 +20,8 @@ public record TransferResponseForPaymentDto (
 	LocalDateTime createdAt
 ) {
 
-	public static TransferResponseForPaymentDto of(Transfer transfer) {
-		return TransferResponseForPaymentDto.builder()
+	public static PaymentTransferDetailResponse of(Transfer transfer) {
+		return PaymentTransferDetailResponse.builder()
 			.transferGroupId(transfer.getTransferGroupId())
 			.transferType(transfer.getTransferType())
 			.withdrawalAccountId(transfer.getWithdrawalAccountId())

@@ -10,7 +10,7 @@ import java.math.RoundingMode;
 
 @Builder
 @Schema(description = "계좌 정보 응답 DTO")
-public record AccountResponseDto (
+public record AccountDetailResponse (
 
     @Schema(description = "계좌 DB PK", example = "1")
     Long accountId,
@@ -28,8 +28,8 @@ public record AccountResponseDto (
     String accountName
 ) {
 
-    public static AccountResponseDto of(Account account) {
-        return AccountResponseDto.builder()
+    public static AccountDetailResponse of(Account account) {
+        return AccountDetailResponse.builder()
             .accountId(account.getId())
             .accountNumber(account.getAccountNumber())
             .currency(account.getCurrency())

@@ -6,14 +6,14 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
-public record WithdrawalRequestDto (
+public record WithdrawalRequest (
 
 	@NotBlank(message = "출금 계좌번호는 필수입니다.")
 	@Schema(description = "출금 계좌번호",example = "5618752-3157985")
 	String accountNumber,
 
 	@NotBlank(message = "출금 계좌 비밀번호는 필수입니다.")
-	@Schema(description = "출금 계좌 비밀번호",example = "965618")
+	@Schema(description = "출금 계좌 비밀번호",example = "12345")
 	String accountPassword,
 
 	@NotNull(message = "출금 금액은 필수입니다.")

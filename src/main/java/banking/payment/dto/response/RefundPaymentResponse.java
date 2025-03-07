@@ -10,7 +10,7 @@ import java.math.RoundingMode;
 
 @Schema(description = "결제 취소 응답 DTO")
 @Builder
-public record RefundPaymentResponseDto (
+public record RefundPaymentResponse (
 
 	@NotBlank
 	@Schema(description = "입금 계좌번호", example = "230492-5894257")
@@ -21,8 +21,8 @@ public record RefundPaymentResponseDto (
 	BigDecimal refundAmount
 ) {
 
-	public static RefundPaymentResponseDto of(String depositAccountNumber, BigDecimal refundAmount) {
-		return RefundPaymentResponseDto.builder()
+	public static RefundPaymentResponse of(String depositAccountNumber, BigDecimal refundAmount) {
+		return RefundPaymentResponse.builder()
 			.depositAccountNumber(depositAccountNumber)
 			.refundAmount(stripZeros(refundAmount))
 			.build();
