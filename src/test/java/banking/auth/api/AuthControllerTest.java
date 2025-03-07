@@ -17,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -57,7 +58,7 @@ class AuthControllerTest {
 		// given
 		UserCreationRequest userCreationRequest = UserCreationRequest.builder()
 			.name("test-name")
-			.loginId("test-login-id-890")
+			.loginId("test-login-id-1890")
 			.password("test-password")
 			.build();
 
@@ -138,7 +139,7 @@ class AuthControllerTest {
 	}
 
 	@Test
-	@DisplayName("[로그아웃 성공 테스트] 로그아웃 시 refresh 토큰 만료")
+	@DisplayName("[로그아웃 성공 테스트] 로그아웃 시 Access Token 제거 & Refresh Token 만료")
 	public void logout_succeed_test () throws Exception {
 		// given
 		UserCreationRequest userCreationRequest = UserCreationRequest.builder()
@@ -177,6 +178,9 @@ class AuthControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$").value("로그아웃 성공"))
 			.andExpect(header().doesNotExist("Authorization"))
+			.andExpect(cookie().exists("refresh_token"))
+			.andExpect(cookie().value("refresh_token", nullValue()))
+			.andExpect(cookie().maxAge("refresh_token", 0))
 			.andDo(print());
 	}
 }
