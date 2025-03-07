@@ -29,11 +29,6 @@ spring:
     consumer:
       group-id: backingServiceGroup
 
-server:
-  servlet:
-    session:
-      timeout: 30m
-
 data:
   secret-key: dtj8WL8jwm49LhXyXnscpXTv5uc5VhWm+WWN5pkDejo=
 
