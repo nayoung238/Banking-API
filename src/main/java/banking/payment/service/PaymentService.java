@@ -32,13 +32,13 @@ public class PaymentService {
     private final UserService userService;
 
     @Transactional
-    public PaymentResponseDto processPayment(Long requesterId, PaymentRequestDto request) {
-        TransferResponseForPaymentDto transferResponse = transferService.transfer(requesterId, request);
+    public PaymentResponseDto processPayment(Long userId, PaymentRequestDto request) {
+        TransferResponseForPaymentDto transferResponse = transferService.transfer(userId, request);
 
         UserPublicInfoDto payeeUserPublicInfo = userService.findUserPublicInfo(transferResponse.depositAccountId());
 
         Payment payment = Payment.builder()
-            .payerId(requesterId)
+            .payerId(userId)
             .payeeId(payeeUserPublicInfo.id())
             .transferGroupId(transferResponse.transferGroupId())
             .paymentStatus(PaymentStatus.PAYMENT_PENDING)
@@ -46,21 +46,21 @@ public class PaymentService {
 
         paymentRepository.save(payment);
 
-        return createPaymentResponseDto(requesterId, payment.getId());
+        return createPaymentResponseDto(userId, payment.getId());
     }
 
     @Transactional
-    public RefundPaymentResponseDto refundPayment(Long requesterId, PaymentRefundRequestDto request) {
+    public RefundPaymentResponseDto refundPayment(Long userId, PaymentRefundRequestDto request) {
         Payment payment = paymentRepository.findById(request.paymentId())
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PAYMENT));
 
-        verifyRequesterOwnership(payment, requesterId);
+        verifyRequesterOwnership(payment, userId);
 
         if(payment.getPaymentStatus().equals(PaymentStatus.PAYMENT_CANCELLED)) {
             throw new CustomException(ErrorCode.PAYMENT_ALREADY_CANCELLED);
         }
 
-        TransferResponseForPaymentDto refundTransferResponse = transferService.transferForRefund(requesterId, payment.getTransferGroupId(), request.withdrawalAccountPassword());
+        TransferResponseForPaymentDto refundTransferResponse = transferService.transferForRefund(userId, payment.getTransferGroupId(), request.withdrawalAccountPassword());
 
         // Payment 상태 변경 (PENDING/COMPLETED -> CANCELLED)
         payment.updatePaymentStatus(PaymentStatus.PAYMENT_CANCELLED);
@@ -71,21 +71,21 @@ public class PaymentService {
         return RefundPaymentResponseDto.of(depositAccountPublicInfo.accountNumber(), refundTransferResponse.amount());
     }
 
-    private void verifyRequesterOwnership(Payment payment, Long requesterId) {
-        if (!payment.getPayerId().equals(requesterId)) {
+    private void verifyRequesterOwnership(Payment payment, Long userId) {
+        if (!payment.getPayerId().equals(userId)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_PAYMENT_ACCESS);
         }
     }
 
-    public PaymentResponseDto findPaymentById(Long requesterId, Long paymentId) {
-        return createPaymentResponseDto(requesterId, paymentId);
+    public PaymentResponseDto findPaymentById(Long userId, Long paymentId) {
+        return createPaymentResponseDto(userId, paymentId);
     }
 
-    private PaymentResponseDto createPaymentResponseDto(Long requesterId, Long paymentId) {
+    private PaymentResponseDto createPaymentResponseDto(Long userId, Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PAYMENT));
 
-        TransferResponseForPaymentDto transferResponse = transferQueryService.findTransfer(payment.getTransferGroupId(), requesterId);
+        TransferResponseForPaymentDto transferResponse = transferQueryService.findTransfer(payment.getTransferGroupId(), userId);
 
         Long requesterAccountId = (transferResponse.transferType().equals(TransferType.WITHDRAWAL)) ?
             transferResponse.withdrawalAccountId() : transferResponse.depositAccountId();
@@ -94,7 +94,7 @@ public class PaymentService {
         AccountPublicInfoDto accountPublicInfo = accountService.findAccountPublicInfo(requesterAccountId, transferResponse);
 
         // 공개용 사용자 정보 GET
-        UserPublicInfoDto userPublicInfo = userService.findUserPublicInfo(requesterId, requesterAccountId);
+        UserPublicInfoDto userPublicInfo = userService.findUserPublicInfo(userId, requesterAccountId);
 
         return PaymentResponseDto.of(payment, transferResponse, accountPublicInfo.accountNumber(), userPublicInfo.name());
     }

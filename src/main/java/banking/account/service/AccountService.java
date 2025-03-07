@@ -67,13 +67,13 @@ public class AccountService {
      * /payment, /transfer 에서 사용
      * 계좌 소유자만 접근 가능
      * @param accountId   요청 계좌 PK
-     * @param requesterId 요청 사용자 PK
+     * @param userId      요청 사용자 PK
      * @param password    요청 계좌 비밀번호
      * @return 계좌 소유자인 경우 계좌 반환
      */
     @Transactional
-    public Account findAccountWithLock(Long requesterId, Long accountId, String password) {
-        boolean isOwner = accountRepository.existsByIdAndUserId(accountId, requesterId);
+    public Account findAccountWithLock(Long userId, Long accountId, String password) {
+        boolean isOwner = accountRepository.existsByIdAndUserId(accountId, userId);
         if (!isOwner) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
         }

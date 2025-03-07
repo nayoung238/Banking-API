@@ -35,8 +35,8 @@ public class TransferService {
     private final AccountBalanceService accountBalanceService;
 
     @Transactional
-    public TransferDetailsResponseDto transfer(Long requesterId, TransferRequestDto request) {
-        return executeTransfer(requesterId, request,
+    public TransferDetailsResponseDto transfer(Long userId, TransferRequestDto request) {
+        return executeTransfer(userId, request,
             (transfer, withdrawalAccount, depositAccount) -> {
                 AccountPublicInfoDto withdrawalAccountPublicInfo = accountService.findAccountPublicInfo(withdrawalAccount.getId(), transfer);
                 return TransferDetailsResponseDto.of(transfer, TransferType.WITHDRAWAL, withdrawalAccountPublicInfo, depositAccount);
@@ -45,14 +45,14 @@ public class TransferService {
     }
 
     @Transactional
-    public TransferResponseForPaymentDto transfer(Long requesterId, PaymentRequestDto request) {
-        return executeTransfer(requesterId, TransferRequestDto.of(request),
+    public TransferResponseForPaymentDto transfer(Long userId, PaymentRequestDto request) {
+        return executeTransfer(userId, TransferRequestDto.of(request),
             (transfer, withdrawalAccount, depositAccount) ->  TransferResponseForPaymentDto.of(transfer));
     }
 
-    public <T> T executeTransfer(Long requesterId, TransferRequestDto request, TransferResultHandler<T> resultHandler) {
+    public <T> T executeTransfer(Long userId, TransferRequestDto request, TransferResultHandler<T> resultHandler) {
         // 출금 계좌 Entity GET with Lock
-        Account withdrawalAccount = accountService.findAccountWithLock(requesterId, request.withdrawalAccountId(), request.withdrawalAccountPassword());
+        Account withdrawalAccount = accountService.findAccountWithLock(userId, request.withdrawalAccountId(), request.withdrawalAccountPassword());
 
         // 같은 계좌 간 이체 불가
         if (withdrawalAccount.getAccountNumber().equals(request.depositAccountNumber())) {
@@ -82,9 +82,9 @@ public class TransferService {
     }
 
     @Transactional
-    public TransferResponseForPaymentDto transferForRefund(Long requesterId, String transferGroupId, String requesterAccountPassword) {
+    public TransferResponseForPaymentDto transferForRefund(Long userId, String transferGroupId, String requesterAccountPassword) {
         List<Transfer> transfers = transferRepository.findAllByTransferGroupId(transferGroupId);
-        verifyTransfer(transfers, requesterId);
+        verifyTransfer(transfers, userId);
 
         Transfer origianlWithdrawalTransfer;
         Transfer originalDepositTransfer;
@@ -101,7 +101,7 @@ public class TransferService {
         Account originalDepositAccount = null;
         if(origianlWithdrawalTransfer.getWithdrawalAccountId().compareTo(origianlWithdrawalTransfer.getDepositAccountId()) < 0) {
             originalWithdrawalAccount = accountService.findAccountWithLock(origianlWithdrawalTransfer.getWithdrawalAccountId(),
-                                                                            requesterId,
+                                                                            userId,
                                                                             requesterAccountPassword);
 
             originalDepositAccount = accountService.findAccountWithLock(origianlWithdrawalTransfer.getDepositAccountId(),
@@ -111,7 +111,7 @@ public class TransferService {
                                                                         originalDepositTransfer);
 
             originalWithdrawalAccount = accountService.findAccountWithLock(origianlWithdrawalTransfer.getWithdrawalAccountId(),
-                                                                            requesterId,
+                                                                            userId,
                                                                             requesterAccountPassword);
         }
 
