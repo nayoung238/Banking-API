@@ -1,9 +1,7 @@
 package banking.common.config;
 
-import banking.common.exception.CustomAccessDeniedHandler;
-import banking.common.exception.CustomAuthenticationEntryPoint;
-import banking.user.service.CustomUserDetailsService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import banking.auth.jwt.JwtUtil;
+import banking.auth.jwt.JwtAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -19,35 +18,35 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final CustomUserDetailsService customUserDetailsService;
-    private final ObjectMapper objectMapper;
+
+    private final JwtUtil jwtUtil;
+    private final JwtAuthenticationProvider jwtAuthenticationProvider;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
-        httpSecurity.
-                csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session->session.maximumSessions(1));
-        httpSecurity
-                .authorizeHttpRequests(auth->auth
-                        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/users").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET,"/accounts").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST,"/accounts").hasAnyRole("USER", "ADMIN")
-//                        .requestMatchers(HttpMethod.GET,"/transfer").hasAnyRole("USER", "ADMIN")
-//                        .requestMatchers(HttpMethod.POST,"/transfer").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/**").permitAll()
-                );
-        httpSecurity
-                .addFilterBefore(new SessionAuthenticationFilter(customUserDetailsService,objectMapper), UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exception->exception.accessDeniedHandler(new CustomAccessDeniedHandler(objectMapper))
-                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint(objectMapper)));
-        return httpSecurity.build();
+        return httpSecurity
+            .csrf(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .formLogin(AbstractHttpConfigurer::disable)
+            .logout(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers(HttpMethod.POST,"/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/users").permitAll()  // sign-up
+                .requestMatchers(HttpMethod.POST, "/atm/**").permitAll()
+                .anyRequest().authenticated()
+            )
+            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+            .build();
+    }
+
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtUtil, jwtAuthenticationProvider);
     }
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-
 }

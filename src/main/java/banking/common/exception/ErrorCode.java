@@ -52,7 +52,15 @@ public enum ErrorCode {
     DUPLICATE_TOKEN(HttpStatus.BAD_REQUEST,"중복된 토큰입니다."),
 
     // Valid
-    NULL_PARAMETER(HttpStatus.BAD_REQUEST, "파라미터가 null 입니다.");
+    NULL_PARAMETER(HttpStatus.BAD_REQUEST, "파라미터가 null 입니다."),
+
+    // JWT
+    TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
+    REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 만료되었습니다."),
+    REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 없습니다."),
+    JWT_PROCESSING_FAILED(HttpStatus.BAD_REQUEST, "JWT 처리 중 오류가 발생했습니다."),
+    MISSING_USER_ID(HttpStatus.BAD_REQUEST, "토큰 생성 시 userId 값은 필수입니다."),
+    MISSING_ROLE(HttpStatus.BAD_REQUEST, "토큰 생성 시 role 값은 필수입니다.");
 
     private final HttpStatus status;
     private final String message;

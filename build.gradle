@@ -45,7 +45,8 @@ dependencies {
 
 	// security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.session:spring-session-core'
+	implementation 'io.jsonwebtoken:jjwt:0.9.1'
+	implementation 'javax.xml.bind:jaxb-api:2.3.1'
 
 	// aop
 	implementation 'org.springframework.retry:spring-retry'
@@ -62,6 +63,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	runtimeOnly 'com.mysql:mysql-connector-j:8.0.33'
 	runtimeOnly 'com.h2database:h2'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	testImplementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 	// fcm
 	implementation 'com.google.firebase:firebase-messaging:23.2.0'
@@ -71,7 +74,6 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testImplementation 'org.awaitility:awaitility:4.2.2'
-
 
 	// monitoring
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
