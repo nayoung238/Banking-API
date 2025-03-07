@@ -1,6 +1,6 @@
 package banking.fixture.dto;
 
-import banking.user.dto.request.UserCreationRequestDto;
+import banking.user.dto.request.UserCreationRequest;
 
 public enum UserCreationRequestDtoFixture {
 
@@ -25,8 +25,8 @@ public enum UserCreationRequestDtoFixture {
 		this.password = password;
 	}
 
-	public UserCreationRequestDto createUserCreationRequestDto() {
-		return UserCreationRequestDto.builder()
+	public UserCreationRequest createUserCreationRequestDto() {
+		return UserCreationRequest.builder()
 			.name(name)
 			.loginId(loginId)
 			.password(password)

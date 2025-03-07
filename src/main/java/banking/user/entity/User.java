@@ -1,6 +1,8 @@
 package banking.user.entity;
 
 import banking.account.entity.Account;
+import banking.common.exception.CustomException;
+import banking.common.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,5 +33,11 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role = Role.ROLE_USER;
+    private Role role;
+
+    public void verifyPasswordMatching(String requestedPassword) {
+        if (!password.equals(requestedPassword)) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+    }
 }

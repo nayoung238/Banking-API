@@ -1,18 +1,18 @@
 package banking.payment.service;
 
-import banking.account.dto.response.AccountPublicInfoDto;
+import banking.account.dto.response.AccountPublicInfoResponse;
 import banking.account.entity.Account;
 import banking.account.service.AccountService;
 import banking.fixture.testEntity.AccountFixture;
 import banking.fixture.testEntity.UserFixture;
-import banking.payment.dto.request.PaymentRequestDto;
+import banking.payment.dto.request.PaymentRequest;
 import banking.payment.enums.PaymentStatus;
 import banking.payment.repository.PaymentRepository;
-import banking.transfer.dto.response.TransferResponseForPaymentDto;
+import banking.transfer.dto.response.PaymentTransferDetailResponse;
 import banking.transfer.enums.TransferType;
 import banking.transfer.service.TransferQueryService;
 import banking.transfer.service.TransferService;
-import banking.user.dto.response.UserPublicInfoDto;
+import banking.user.dto.response.UserPublicInfoResponse;
 import banking.user.entity.User;
 import banking.user.service.UserService;
 import org.assertj.core.api.Assertions;
@@ -23,7 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
-import banking.payment.dto.request.PaymentRefundRequestDto;
+import banking.payment.dto.request.PaymentRefundRequest;
 import banking.payment.entity.Payment;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -63,14 +63,14 @@ public class PaymentServiceUnitTest {
 		Account withdrawalAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
 		Account depositAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_2.createAccount(user);
 
-		PaymentRequestDto paymentRequest = PaymentRequestDto.builder()
+		PaymentRequest paymentRequest = PaymentRequest.builder()
 			.withdrawalAccountId(withdrawalAccount.getId())
 			.withdrawalAccountPassword(AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user).getPassword())
 			.depositAccountNumber(depositAccount.getAccountNumber())
 			.amount(BigDecimal.valueOf(200))
 			.build();
 
-		TransferResponseForPaymentDto transferResponse = TransferResponseForPaymentDto.builder()
+		PaymentTransferDetailResponse transferResponse = PaymentTransferDetailResponse.builder()
 			.transferGroupId("173234Ad2D")
 			.transferType(TransferType.WITHDRAWAL)
 			.withdrawalAccountId(withdrawalAccount.getId())
@@ -85,31 +85,31 @@ public class PaymentServiceUnitTest {
 			.payeeId(depositAccount.getId())
 			.build();
 
-		AccountPublicInfoDto mockAccountPublicInfoDto = AccountPublicInfoDto.builder()
+		AccountPublicInfoResponse mockAccountPublicInfoResponse = AccountPublicInfoResponse.builder()
 			.ownerName(user.getName())
 			.accountNumber(withdrawalAccount.getAccountNumber())
 			.accountName(withdrawalAccount.getAccountName())
 			.currency(withdrawalAccount.getCurrency())
 			.build();
 
-		UserPublicInfoDto mockUserPublicInfoDto = UserPublicInfoDto.builder()
+		UserPublicInfoResponse mockUserPublicInfoResponse = UserPublicInfoResponse.builder()
 			.id(user.getId())
 			.name(user.getName())
 			.build();
 
-		when(transferService.transfer(anyLong(), any(PaymentRequestDto.class))).thenReturn(transferResponse);
-		when(userService.findUserPublicInfo(any())).thenReturn(mockUserPublicInfoDto);
+		when(transferService.transfer(anyLong(), any(PaymentRequest.class))).thenReturn(transferResponse);
+		when(userService.findUserPublicInfo(any())).thenReturn(mockUserPublicInfoResponse);
 		when(paymentRepository.save(any(Payment.class))).thenReturn(null);
 		when(paymentRepository.findById(any())).thenReturn(Optional.ofNullable(mockPayment));
 		when(transferQueryService.findTransfer(any(), anyLong())).thenReturn(transferResponse);
-		when(accountService.findAccountPublicInfo(anyLong(), any(TransferResponseForPaymentDto.class))).thenReturn(mockAccountPublicInfoDto);
-		when(userService.findUserPublicInfo(any(), any())).thenReturn(mockUserPublicInfoDto);
+		when(accountService.findAccountPublicInfo(anyLong(), any(PaymentTransferDetailResponse.class))).thenReturn(mockAccountPublicInfoResponse);
+		when(userService.findUserPublicInfo(any(), any())).thenReturn(mockUserPublicInfoResponse);
 
 		// when
 		paymentService.processPayment(user.getId(), paymentRequest);
 
 		// then
-		verify(transferService, times(1)).transfer(anyLong(), any(PaymentRequestDto.class));
+		verify(transferService, times(1)).transfer(anyLong(), any(PaymentRequest.class));
 		verify(paymentRepository, times(1)).save(any(Payment.class));
 	}
 
@@ -129,7 +129,7 @@ public class PaymentServiceUnitTest {
 
 		when(paymentRepository.findById(anyLong())).thenReturn(Optional.ofNullable(mockPayment));
 
-        PaymentRefundRequestDto refundRequest = PaymentRefundRequestDto.builder()
+        PaymentRefundRequest refundRequest = PaymentRefundRequest.builder()
 			.paymentId(1L)
 			.withdrawalAccountPassword(AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user).getPassword())
 			.build();

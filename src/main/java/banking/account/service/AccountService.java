@@ -1,14 +1,14 @@
 package banking.account.service;
 
-import banking.account.dto.request.AccountCreationRequestDto;
-import banking.account.dto.response.AccountResponseDto;
-import banking.account.dto.response.AccountPublicInfoDto;
+import banking.account.dto.request.AccountCreationRequest;
+import banking.account.dto.response.AccountDetailResponse;
+import banking.account.dto.response.AccountPublicInfoResponse;
 import banking.account.enums.AccountStatus;
 import banking.account.repository.AccountRepository;
 import banking.account.entity.Account;
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
-import banking.transfer.dto.response.TransferResponseForPaymentDto;
+import banking.transfer.dto.response.PaymentTransferDetailResponse;
 import banking.transfer.entity.Transfer;
 import banking.user.entity.User;
 import banking.user.service.UserService;
@@ -36,7 +36,7 @@ public class AccountService {
         backoff = @Backoff(delay = 500)
     )
     @Transactional
-    public AccountResponseDto createAccount(Long userId, AccountCreationRequestDto request) {
+    public AccountDetailResponse createAccount(Long userId, AccountCreationRequest request) {
         User user = userService.findUserEntity(userId);
         String accountName = request.accountName() != null ? request.accountName() : "은행 계좌명";
 
@@ -51,7 +51,7 @@ public class AccountService {
             .build();
 
         accountRepository.save(account);
-        return AccountResponseDto.of(account);
+        return AccountDetailResponse.of(account);
     }
 
     private String generateUniqueAccountNumber() {
@@ -67,13 +67,13 @@ public class AccountService {
      * /payment, /transfer 에서 사용
      * 계좌 소유자만 접근 가능
      * @param accountId   요청 계좌 PK
-     * @param requesterId 요청 사용자 PK
+     * @param userId      요청 사용자 PK
      * @param password    요청 계좌 비밀번호
      * @return 계좌 소유자인 경우 계좌 반환
      */
     @Transactional
-    public Account findAccountWithLock(Long requesterId, Long accountId, String password) {
-        boolean isOwner = accountRepository.existsByIdAndUserId(accountId, requesterId);
+    public Account findAccountWithLock(Long userId, Long accountId, String password) {
+        boolean isOwner = accountRepository.existsByIdAndUserId(accountId, userId);
         if (!isOwner) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
         }
@@ -116,11 +116,11 @@ public class AccountService {
      * @param accountNumber 거래 상대 계좌 번호
      * @return 상대 계좌 일부 반환
      */
-    public AccountPublicInfoDto findAccountPublicInfo(String accountNumber) {
+    public AccountPublicInfoResponse findAccountPublicInfo(String accountNumber) {
         Account account = accountRepository.findByAccountNumber(accountNumber)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
-        return AccountPublicInfoDto.of(account);
+        return AccountPublicInfoResponse.of(account);
     }
 
     /**
@@ -129,7 +129,7 @@ public class AccountService {
      * @param transfer 관련 거래
      * @return 거래 권한 확인 후 상대 계좌 일부 반환
      */
-    public AccountPublicInfoDto findAccountPublicInfo(Long accountId, Transfer transfer) {
+    public AccountPublicInfoResponse findAccountPublicInfo(Long accountId, Transfer transfer) {
         if (!isRelatedAccount(accountId, transfer)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
         }
@@ -137,7 +137,7 @@ public class AccountService {
         Account account = accountRepository.findById(accountId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
-        return AccountPublicInfoDto.of(account);
+        return AccountPublicInfoResponse.of(account);
     }
 
     /**
@@ -146,7 +146,7 @@ public class AccountService {
      * @param transferResponse 관련 거래
      * @return 거래 권한 확인 후 상대 계좌 일부 반환
      */
-    public AccountPublicInfoDto findAccountPublicInfo(Long accountId, TransferResponseForPaymentDto transferResponse) {
+    public AccountPublicInfoResponse findAccountPublicInfo(Long accountId, PaymentTransferDetailResponse transferResponse) {
         if (!isRelatedAccount(accountId, transferResponse)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
         }
@@ -154,10 +154,10 @@ public class AccountService {
         Account account = accountRepository.findById(accountId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
-        return AccountPublicInfoDto.of(account);
+        return AccountPublicInfoResponse.of(account);
     }
 
-    private boolean isRelatedAccount(Long accountId, TransferResponseForPaymentDto transferResponse) {
+    private boolean isRelatedAccount(Long accountId, PaymentTransferDetailResponse transferResponse) {
         return transferResponse.withdrawalAccountId().equals(accountId)
             || transferResponse.depositAccountId().equals(accountId);
     }
@@ -171,18 +171,18 @@ public class AccountService {
         }
     }
 
-    public AccountResponseDto findAccount(Long userId, Long accountId) {
+    public AccountDetailResponse findAccount(Long userId, Long accountId) {
         Account account = accountRepository.findByIdAndUserId(accountId, userId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
-        return AccountResponseDto.of(account);
+        return AccountDetailResponse.of(account);
     }
 
-    public List<AccountResponseDto> findAllAccounts(Long userId) {
+    public List<AccountDetailResponse> findAllAccounts(Long userId) {
         List<Account> accounts = accountRepository.findAllByUserId(userId);
 
         return accounts.stream()
-            .map(AccountResponseDto::of)
+            .map(AccountDetailResponse::of)
             .toList();
     }
 

@@ -1,6 +1,6 @@
 package banking.transfer.service;
 
-import banking.account.dto.response.AccountPublicInfoDto;
+import banking.account.dto.response.AccountPublicInfoResponse;
 import banking.account.entity.Account;
 import banking.account.service.AccountService;
 import banking.common.exception.CustomException;
@@ -8,7 +8,7 @@ import banking.common.exception.ErrorCode;
 import banking.exchangeRate.ExchangeRateService;
 import banking.fixture.testEntity.AccountFixture;
 import banking.fixture.testEntity.UserFixture;
-import banking.transfer.dto.request.TransferRequestDto;
+import banking.transfer.dto.request.TransferRequest;
 import banking.transfer.entity.Transfer;
 import banking.transfer.repository.TransferRepository;
 import banking.user.entity.User;
@@ -54,9 +54,9 @@ class TransferServiceUnitTest {
         Account withdrawalAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
         Account depositAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_2.createAccount(user);
 
-        AccountPublicInfoDto mockDepositAccountPublicInfo = AccountPublicInfoDto.of(depositAccount);
+        AccountPublicInfoResponse mockDepositAccountPublicInfo = AccountPublicInfoResponse.of(depositAccount);
 
-        TransferRequestDto transferRequest = TransferRequestDto.builder()
+        TransferRequest transferRequest = TransferRequest.builder()
             .withdrawalAccountId(withdrawalAccount.getId())
             .withdrawalAccountPassword(AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user).getPassword())
             .depositAccountNumber(depositAccount.getAccountNumber())
@@ -88,7 +88,7 @@ class TransferServiceUnitTest {
         User user = UserFixture.USER_FIXTURE_1.createUser();
         Account account = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
 
-        TransferRequestDto transferRequest = TransferRequestDto.builder()
+        TransferRequest transferRequest = TransferRequest.builder()
             .withdrawalAccountId(account.getId())
             .withdrawalAccountPassword(AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user).getPassword())
             .depositAccountNumber(account.getAccountNumber())

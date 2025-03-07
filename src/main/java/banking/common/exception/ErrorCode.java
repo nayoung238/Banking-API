@@ -46,13 +46,21 @@ public enum ErrorCode {
     DECRYPTION_FAIL(HttpStatus.BAD_REQUEST, "복호화에 실패했습니다. 올바른 암호화 키를 사용하고 있는지 확인해주세요."),
 
     // Notification
-    INVALID_TOKEN(HttpStatus.UNAUTHORIZED,"잘못된 토큰입니다."),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED,"유효하지 않은 토큰입니다."),
     FCM_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE,"네트워크 및 서비스에 장애가 있습니다."),
     FCM_UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"알수 없는 에러입니다"),
     DUPLICATE_TOKEN(HttpStatus.BAD_REQUEST,"중복된 토큰입니다."),
 
     // Valid
-    NULL_PARAMETER(HttpStatus.BAD_REQUEST, "파라미터가 null 입니다.");
+    NULL_PARAMETER(HttpStatus.BAD_REQUEST, "파라미터가 null 입니다."),
+
+    // JWT
+    TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
+    REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 만료되었습니다."),
+    REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 없습니다."),
+    JWT_PROCESSING_FAILED(HttpStatus.BAD_REQUEST, "JWT 처리 중 오류가 발생했습니다."),
+    MISSING_USER_ID(HttpStatus.BAD_REQUEST, "토큰 생성 시 userId 값은 필수입니다."),
+    MISSING_ROLE(HttpStatus.BAD_REQUEST, "토큰 생성 시 role 값은 필수입니다.");
 
     private final HttpStatus status;
     private final String message;

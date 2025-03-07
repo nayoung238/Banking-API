@@ -1,7 +1,7 @@
 package banking.account.service;
 
-import banking.account.dto.request.AccountCreationRequestDto;
-import banking.account.dto.response.AccountResponseDto;
+import banking.account.dto.request.AccountCreationRequest;
+import banking.account.dto.response.AccountDetailResponse;
 import banking.account.repository.AccountRepository;
 import banking.account.entity.Account;
 import banking.common.exception.CustomException;
@@ -134,7 +134,7 @@ class AccountServiceUnitTest {
         when(accountRepository.existsByAccountNumber(anyString())).thenReturn(false);
 		when(accountRepository.save(any(Account.class))).thenReturn(null);
 
-        AccountCreationRequestDto request = AccountCreationRequestDto.builder()
+        AccountCreationRequest request = AccountCreationRequest.builder()
             .password("123432")
             .currency(Currency.KRW)
             .accountName("test-account-name")
@@ -142,7 +142,7 @@ class AccountServiceUnitTest {
 
         // when
 		assert user != null;
-		AccountResponseDto response = accountService.createAccount(user.getId(), request);
+		AccountDetailResponse response = accountService.createAccount(user.getId(), request);
 
         // then
         assertNotNull(response.accountNumber());

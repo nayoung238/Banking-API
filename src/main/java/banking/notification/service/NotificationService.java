@@ -3,8 +3,8 @@ package banking.notification.service;
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
 import banking.common.exception.NotificationException;
-import banking.notification.dto.NotificationRequestDto;
-import banking.notification.dto.TokenRequest;
+import banking.notification.dto.request.NotificationRequest;
+import banking.notification.dto.request.TokenRequest;
 import banking.notification.entity.FCMToken;
 import banking.notification.repository.FCMTokenRepository;
 import banking.user.service.UserService;
@@ -23,15 +23,15 @@ public class NotificationService {
     private final FCMTokenRepository fcmTokenRepository;
     private final UserService userService;
 
-    public String sendNotification(NotificationRequestDto notificationRequestDto) {
+    public String sendNotification(NotificationRequest notificationRequest) {
         Notification notification = Notification.builder()
-                .setTitle(notificationRequestDto.title())
-                .setBody(notificationRequestDto.message())
+                .setTitle(notificationRequest.title())
+                .setBody(notificationRequest.message())
                 .build();
 
         Message message = Message.builder()
                 .setNotification(notification)
-                .setToken(notificationRequestDto.token())
+                .setToken(notificationRequest.token())
                 .build();
 
         try {

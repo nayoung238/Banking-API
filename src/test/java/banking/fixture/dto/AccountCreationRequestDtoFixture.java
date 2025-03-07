@@ -1,6 +1,6 @@
 package banking.fixture.dto;
 
-import banking.account.dto.request.AccountCreationRequestDto;
+import banking.account.dto.request.AccountCreationRequest;
 import banking.account.enums.Currency;
 
 public enum AccountCreationRequestDtoFixture {
@@ -41,8 +41,8 @@ public enum AccountCreationRequestDtoFixture {
 		this.accountName = accountName;
 	}
 
-	public AccountCreationRequestDto createAccountCreationRequestDto() {
-		return AccountCreationRequestDto.builder()
+	public AccountCreationRequest createAccountCreationRequestDto() {
+		return AccountCreationRequest.builder()
 			.password(password)
 			.currency(currency)
 			.accountName(accountName)

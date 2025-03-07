@@ -1,8 +1,8 @@
 package banking.account.service;
 
-import banking.account.dto.request.DepositRequestDto;
-import banking.account.dto.request.WithdrawalRequestDto;
-import banking.account.dto.response.AccountResponseDto;
+import banking.account.dto.request.DepositRequest;
+import banking.account.dto.request.WithdrawalRequest;
+import banking.account.dto.response.AccountDetailResponse;
 import banking.account.entity.Account;
 import banking.account.repository.AccountRepository;
 import banking.common.exception.CustomException;
@@ -26,7 +26,7 @@ public class AccountBalanceService {
 	 * @return 입금 계좌 상태
 	 */
 	@Transactional
-	public AccountResponseDto atmDeposit(DepositRequestDto request) {
+	public AccountDetailResponse atmDeposit(DepositRequest request) {
 		Account account = accountRepository.findByAccountNumberWithLock(request.accountNumber())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
@@ -35,7 +35,7 @@ public class AccountBalanceService {
 		}
 
 		account.increaseBalance(request.amount());
-		return AccountResponseDto.of(account);
+		return AccountDetailResponse.of(account);
 	}
 
 	/**
@@ -43,7 +43,7 @@ public class AccountBalanceService {
 	 * @param request - 출금 계좌번호, 출금 계좌 비밀번호, 출금 금액
 	 * @return 출금 계좌 상태
 	 */
-	public AccountResponseDto atmWithdrawal(WithdrawalRequestDto request) {
+	public AccountDetailResponse atmWithdrawal(WithdrawalRequest request) {
 		Account account = accountRepository.findByAccountNumberWithLock(request.accountNumber())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
 
@@ -52,7 +52,7 @@ public class AccountBalanceService {
 		}
 
 		account.decreaseBalance(request.amount());
-		return AccountResponseDto.of(account);
+		return AccountDetailResponse.of(account);
 	}
 
 	@Transactional

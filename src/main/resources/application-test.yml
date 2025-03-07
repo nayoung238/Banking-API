@@ -7,13 +7,13 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop # 테스트 후 데이터 삭제
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
         format_sql: true
 
-server:
-  servlet:
-    session:
-      timeout: 30m
+  data:
+    redis:
+      host: localhost
+      port: 6379
