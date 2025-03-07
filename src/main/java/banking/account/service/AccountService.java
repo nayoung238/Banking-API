@@ -90,7 +90,7 @@ public class AccountService {
     }
 
     /**
-     * /payment, /transfer 에서 사용
+     * /payment, /transfer 에서 사용 (refund)
      * 거래에 연관된 사용자만 상대 계좌 접근 가능
      * @param accountId 상태 계좌 PK
      * @param transfer 관련 거래
@@ -98,17 +98,12 @@ public class AccountService {
      */
     @Transactional
     public Account findAccountWithLock(Long accountId, Transfer transfer) {
-        if (!isRelatedAccount(accountId, transfer)) {
+        if (!isTransferParticipant(accountId, transfer)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
         }
 
         return accountRepository.findByIdWithLock(accountId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ACCOUNT));
-    }
-
-    private boolean isRelatedAccount(Long accountId, Transfer transfer) {
-        return transfer.getWithdrawalAccountId().equals(accountId)
-            || transfer.getDepositAccountId().equals(accountId);
     }
 
     /**
@@ -130,7 +125,7 @@ public class AccountService {
      * @return 거래 권한 확인 후 상대 계좌 일부 반환
      */
     public AccountPublicInfoResponse findAccountPublicInfo(Long accountId, Transfer transfer) {
-        if (!isRelatedAccount(accountId, transfer)) {
+        if (!isTransferParticipant(accountId, transfer)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
         }
 
@@ -147,7 +142,7 @@ public class AccountService {
      * @return 거래 권한 확인 후 상대 계좌 일부 반환
      */
     public AccountPublicInfoResponse findAccountPublicInfo(Long accountId, PaymentTransferDetailResponse transferResponse) {
-        if (!isRelatedAccount(accountId, transferResponse)) {
+        if (!isTransferParticipant(accountId, transferResponse)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCOUNT_ACCESS);
         }
 
@@ -157,7 +152,12 @@ public class AccountService {
         return AccountPublicInfoResponse.of(account);
     }
 
-    private boolean isRelatedAccount(Long accountId, PaymentTransferDetailResponse transferResponse) {
+    private boolean isTransferParticipant(Long accountId, Transfer transfer) {
+        return transfer.getWithdrawalAccountId().equals(accountId)
+            || transfer.getDepositAccountId().equals(accountId);
+    }
+
+    private boolean isTransferParticipant(Long accountId, PaymentTransferDetailResponse transferResponse) {
         return transferResponse.withdrawalAccountId().equals(accountId)
             || transferResponse.depositAccountId().equals(accountId);
     }
