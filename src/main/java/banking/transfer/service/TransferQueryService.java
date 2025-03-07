@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -62,13 +61,16 @@ public class TransferQueryService {
 		Transfer transfer = transferRepository.findById(request.transferId())
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRANSFER));
 
+		if (!transfer.getTransferOwnerId().equals(userId)) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED_TRANSFER_ACCESS);
+		}
+
 		AccountPublicInfoResponse withdrawalAccountPublicInfo = accountService.findAccountPublicInfo(transfer.getWithdrawalAccountId(), transfer);
 		AccountPublicInfoResponse depositAccountPublicInfo = accountService.findAccountPublicInfo(transfer.getDepositAccountId(), transfer);
 
-		TransferType transferType = getTransferType(transfer, request.accountId());
-		verifyTransferAccount(userId, transferType, withdrawalAccountPublicInfo, depositAccountPublicInfo);
+		verifyTransferAccount(userId, transfer.getTransferType(), withdrawalAccountPublicInfo, depositAccountPublicInfo);
 
-		return TransferDetailResponse.of(transfer, transferType, withdrawalAccountPublicInfo, depositAccountPublicInfo);
+		return TransferDetailResponse.of(transfer, withdrawalAccountPublicInfo, depositAccountPublicInfo);
 	}
 
 	private void verifyTransferAccount(Long userId, TransferType transferType,
@@ -85,16 +87,6 @@ public class TransferQueryService {
 		} else {
 			throw new CustomException(ErrorCode.UNAUTHORIZED_TRANSFER_ACCESS);
 		}
-	}
-
-	private TransferType getTransferType(Transfer transfer, Long accountId) {
-		if (Objects.equals(transfer.getWithdrawalAccountId(), accountId)) {
-			return TransferType.WITHDRAWAL;
-		} else if (Objects.equals(transfer.getDepositAccountId(), accountId)) {
-			return TransferType.DEPOSIT;
-		}
-
-		throw new CustomException(ErrorCode.NOT_FOUND_TRANSFER);
 	}
 
 	public PaymentTransferDetailResponse findTransfer(String transferGroupId, Long userId) {
