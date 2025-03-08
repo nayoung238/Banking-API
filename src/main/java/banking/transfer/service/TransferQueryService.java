@@ -34,7 +34,7 @@ public class TransferQueryService {
 		// 계좌 소유자 검증
 		accountService.verifyAccountOwner(accountId, userId);
 
-		return transferRepository.findAllByTransferOwnerId(accountId)
+		return transferRepository.findTransfersByUserIdAndAccountId(userId, accountId)
 			.stream()
 			.map(transfer -> {
 				UserPublicInfoResponse peerUserPublicInfo;
@@ -46,7 +46,7 @@ public class TransferQueryService {
 					// TODO: 관리자에게 알림하고, 클라이언트에게는 응답
 					throw new CustomException(ErrorCode.UNSUPPORTED_TRANSFER_TYPE);
 				}
-				return TransferSummaryResponse.of(transfer, TransferType.WITHDRAWAL, peerUserPublicInfo.name());
+				return TransferSummaryResponse.of(transfer, peerUserPublicInfo.name());
 			})
 			.toList();
 	}
