@@ -34,10 +34,10 @@ public record TransferSummaryResponse (
     BigDecimal balancePostTransaction
 ) {
 
-    public static TransferSummaryResponse of(Transfer transfer, TransferType transferType, String peerName) {
+    public static TransferSummaryResponse of(Transfer transfer, String peerName) {
         return TransferSummaryResponse.builder()
             .transferId(transfer.getId())
-            .transferType(transferType)
+            .transferType(transfer.getTransferType())
             .peerName(peerName)
             .transactedAt(transfer.getCreatedAt())
             .amount(stripZeros(transfer.getAmount()))

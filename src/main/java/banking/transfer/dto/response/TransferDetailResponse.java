@@ -50,15 +50,16 @@ public record TransferDetailResponse (
     LocalDateTime createdAt
 
 ) {
-    public static TransferDetailResponse of(Transfer transfer, TransferType transferType,
-                                            AccountPublicInfoResponse withdrawalAccountPublicInfo, AccountPublicInfoResponse depositAccountPublicInfo) {
+    public static TransferDetailResponse of(Transfer transfer,
+                                            AccountPublicInfoResponse withdrawalAccountPublicInfo,
+                                            AccountPublicInfoResponse depositAccountPublicInfo) {
         return TransferDetailResponse.builder()
             .transferId(transfer.getId())
             .withdrawalAccountNumber(withdrawalAccountPublicInfo.accountNumber())
             .senderName(withdrawalAccountPublicInfo.ownerName())
             .depositAccountNumber(depositAccountPublicInfo.accountNumber())
             .receiverName(depositAccountPublicInfo.ownerName())
-            .transferType(transferType)
+            .transferType(transfer.getTransferType())
             .exchangeRate(stripZeros(transfer.getExchangeRate()))
             .currency(transfer.getCurrency())
             .createdAt(transfer.getCreatedAt())
