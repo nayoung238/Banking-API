@@ -101,7 +101,7 @@ class PaymentControllerTest {
                 is(PaymentStatus.PAYMENT_COMPLETED.toString()),
                 is(PaymentStatus.PAYMENT_CANCELLED.toString())
             )))
-            .andExpect(jsonPath("$.withdrawAccountNumber").value(withdrawalAccount.getAccountNumber()))
+            .andExpect(jsonPath("$.withdrawalAccountNumber").value(withdrawalAccount.getAccountNumber()))
             .andExpect(jsonPath("$.amount").value(comparesEqualTo(paymentAmount.intValue())))
             .andExpect(jsonPath("$.exchangeRate").value(comparesEqualTo(BigDecimal.ONE.intValue())))
             .andExpect(jsonPath("$.currency").value(depositAccount.getCurrency() + "/" + withdrawalAccount.getCurrency()))
@@ -192,7 +192,7 @@ class PaymentControllerTest {
                 is(PaymentStatus.PAYMENT_COMPLETED.toString()),
                 is(PaymentStatus.PAYMENT_CANCELLED.toString())
             )))
-            .andExpect(jsonPath("$.withdrawAccountNumber").value(withdrawalAccount.getAccountNumber()))
+            .andExpect(jsonPath("$.withdrawalAccountNumber").value(withdrawalAccount.getAccountNumber()))
             .andExpect(jsonPath("$.amount").value(comparesEqualTo(paymentAmount.intValue())))
             .andExpect(jsonPath("$.exchangeRate").value(comparesEqualTo(BigDecimal.ONE.intValue())))
             .andExpect(jsonPath("$.currency").value(depositAccount.getCurrency() + "/" + withdrawalAccount.getCurrency()))

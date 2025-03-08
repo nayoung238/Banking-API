@@ -22,7 +22,7 @@ public record PaymentResponse (
     PaymentStatus paymentStatus,
 
     @Schema(description = "결제하는 계좌 번호", example = "5792214-80232581")
-    String withdrawAccountNumber,
+    String withdrawalAccountNumber,
 
     @Schema(description = "수취인 이름", example = "홍길동")
     String payeeName,
@@ -41,11 +41,11 @@ public record PaymentResponse (
     LocalDateTime paidAt
 ) {
     public static PaymentResponse of(Payment payment, PaymentTransferDetailResponse transferResponse,
-									 String withdrawAccountNumber, String payeeName) {
+									 String withdrawalAccountNumber, String payeeName) {
         return PaymentResponse.builder()
             .paymentId(payment.getId())
             .paymentStatus(payment.getPaymentStatus())
-            .withdrawAccountNumber(withdrawAccountNumber)
+            .withdrawalAccountNumber(withdrawalAccountNumber)
             .payeeName(payeeName)
             .amount(stripZeros(transferResponse.amount()))
             .exchangeRate(stripZeros(transferResponse.exchangeRate()))
