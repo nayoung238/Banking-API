@@ -84,8 +84,8 @@ public class TransferService {
     }
 
     @Transactional
-    public PaymentTransferDetailResponse transferForRefund(Long userId, String transferGroupId, String accountPassword) {
-        List<Transfer> transfers = transferRepository.findAllByTransferGroupId(transferGroupId);
+    public PaymentTransferDetailResponse transferForRefund(Long userId, Long transferId, String accountPassword) {
+        List<Transfer> transfers = transferRepository.findTransferGroupByTransferId(transferId);
         verifyTransfer(transfers, userId);
 
         Transfer baseWithdrawalTransfer, baseDepositTransfer;

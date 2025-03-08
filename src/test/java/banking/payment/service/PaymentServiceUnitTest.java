@@ -59,6 +59,7 @@ public class PaymentServiceUnitTest {
     @DisplayName("[결제 성공 테스트] 결제 처리 시 TransferService에 의존")
     void payment_test () {
 		// given
+		final Long transferId = 3L;
 		User user = UserFixture.USER_FIXTURE_1.createUser();
 		Account withdrawalAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
 		Account depositAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_2.createAccount(user);
@@ -71,7 +72,7 @@ public class PaymentServiceUnitTest {
 			.build();
 
 		PaymentTransferDetailResponse transferResponse = PaymentTransferDetailResponse.builder()
-			.transferGroupId("173234Ad2D")
+			.transferId(transferId)
 			.transferType(TransferType.WITHDRAWAL)
 			.withdrawalAccountId(withdrawalAccount.getId())
 			.depositAccountId(depositAccount.getId())
@@ -81,6 +82,7 @@ public class PaymentServiceUnitTest {
 
 		Payment mockPayment = Payment.builder()
 			.id(1L)
+			.transferId(transferId)
 			.payerId(withdrawalAccount.getId())
 			.payeeId(depositAccount.getId())
 			.build();
@@ -101,7 +103,7 @@ public class PaymentServiceUnitTest {
 		when(userService.findUserPublicInfo(any())).thenReturn(mockUserPublicInfoResponse);
 		when(paymentRepository.save(any(Payment.class))).thenReturn(null);
 		when(paymentRepository.findById(any())).thenReturn(Optional.ofNullable(mockPayment));
-		when(transferQueryService.findTransfer(any(), anyLong())).thenReturn(transferResponse);
+		when(transferQueryService.findTransfer(anyLong())).thenReturn(transferResponse);
 		when(accountService.findAccountPublicInfo(anyLong(), any(PaymentTransferDetailResponse.class))).thenReturn(mockAccountPublicInfoResponse);
 		when(userService.findUserPublicInfo(any(), any())).thenReturn(mockUserPublicInfoResponse);
 
@@ -123,7 +125,7 @@ public class PaymentServiceUnitTest {
 			.id(1L)
 			.payerId(user.getId())
 			.payeeId(12L)
-			.transferGroupId("173234Ad2D")
+			.transferId(3L)
 			.paymentStatus(PaymentStatus.PAYMENT_CANCELLED)
 			.build();
 

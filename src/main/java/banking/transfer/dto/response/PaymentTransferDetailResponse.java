@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 public record PaymentTransferDetailResponse (
 
-	String transferGroupId,
+	Long transferId,
 	TransferType transferType,
 	Long withdrawalAccountId,
 	Long depositAccountId,
@@ -22,7 +22,7 @@ public record PaymentTransferDetailResponse (
 
 	public static PaymentTransferDetailResponse of(Transfer transfer) {
 		return PaymentTransferDetailResponse.builder()
-			.transferGroupId(transfer.getTransferGroupId())
+			.transferId(transfer.getId())
 			.transferType(transfer.getTransferType())
 			.withdrawalAccountId(transfer.getWithdrawalAccountId())
 			.depositAccountId(transfer.getDepositAccountId())

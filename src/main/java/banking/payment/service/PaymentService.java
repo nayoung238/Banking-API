@@ -40,7 +40,7 @@ public class PaymentService {
         Payment payment = Payment.builder()
             .payerId(userId)
             .payeeId(payeeUserPublicInfo.id())
-            .transferGroupId(transferResponse.transferGroupId())
+            .transferId(transferResponse.transferId())
             .paymentStatus(PaymentStatus.PAYMENT_PENDING)
             .build();
 
@@ -60,7 +60,7 @@ public class PaymentService {
             throw new CustomException(ErrorCode.PAYMENT_ALREADY_CANCELLED);
         }
 
-        PaymentTransferDetailResponse refundTransferResponse = transferService.transferForRefund(userId, payment.getTransferGroupId(), request.withdrawalAccountPassword());
+        PaymentTransferDetailResponse refundTransferResponse = transferService.transferForRefund(userId, payment.getTransferId(), request.withdrawalAccountPassword());
 
         // Payment 상태 변경 (PENDING/COMPLETED -> CANCELLED)
         payment.updatePaymentStatus(PaymentStatus.PAYMENT_CANCELLED);
@@ -85,7 +85,7 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(paymentId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PAYMENT));
 
-        PaymentTransferDetailResponse transferResponse = transferQueryService.findTransfer(payment.getTransferGroupId(), userId);
+        PaymentTransferDetailResponse transferResponse = transferQueryService.findTransfer(payment.getTransferId());
 
         Long requesterAccountId = (transferResponse.transferType().equals(TransferType.WITHDRAWAL)) ?
             transferResponse.withdrawalAccountId() : transferResponse.depositAccountId();

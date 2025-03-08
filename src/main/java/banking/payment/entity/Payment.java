@@ -22,7 +22,7 @@ public class Payment {
     private Long payeeId;
 
     @Column(nullable = false, unique = true)
-    private String transferGroupId;
+    private Long transferId;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
