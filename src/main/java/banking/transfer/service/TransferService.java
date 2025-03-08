@@ -68,7 +68,7 @@ public class TransferService {
         AccountPublicInfoResponse depositAccountPublicInfo = accountService.findAccountPublicInfo(request.depositAccountNumber());
 
         // 출금 (sync)
-        Transfer withdrawalTransfer = processWithdrawal(withdrawalAccount, depositAccountPublicInfo, request.amount());
+        Transfer withdrawalTransfer = processWithdrawalAndSaveTransferDetail(withdrawalAccount, depositAccountPublicInfo, request.amount());
 
         // 입금 (async)
         depositAsyncService.processDepositAsync(withdrawalTransfer);
@@ -76,7 +76,7 @@ public class TransferService {
         return resultHandler.handle(withdrawalTransfer, withdrawalAccount, depositAccountPublicInfo);
     }
 
-    public Transfer processWithdrawal(Account withdrawalAccount, AccountPublicInfoResponse depositAccountPublicInfo, BigDecimal amount) {
+    public Transfer processWithdrawalAndSaveTransferDetail(Account withdrawalAccount, AccountPublicInfoResponse depositAccountPublicInfo, BigDecimal amount) {
         BigDecimal exchangeRate = exchangeRateService.getExchangeRate(depositAccountPublicInfo.currency(), withdrawalAccount.getCurrency());
         BigDecimal convertedAmount = amount.multiply(exchangeRate);
         withdrawalAccount.decreaseBalance(convertedAmount);
@@ -104,22 +104,14 @@ public class TransferService {
 
         AccountPublicInfoResponse refundDepositAccountPublicInfo = accountService.findAccountPublicInfo(refundDepositAccount.getId(), baseWithdrawalTransfer);
 
-        // 결제 취소에 대한 출금
-        processWithdrawal(refundWithdrawalAccount, refundDepositAccountPublicInfo, baseDepositTransfer.getAmount());
+        // 결제 취소에 대한 출금 및 내역 생성
+        Transfer refundWithdrawalTransfer = processWithdrawalAndSaveTransferDetail(refundWithdrawalAccount, refundDepositAccountPublicInfo, baseDepositTransfer.getAmount());
 
-        // 결제 취소에 대한 출금 내역 생성
-        Transfer refundTransfer = saveWithdrawalTransferDetail(refundWithdrawalAccount,
-                                                                refundDepositAccountPublicInfo,
-                                                                baseDepositTransfer.getExchangeRate(),
-                                                                baseDepositTransfer.getAmount());
-
-        // 결제 취소로 인한 입금 (출금 작업 완료 후 진행)
+        // 결제 취소로 인한 입금 및 내역 생성
         accountBalanceService.increaseBalanceWithLock(refundDepositAccount.getId(), baseWithdrawalTransfer.getAmount());
+        saveDepositTransferDetail(refundWithdrawalTransfer, baseWithdrawalTransfer.getAmount(), refundDepositAccount.getBalance());
 
-        // 결제 취소에 대한 입금 내역 생성
-        saveDepositTransferDetail(refundTransfer, baseWithdrawalTransfer.getAmount(), refundDepositAccount.getBalance());
-
-        return PaymentTransferDetailResponse.of(refundTransfer);
+        return PaymentTransferDetailResponse.of(refundWithdrawalTransfer);
     }
 
     public Map<Long, Account> getAccountsWithLock(Transfer transfer, Long userId, String accountPassword) {
