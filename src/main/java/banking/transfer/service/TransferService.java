@@ -98,7 +98,7 @@ public class TransferService {
             originalDepositTransfer = transfers.get(0);
         }
 
-        Map<Long, Account> accountsWithLock = getAccountsWithLock(originalWithdrawalTransfer);
+        Map<Long, Account> accountsWithLock = getAccountsWithLock(originalWithdrawalTransfer, userId, accountPassword);
 
         Account originalWithdrawalAccount = accountsWithLock.get(originalWithdrawalTransfer.getWithdrawalAccountId());
         Account originalDepositAccount = accountsWithLock.get(originalWithdrawalTransfer.getDepositAccountId());
@@ -125,7 +125,7 @@ public class TransferService {
         return PaymentTransferDetailResponse.of(refundTransfer);
     }
 
-    public Map<Long, Account> getAccountsWithLock(Transfer transfer) {
+    public Map<Long, Account> getAccountsWithLock(Transfer transfer, Long userId, String accountPassword) {
         List<Long> accountIds = Stream.of(
             transfer.getWithdrawalAccountId(),
             transfer.getDepositAccountId()
@@ -134,7 +134,14 @@ public class TransferService {
         return accountIds.stream()
             .collect(Collectors.toMap(
                 accountId -> accountId,
-                accountId -> accountService.findAccountWithLock(accountId, transfer),
+                accountId -> {
+                    if (accountId.equals(transfer.getWithdrawalAccountId())) {
+                        return accountService.findAccountWithLock(userId, accountId, accountPassword);
+                    }
+                    else {
+                        return accountService.findAccountWithLock(accountId, transfer);
+                    }
+                },
                 (existing, replacement) -> existing,
                 LinkedHashMap::new
             ));

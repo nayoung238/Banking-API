@@ -118,11 +118,12 @@ class TransferServiceUnitTest {
     @DisplayName("[계좌 잠금 순서 테스트] 단일 트랜잭션에서 여러 락 획득 시 PK 오름차순으로 락 획득")
     void ordered_locking_test() {
         // given
+        final Long withdrawalUserId = 10L;
         final Long withdrawalAccountId = 10L;
         final Long depositAccountId = withdrawalAccountId + 10L;
         Transfer mockTransfer = Transfer.builder()
             .transferGroupId("we234dfe2")
-            .transferOwnerId(10L)
+            .transferOwnerId(withdrawalUserId)
             .transferType(TransferType.WITHDRAWAL)
             .withdrawalAccountId(withdrawalAccountId)
             .depositAccountId(depositAccountId)
@@ -132,10 +133,11 @@ class TransferServiceUnitTest {
             .balancePostTransaction(BigDecimal.TEN)
             .build();
 
+        when(accountService.findAccountWithLock(anyLong(), anyLong(), anyString())).thenReturn(mock(Account.class));
         when(accountService.findAccountWithLock(anyLong(), any(Transfer.class))).thenReturn(mock(Account.class));
 
         // when
-        Map<Long, Account> accounts = transferService.getAccountsWithLock(mockTransfer);
+        Map<Long, Account> accounts = transferService.getAccountsWithLock(mockTransfer, withdrawalUserId, "password");
 
         // then
         List<Long> keys = new ArrayList<>(accounts.keySet());
