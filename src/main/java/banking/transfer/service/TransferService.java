@@ -82,57 +82,56 @@ public class TransferService {
     }
 
     @Transactional
-    public PaymentTransferDetailResponse transferForRefund(Long userId, String transferGroupId, String requesterAccountPassword) {
+    public PaymentTransferDetailResponse transferForRefund(Long userId, String transferGroupId, String accountPassword) {
         List<Transfer> transfers = transferRepository.findAllByTransferGroupId(transferGroupId);
         verifyTransfer(transfers, userId);
 
-        Transfer origianlWithdrawalTransfer;
+        Transfer originalWithdrawalTransfer;
         Transfer originalDepositTransfer;
         if (transfers.get(0).getTransferType().equals(TransferType.WITHDRAWAL)) {
-            origianlWithdrawalTransfer = transfers.get(0);
+            originalWithdrawalTransfer = transfers.get(0);
             originalDepositTransfer = transfers.get(1);
         } else {
-            origianlWithdrawalTransfer = transfers.get(1);
+            originalWithdrawalTransfer = transfers.get(1);
             originalDepositTransfer = transfers.get(0);
         }
 
         // Ordered Locking
         Account originalWithdrawalAccount = null;
         Account originalDepositAccount = null;
-        if(origianlWithdrawalTransfer.getWithdrawalAccountId().compareTo(origianlWithdrawalTransfer.getDepositAccountId()) < 0) {
-            originalWithdrawalAccount = accountService.findAccountWithLock(origianlWithdrawalTransfer.getWithdrawalAccountId(),
+        if(originalWithdrawalTransfer.getWithdrawalAccountId().compareTo(originalWithdrawalTransfer.getDepositAccountId()) < 0) {
+            originalWithdrawalAccount = accountService.findAccountWithLock(originalWithdrawalTransfer.getWithdrawalAccountId(),
                                                                             userId,
-                                                                            requesterAccountPassword);
+                                                                            accountPassword);
 
-            originalDepositAccount = accountService.findAccountWithLock(origianlWithdrawalTransfer.getDepositAccountId(),
-                                                                        originalDepositTransfer);
+            originalDepositAccount = accountService.findAccountWithLock(originalWithdrawalTransfer.getDepositAccountId(),
+                originalDepositTransfer);
         } else {
-            originalDepositAccount = accountService.findAccountWithLock(origianlWithdrawalTransfer.getDepositAccountId(),
-                                                                        originalDepositTransfer);
+            originalDepositAccount = accountService.findAccountWithLock(originalWithdrawalTransfer.getDepositAccountId(),
+                originalDepositTransfer);
 
-            originalWithdrawalAccount = accountService.findAccountWithLock(origianlWithdrawalTransfer.getWithdrawalAccountId(),
+            originalWithdrawalAccount = accountService.findAccountWithLock(originalWithdrawalTransfer.getWithdrawalAccountId(),
                                                                             userId,
-                                                                            requesterAccountPassword);
+                                                                            accountPassword);
         }
-
         Account refundWithdrawalAccount = originalDepositAccount;
         Account refundDepositAccount = originalWithdrawalAccount;
-        AccountPublicInfoResponse refundDepositAccountPublicInfo = accountService.findAccountPublicInfo(refundDepositAccount.getId(), origianlWithdrawalTransfer);
+        AccountPublicInfoResponse refundDepositAccountPublicInfo = accountService.findAccountPublicInfo(refundDepositAccount.getId(), originalWithdrawalTransfer);
 
         // 결제 취소에 대한 출금
         processWithdrawal(refundWithdrawalAccount, refundDepositAccountPublicInfo, originalDepositTransfer.getAmount());
 
         // 결제 취소에 대한 출금 내역 생성
         Transfer refundTransfer = saveWithdrawalTransferDetail(refundWithdrawalAccount,
-                                                                            refundDepositAccountPublicInfo,
-                                                                            originalDepositTransfer.getExchangeRate(),
-                                                                            originalDepositTransfer.getAmount());
+                                                                refundDepositAccountPublicInfo,
+                                                                originalDepositTransfer.getExchangeRate(),
+                                                                originalDepositTransfer.getAmount());
 
         // 결제 취소로 인한 입금 (출금 작업 완료 후 진행)
-        accountBalanceService.increaseBalanceWithLock(refundDepositAccount.getId(), origianlWithdrawalTransfer.getAmount());
+        accountBalanceService.increaseBalanceWithLock(refundDepositAccount.getId(), originalWithdrawalTransfer.getAmount());
 
         // 결제 취소에 대한 입금 내역 생성
-        saveDepositTransferDetail(refundTransfer, origianlWithdrawalTransfer.getAmount(), refundDepositAccount.getBalance());
+        saveDepositTransferDetail(refundTransfer, originalWithdrawalTransfer.getAmount(), refundDepositAccount.getBalance());
 
         return PaymentTransferDetailResponse.of(refundTransfer);
     }
