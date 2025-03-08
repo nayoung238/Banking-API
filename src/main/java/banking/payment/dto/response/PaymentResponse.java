@@ -3,6 +3,7 @@ package banking.payment.dto.response;
 import banking.payment.entity.Payment;
 import banking.payment.enums.PaymentStatus;
 import banking.transfer.dto.response.PaymentTransferDetailResponse;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -35,7 +36,8 @@ public record PaymentResponse (
     @Schema(description = "통화", example = "KRW/USD")
     String currency,
 
-    @Schema(description = "결제일", example = "2019.05.20")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd HH:mm")
+    @Schema(description = "결제일", example = "2024.06.11 15:20")
     LocalDateTime paidAt
 ) {
     public static PaymentResponse of(Payment payment, PaymentTransferDetailResponse transferResponse,
