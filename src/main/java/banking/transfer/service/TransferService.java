@@ -23,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -96,24 +98,11 @@ public class TransferService {
             originalDepositTransfer = transfers.get(0);
         }
 
-        // Ordered Locking
-        Account originalWithdrawalAccount = null;
-        Account originalDepositAccount = null;
-        if(originalWithdrawalTransfer.getWithdrawalAccountId().compareTo(originalWithdrawalTransfer.getDepositAccountId()) < 0) {
-            originalWithdrawalAccount = accountService.findAccountWithLock(originalWithdrawalTransfer.getWithdrawalAccountId(),
-                                                                            userId,
-                                                                            accountPassword);
+        Map<Long, Account> accountsWithLock = getAccountsWithLock(originalWithdrawalTransfer);
 
-            originalDepositAccount = accountService.findAccountWithLock(originalWithdrawalTransfer.getDepositAccountId(),
-                originalDepositTransfer);
-        } else {
-            originalDepositAccount = accountService.findAccountWithLock(originalWithdrawalTransfer.getDepositAccountId(),
-                originalDepositTransfer);
+        Account originalWithdrawalAccount = accountsWithLock.get(originalWithdrawalTransfer.getWithdrawalAccountId());
+        Account originalDepositAccount = accountsWithLock.get(originalWithdrawalTransfer.getDepositAccountId());
 
-            originalWithdrawalAccount = accountService.findAccountWithLock(originalWithdrawalTransfer.getWithdrawalAccountId(),
-                                                                            userId,
-                                                                            accountPassword);
-        }
         Account refundWithdrawalAccount = originalDepositAccount;
         Account refundDepositAccount = originalWithdrawalAccount;
         AccountPublicInfoResponse refundDepositAccountPublicInfo = accountService.findAccountPublicInfo(refundDepositAccount.getId(), originalWithdrawalTransfer);
@@ -134,6 +123,21 @@ public class TransferService {
         saveDepositTransferDetail(refundTransfer, originalWithdrawalTransfer.getAmount(), refundDepositAccount.getBalance());
 
         return PaymentTransferDetailResponse.of(refundTransfer);
+    }
+
+    public Map<Long, Account> getAccountsWithLock(Transfer transfer) {
+        List<Long> accountIds = Stream.of(
+            transfer.getWithdrawalAccountId(),
+            transfer.getDepositAccountId()
+        ).sorted().toList();
+
+        return accountIds.stream()
+            .collect(Collectors.toMap(
+                accountId -> accountId,
+                accountId -> accountService.findAccountWithLock(accountId, transfer),
+                (existing, replacement) -> existing,
+                LinkedHashMap::new
+            ));
     }
 
     private void verifyTransfer(List<Transfer> transfers, Long withdrawalUserId) {
