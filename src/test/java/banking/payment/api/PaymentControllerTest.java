@@ -64,14 +64,14 @@ class PaymentControllerTest {
     @DisplayName("[결제 성공 테스트] 결제 성공 시 결제 상세 내역 반환")
     void payment_succeed_test () throws Exception {
         // given1 - 출금 계좌에 입금
-        User withdrawalAccountUser = createUser("login-id-123");
+        User withdrawalAccountUser = createUser("login-id-123", "user-1");
         Account withdrawalAccount = createAccount(withdrawalAccountUser, Currency.KRW);
 
         final BigDecimal depositAmount = BigDecimal.valueOf(10000);
         deposit(withdrawalAccount, depositAmount);
 
         // given2 - 입금 계좌 생성
-        User depositAccountUser = createUser("login-id-321");
+        User depositAccountUser = createUser("login-id-321", "user-2");
         Account depositAccount = createAccount(depositAccountUser, Currency.KRW);
 
         // @Decrypt 주석 처리함
@@ -102,6 +102,7 @@ class PaymentControllerTest {
                 is(PaymentStatus.PAYMENT_CANCELLED.toString())
             )))
             .andExpect(jsonPath("$.withdrawalAccountNumber").value(withdrawalAccount.getAccountNumber()))
+            .andExpect(jsonPath("$.payeeName").value(depositAccountUser.getName()))
             .andExpect(jsonPath("$.amount").value(comparesEqualTo(paymentAmount.doubleValue())))
             .andExpect(jsonPath("$.exchangeRate").value(comparesEqualTo(BigDecimal.ONE.doubleValue())))
             .andExpect(jsonPath("$.currency").value(depositAccount.getCurrency() + "/" + withdrawalAccount.getCurrency()))
@@ -112,14 +113,14 @@ class PaymentControllerTest {
     @DisplayName("[결제 취소 성공 테스트] 결제 취소 시 입금 계좌번호와 환불 금액 반환")
     void refund_succeed_test () {
         // given1 - 출금 계좌에 입금
-        User withdrawalAccountUser = createUser("login-id-456");
+        User withdrawalAccountUser = createUser("login-id-456", "user-1");
         Account withdrawalAccount = createAccount(withdrawalAccountUser, Currency.KRW);
 
         final BigDecimal depositAmount = BigDecimal.valueOf(10000);
         deposit(withdrawalAccount, depositAmount);
 
         // given2 - 입금 계좌 생성
-        User depositAccountUser = createUser("login-id-654");
+        User depositAccountUser = createUser("login-id-654", "user-2");
         Account depositAccount = createAccount(depositAccountUser, Currency.KRW);
 
         // given3 - 결제 요청 및 처리
@@ -159,14 +160,14 @@ class PaymentControllerTest {
     @DisplayName("[결제 조회 성공 테스트] 특정 결제 내역 조회 시 상세 내역 반환")
     void find_payment_details_test () throws Exception {
         // given1 - 출금 계좌에 입금
-        User withdrawalAccountUser = createUser("login-id-789");
+        User withdrawalAccountUser = createUser("login-id-789", "user-1");
         Account withdrawalAccount = createAccount(withdrawalAccountUser, Currency.KRW);
 
         final BigDecimal depositAmount = BigDecimal.valueOf(10000);
         deposit(withdrawalAccount, depositAmount);
 
         // given2 - 입금 계좌 생성
-        User depositAccountUser = createUser("login-id-987");
+        User depositAccountUser = createUser("login-id-987", "user-2");
         Account depositAccount = createAccount(depositAccountUser, Currency.KRW);
 
         // given3 - 결제 요청 및 처리
@@ -193,15 +194,16 @@ class PaymentControllerTest {
                 is(PaymentStatus.PAYMENT_CANCELLED.toString())
             )))
             .andExpect(jsonPath("$.withdrawalAccountNumber").value(withdrawalAccount.getAccountNumber()))
+            .andExpect(jsonPath("$.payeeName").value(depositAccountUser.getName()))
             .andExpect(jsonPath("$.amount").value(comparesEqualTo(paymentAmount.doubleValue())))
             .andExpect(jsonPath("$.exchangeRate").value(comparesEqualTo(BigDecimal.ONE.doubleValue())))
             .andExpect(jsonPath("$.currency").value(depositAccount.getCurrency() + "/" + withdrawalAccount.getCurrency()))
             .andDo(print());
     }
 
-    private User createUser(String loginId) {
+    private User createUser(String loginId, String name) {
         User user = User.builder()
-            .name("test-name")
+            .name(name)
             .loginId(loginId)
             .password("test-password")
             .role(Role.USER)
