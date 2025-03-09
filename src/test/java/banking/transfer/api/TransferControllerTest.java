@@ -67,14 +67,14 @@ class TransferControllerTest {
     @DisplayName("[이체 성공 테스트] KRW-KRW 계좌 간 이체")
     void transfer_succeed_test () throws Exception {
         // given1 - 출금 계좌에 입금
-        User withdrawalAccountUser = createUser("login-id-135");
+        User withdrawalAccountUser = createUser("login-id-135", "user-1");
         Account withdrawalAccount = createAccount(withdrawalAccountUser, Currency.KRW);
 
         final BigDecimal depositAmount = BigDecimal.valueOf(10000);
         deposit(withdrawalAccount, depositAmount);
 
         // given2 - 입금 계좌 생성
-        User depositAccountUser = createUser("login-id-531");
+        User depositAccountUser = createUser("login-id-531", "user-2");
         Account depositAccount = createAccount(depositAccountUser, Currency.KRW);
 
         // given3 - 이체 요청 DTO 생성
@@ -97,6 +97,7 @@ class TransferControllerTest {
             .andExpect(jsonPath("$.transferId").isNumber())
             .andExpect(jsonPath("$.withdrawalAccountNumber").value(withdrawalAccount.getAccountNumber()))
             .andExpect(jsonPath("$.depositAccountNumber").value(transferRequest.depositAccountNumber()))
+            .andExpect(jsonPath("$.receiverName").value(depositAccountUser.getName()))
             .andExpect(jsonPath("$.transferType").value(TransferType.WITHDRAWAL.name()))
             .andExpect(jsonPath("$.exchangeRate").value(comparesEqualTo(BigDecimal.ONE.intValue())))
             .andExpect(jsonPath("$.currency").value(depositAccount.getCurrency() + "/" + withdrawalAccount.getCurrency()))
@@ -109,14 +110,14 @@ class TransferControllerTest {
     @DisplayName("[이체 실패 테스트] 잔액 부족 시 400 에러 반환")
     void transfer_insufficient_balance_test () throws Exception {
         // given1 - 출금 계좌에 입금
-        User withdrawalAccountUser = createUser("login-id-246");
+        User withdrawalAccountUser = createUser("login-id-246", "user-1");
         Account withdrawalAccount = createAccount(withdrawalAccountUser, Currency.KRW);
 
         final BigDecimal depositAmount = BigDecimal.valueOf(10000);
         deposit(withdrawalAccount, depositAmount);
 
         // given2 - 입금 계좌 생성
-        User depositAccountUser = createUser("login-id-642");
+        User depositAccountUser = createUser("login-id-642", "user-2");
         Account depositAccount = createAccount(depositAccountUser, Currency.KRW);
 
         // given3 - 이체 요청 DTO 생성
@@ -144,14 +145,14 @@ class TransferControllerTest {
     @DisplayName("[조회 성공 테스트] 이체 내역 단건 조회")
     void findTransaction() throws Exception {
         // given1 - 출금 계좌에 입금
-        User withdrawalAccountUser = createUser("login-id-357");
+        User withdrawalAccountUser = createUser("login-id-357", "user-1");
         Account withdrawalAccount = createAccount(withdrawalAccountUser, Currency.KRW);
 
         final BigDecimal depositAmount = BigDecimal.valueOf(10000);
         deposit(withdrawalAccount, depositAmount);
 
         // given2 - 입금 계좌 생성
-        User depositAccountUser = createUser("login-id-753");
+        User depositAccountUser = createUser("login-id-753", "user-2");
         Account depositAccount = createAccount(depositAccountUser, Currency.KRW);
 
         // given3 - 이체 요청 DTO 생성
@@ -181,6 +182,7 @@ class TransferControllerTest {
             .andExpect(jsonPath("$.transferId").value(transferDetailResponse.transferId()))
             .andExpect(jsonPath("$.withdrawalAccountNumber").value(withdrawalAccount.getAccountNumber()))
             .andExpect(jsonPath("$.depositAccountNumber").value(transferRequest.depositAccountNumber()))
+            .andExpect(jsonPath("$.receiverName").value(depositAccountUser.getName()))
             .andExpect(jsonPath("$.transferType").value(TransferType.WITHDRAWAL.name()))
             .andExpect(jsonPath("$.exchangeRate").value(comparesEqualTo(BigDecimal.ONE.intValue())))
             .andExpect(jsonPath("$.currency").value(depositAccount.getCurrency() + "/" + withdrawalAccount.getCurrency()))
@@ -193,14 +195,14 @@ class TransferControllerTest {
     @DisplayName("[조회 성공 테스트] 모든 이체 내역 조회")
     void findAllTransaction() throws Exception {
         // given1 - 출금 계좌에 입금
-        User withdrawalAccountUser = createUser("login-id-468");
+        User withdrawalAccountUser = createUser("login-id-468", "user-1");
         Account withdrawalAccount = createAccount(withdrawalAccountUser, Currency.KRW);
 
         final BigDecimal depositAmount = BigDecimal.valueOf(10000);
         deposit(withdrawalAccount, depositAmount);
 
         // given2 - 입금 계좌 생성
-        User depositAccountUser = createUser("login-id-864");
+        User depositAccountUser = createUser("login-id-864", "user-2");
         Account depositAccount = createAccount(depositAccountUser, Currency.KRW);
 
         // given3 - 이체 요청 DTO 생성
@@ -223,7 +225,7 @@ class TransferControllerTest {
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(3))
-            .andExpect(jsonPath("$[*].accountNumber", everyItem(comparesEqualTo(withdrawalAccount.getAccountNumber()))))
+            .andExpect(jsonPath("$[*].peerName", everyItem(comparesEqualTo(depositAccountUser.getName()))))
             .andExpect(jsonPath("$[*].amount", everyItem(comparesEqualTo(transferAmount.intValue()))))
             .andExpect(jsonPath("$[*].balancePostTransaction", Matchers.containsInAnyOrder(
                 comparesEqualTo(depositAmount.subtract(transferAmount).intValue()),
@@ -233,9 +235,9 @@ class TransferControllerTest {
             .andDo(print());
     }
 
-    private User createUser(String loginId) {
+    private User createUser(String loginId, String name) {
         User user = User.builder()
-            .name("test-name")
+            .name(name)
             .loginId(loginId)
             .password("test-password")
             .role(Role.USER)

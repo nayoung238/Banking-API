@@ -89,8 +89,8 @@ public class TransferQueryService {
 		}
 	}
 
-	public PaymentTransferDetailResponse findTransfer(String transferGroupId, Long userId) {
-		Transfer transfer =  transferRepository.findByTransferGroupIdAndTransferOwnerId(transferGroupId, userId)
+	public PaymentTransferDetailResponse findTransfer(Long transferId) {
+		Transfer transfer =  transferRepository.findById(transferId)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRANSFER));
 
 		return PaymentTransferDetailResponse.of(transfer);

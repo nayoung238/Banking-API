@@ -15,16 +15,17 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "payer_id")
     private Long payerId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "payee_id")
     private Long payeeId;
 
-    @Column(nullable = false, unique = true)
-    private String transferGroupId;
+    @Column(nullable = false, unique = true, name = "transfer_id")
+    private Long transferId;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, name = "payment_status")
     private PaymentStatus paymentStatus;
 
     public void updatePaymentStatus(PaymentStatus newStatus){

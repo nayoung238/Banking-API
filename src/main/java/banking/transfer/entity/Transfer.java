@@ -28,7 +28,7 @@ public class Transfer extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private TransferType transferType;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "withdrawal_account_id")
     private Long withdrawalAccountId;
 
     @Column(nullable = false)
@@ -37,7 +37,7 @@ public class Transfer extends BaseTimeEntity {
     @Column(nullable = false)
     private String currency;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "exchange_rate")
     private BigDecimal exchangeRate;
 
     @Column(nullable = false)

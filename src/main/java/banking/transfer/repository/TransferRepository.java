@@ -12,8 +12,11 @@ import java.util.Optional;
 public interface TransferRepository extends JpaRepository<Transfer, Long> {
 
     boolean existsByTransferGroupId(String transferGroupId);
-    List<Transfer> findAllByTransferGroupId(String transferGroupId);
-    Optional<Transfer> findByTransferGroupIdAndTransferOwnerId(String transferGroupId, Long transferOwnerId);
+
+    @Query("SELECT t FROM Transfer t WHERE t.transferGroupId " +
+        "= (SELECT t2.transferGroupId FROM Transfer t2 WHERE t2.id = :transferId)")
+    List<Transfer> findTransferGroupByTransferId(Long transferId);
+
     Optional<Transfer> findByTransferGroupIdAndTransferType(String transferGroupId, TransferType transferType);
 
     @Query("SELECT t FROM Transfer t WHERE t.transferOwnerId = :userId " +

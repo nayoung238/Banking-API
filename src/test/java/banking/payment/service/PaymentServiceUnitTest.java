@@ -6,8 +6,10 @@ import banking.account.service.AccountService;
 import banking.fixture.testEntity.AccountFixture;
 import banking.fixture.testEntity.UserFixture;
 import banking.payment.dto.request.PaymentRequest;
+import banking.payment.entity.PaymentView;
 import banking.payment.enums.PaymentStatus;
 import banking.payment.repository.PaymentRepository;
+import banking.payment.repository.PaymentViewRepository;
 import banking.transfer.dto.response.PaymentTransferDetailResponse;
 import banking.transfer.enums.TransferType;
 import banking.transfer.service.TransferQueryService;
@@ -25,8 +27,10 @@ import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
 import banking.payment.dto.request.PaymentRefundRequest;
 import banking.payment.entity.Payment;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -34,7 +38,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class PaymentServiceUnitTest {
 
     @InjectMocks
@@ -45,6 +50,9 @@ public class PaymentServiceUnitTest {
 
     @Mock
     PaymentRepository paymentRepository;
+
+	@Mock
+	PaymentViewRepository paymentViewRepository;
 
     @Mock
     TransferService transferService;
@@ -59,6 +67,7 @@ public class PaymentServiceUnitTest {
     @DisplayName("[결제 성공 테스트] 결제 처리 시 TransferService에 의존")
     void payment_test () {
 		// given
+		final Long transferId = 3L;
 		User user = UserFixture.USER_FIXTURE_1.createUser();
 		Account withdrawalAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_1.createAccount(user);
 		Account depositAccount = AccountFixture.ACCOUNT_FIXTURE_KRW_2.createAccount(user);
@@ -71,7 +80,7 @@ public class PaymentServiceUnitTest {
 			.build();
 
 		PaymentTransferDetailResponse transferResponse = PaymentTransferDetailResponse.builder()
-			.transferGroupId("173234Ad2D")
+			.transferId(transferId)
 			.transferType(TransferType.WITHDRAWAL)
 			.withdrawalAccountId(withdrawalAccount.getId())
 			.depositAccountId(depositAccount.getId())
@@ -81,6 +90,7 @@ public class PaymentServiceUnitTest {
 
 		Payment mockPayment = Payment.builder()
 			.id(1L)
+			.transferId(transferId)
 			.payerId(withdrawalAccount.getId())
 			.payeeId(depositAccount.getId())
 			.build();
@@ -93,17 +103,22 @@ public class PaymentServiceUnitTest {
 			.build();
 
 		UserPublicInfoResponse mockUserPublicInfoResponse = UserPublicInfoResponse.builder()
-			.id(user.getId())
+			.userId(user.getId())
 			.name(user.getName())
+			.build();
+
+		PaymentView mockPaymentView = PaymentView.builder()
+			.paymentId(1L)
 			.build();
 
 		when(transferService.transfer(anyLong(), any(PaymentRequest.class))).thenReturn(transferResponse);
 		when(userService.findUserPublicInfo(any())).thenReturn(mockUserPublicInfoResponse);
 		when(paymentRepository.save(any(Payment.class))).thenReturn(null);
 		when(paymentRepository.findById(any())).thenReturn(Optional.ofNullable(mockPayment));
-		when(transferQueryService.findTransfer(any(), anyLong())).thenReturn(transferResponse);
+		when(transferQueryService.findTransfer(anyLong())).thenReturn(transferResponse);
 		when(accountService.findAccountPublicInfo(anyLong(), any(PaymentTransferDetailResponse.class))).thenReturn(mockAccountPublicInfoResponse);
 		when(userService.findUserPublicInfo(any(), any())).thenReturn(mockUserPublicInfoResponse);
+		when(paymentViewRepository.findByPaymentId(null)).thenReturn(Optional.of(mockPaymentView));
 
 		// when
 		paymentService.processPayment(user.getId(), paymentRequest);
@@ -111,6 +126,7 @@ public class PaymentServiceUnitTest {
 		// then
 		verify(transferService, times(1)).transfer(anyLong(), any(PaymentRequest.class));
 		verify(paymentRepository, times(1)).save(any(Payment.class));
+		verify(paymentViewRepository, times(1)).findByPaymentId(null);
 	}
 
     @Test
@@ -123,7 +139,7 @@ public class PaymentServiceUnitTest {
 			.id(1L)
 			.payerId(user.getId())
 			.payeeId(12L)
-			.transferGroupId("173234Ad2D")
+			.transferId(3L)
 			.paymentStatus(PaymentStatus.PAYMENT_CANCELLED)
 			.build();
 
