@@ -10,7 +10,7 @@ import banking.common.data.EncryptionFacade;
 import banking.common.jwt.TestJwtUtil;
 import banking.payment.dto.request.PaymentRefundRequest;
 import banking.payment.dto.request.PaymentRequest;
-import banking.payment.dto.response.PaymentResponse;
+import banking.payment.entity.PaymentView;
 import banking.payment.enums.PaymentStatus;
 import banking.payment.service.PaymentService;
 import banking.user.entity.Role;
@@ -102,8 +102,8 @@ class PaymentControllerTest {
                 is(PaymentStatus.PAYMENT_CANCELLED.toString())
             )))
             .andExpect(jsonPath("$.withdrawalAccountNumber").value(withdrawalAccount.getAccountNumber()))
-            .andExpect(jsonPath("$.amount").value(comparesEqualTo(paymentAmount.intValue())))
-            .andExpect(jsonPath("$.exchangeRate").value(comparesEqualTo(BigDecimal.ONE.intValue())))
+            .andExpect(jsonPath("$.amount").value(comparesEqualTo(paymentAmount.doubleValue())))
+            .andExpect(jsonPath("$.exchangeRate").value(comparesEqualTo(BigDecimal.ONE.doubleValue())))
             .andExpect(jsonPath("$.currency").value(depositAccount.getCurrency() + "/" + withdrawalAccount.getCurrency()))
             .andDo(print());
     }
@@ -130,11 +130,11 @@ class PaymentControllerTest {
             .depositAccountNumber(depositAccount.getAccountNumber())
             .amount(paymentAmount)
             .build();
-        PaymentResponse paymentResponse = paymentService.processPayment(withdrawalAccountUser.getId(), paymentRequest);
+        PaymentView paymentView = paymentService.processPayment(withdrawalAccountUser.getId(), paymentRequest);
 
         // given4 - 결제 취소 요청 DTO 생성
         PaymentRefundRequest refundRequest = PaymentRefundRequest.builder()
-            .paymentId(paymentResponse.paymentId())
+            .paymentId(paymentView.getPaymentId())
             .withdrawalAccountPassword(withdrawalAccount.getPassword())
             .build();
 
@@ -177,11 +177,11 @@ class PaymentControllerTest {
             .depositAccountNumber(depositAccount.getAccountNumber())
             .amount(paymentAmount)
             .build();
-        PaymentResponse paymentResponse = paymentService.processPayment(withdrawalAccountUser.getId(), paymentRequest);
+        PaymentView paymentView = paymentService.processPayment(withdrawalAccountUser.getId(), paymentRequest);
 
         // When & Then
         mockMvc.perform(
-            get("/payment/{paymentId}", paymentResponse.paymentId())
+            get("/payment/{paymentId}", paymentView.getPaymentId())
                 .header("Authorization", "Bearer " + TestJwtUtil.generateTestAccessToken(withdrawalAccountUser.getId(), Role.USER))
                 .contentType(MediaType.APPLICATION_JSON)
             )
@@ -193,8 +193,8 @@ class PaymentControllerTest {
                 is(PaymentStatus.PAYMENT_CANCELLED.toString())
             )))
             .andExpect(jsonPath("$.withdrawalAccountNumber").value(withdrawalAccount.getAccountNumber()))
-            .andExpect(jsonPath("$.amount").value(comparesEqualTo(paymentAmount.intValue())))
-            .andExpect(jsonPath("$.exchangeRate").value(comparesEqualTo(BigDecimal.ONE.intValue())))
+            .andExpect(jsonPath("$.amount").value(comparesEqualTo(paymentAmount.doubleValue())))
+            .andExpect(jsonPath("$.exchangeRate").value(comparesEqualTo(BigDecimal.ONE.doubleValue())))
             .andExpect(jsonPath("$.currency").value(depositAccount.getCurrency() + "/" + withdrawalAccount.getCurrency()))
             .andDo(print());
     }
