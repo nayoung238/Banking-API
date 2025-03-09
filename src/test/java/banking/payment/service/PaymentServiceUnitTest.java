@@ -25,8 +25,8 @@ import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
 import banking.payment.dto.request.PaymentRefundRequest;
 import banking.payment.entity.Payment;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -34,7 +34,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 public class PaymentServiceUnitTest {
 
     @InjectMocks
@@ -95,7 +95,7 @@ public class PaymentServiceUnitTest {
 			.build();
 
 		UserPublicInfoResponse mockUserPublicInfoResponse = UserPublicInfoResponse.builder()
-			.id(user.getId())
+			.userId(user.getId())
 			.name(user.getName())
 			.build();
 
