@@ -6,8 +6,10 @@ import banking.account.service.AccountService;
 import banking.fixture.testEntity.AccountFixture;
 import banking.fixture.testEntity.UserFixture;
 import banking.payment.dto.request.PaymentRequest;
+import banking.payment.entity.PaymentView;
 import banking.payment.enums.PaymentStatus;
 import banking.payment.repository.PaymentRepository;
+import banking.payment.repository.PaymentViewRepository;
 import banking.transfer.dto.response.PaymentTransferDetailResponse;
 import banking.transfer.enums.TransferType;
 import banking.transfer.service.TransferQueryService;
@@ -26,6 +28,8 @@ import banking.common.exception.ErrorCode;
 import banking.payment.dto.request.PaymentRefundRequest;
 import banking.payment.entity.Payment;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
@@ -35,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class PaymentServiceUnitTest {
 
     @InjectMocks
@@ -45,6 +50,9 @@ public class PaymentServiceUnitTest {
 
     @Mock
     PaymentRepository paymentRepository;
+
+	@Mock
+	PaymentViewRepository paymentViewRepository;
 
     @Mock
     TransferService transferService;
@@ -99,6 +107,10 @@ public class PaymentServiceUnitTest {
 			.name(user.getName())
 			.build();
 
+		PaymentView mockPaymentView = PaymentView.builder()
+			.paymentId(1L)
+			.build();
+
 		when(transferService.transfer(anyLong(), any(PaymentRequest.class))).thenReturn(transferResponse);
 		when(userService.findUserPublicInfo(any())).thenReturn(mockUserPublicInfoResponse);
 		when(paymentRepository.save(any(Payment.class))).thenReturn(null);
@@ -106,6 +118,7 @@ public class PaymentServiceUnitTest {
 		when(transferQueryService.findTransfer(anyLong())).thenReturn(transferResponse);
 		when(accountService.findAccountPublicInfo(anyLong(), any(PaymentTransferDetailResponse.class))).thenReturn(mockAccountPublicInfoResponse);
 		when(userService.findUserPublicInfo(any(), any())).thenReturn(mockUserPublicInfoResponse);
+		when(paymentViewRepository.findByPaymentId(null)).thenReturn(Optional.of(mockPaymentView));
 
 		// when
 		paymentService.processPayment(user.getId(), paymentRequest);
@@ -113,6 +126,7 @@ public class PaymentServiceUnitTest {
 		// then
 		verify(transferService, times(1)).transfer(anyLong(), any(PaymentRequest.class));
 		verify(paymentRepository, times(1)).save(any(Payment.class));
+		verify(paymentViewRepository, times(1)).findByPaymentId(null);
 	}
 
     @Test
