@@ -5,15 +5,14 @@ import banking.account.service.AccountService;
 import banking.common.exception.CustomException;
 import banking.common.exception.ErrorCode;
 import banking.payment.dto.request.PaymentRefundRequest;
-import banking.payment.dto.response.PaymentResponse;
 import banking.payment.dto.response.RefundPaymentResponse;
 import banking.payment.entity.Payment;
+import banking.payment.entity.PaymentView;
 import banking.payment.enums.PaymentStatus;
 import banking.payment.repository.PaymentRepository;
 import banking.payment.dto.request.PaymentRequest;
+import banking.payment.repository.PaymentViewRepository;
 import banking.transfer.dto.response.PaymentTransferDetailResponse;
-import banking.transfer.enums.TransferType;
-import banking.transfer.service.TransferQueryService;
 import banking.transfer.service.TransferService;
 import banking.user.dto.response.UserPublicInfoResponse;
 import banking.user.service.UserService;
@@ -27,12 +26,12 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final TransferService transferService;
-    private final TransferQueryService transferQueryService;
     private final AccountService accountService;
     private final UserService userService;
+    private final PaymentViewRepository paymentViewRepository;
 
     @Transactional
-    public PaymentResponse processPayment(Long userId, PaymentRequest request) {
+    public PaymentView processPayment(Long userId, PaymentRequest request) {
         PaymentTransferDetailResponse transferResponse = transferService.transfer(userId, request);
 
         UserPublicInfoResponse payeeUserPublicInfo = userService.findUserPublicInfo(transferResponse.depositAccountId());
@@ -46,7 +45,8 @@ public class PaymentService {
 
         paymentRepository.save(payment);
 
-        return createPaymentResponseDto(userId, payment.getId());
+        return paymentViewRepository.findByPaymentId(payment.getId())
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PAYMENT));
     }
 
     @Transactional
@@ -77,25 +77,13 @@ public class PaymentService {
         }
     }
 
-    public PaymentResponse findPaymentById(Long userId, Long paymentId) {
-        return createPaymentResponseDto(userId, paymentId);
-    }
+    public PaymentView findPaymentById(Long userId, Long paymentId) {
+        boolean isExist = paymentRepository.existsByIdAndPayerId(paymentId, userId);
+        if (!isExist) {
+            throw new CustomException(ErrorCode.NOT_FOUND_PAYMENT);
+        }
 
-    private PaymentResponse createPaymentResponseDto(Long userId, Long paymentId) {
-        Payment payment = paymentRepository.findById(paymentId)
+        return paymentViewRepository.findByPaymentId(paymentId)
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PAYMENT));
-
-        PaymentTransferDetailResponse transferResponse = transferQueryService.findTransfer(payment.getTransferId());
-
-        Long requesterAccountId = (transferResponse.transferType().equals(TransferType.WITHDRAWAL)) ?
-            transferResponse.withdrawalAccountId() : transferResponse.depositAccountId();
-
-        // 공개용 계좌 정보 GET
-        AccountPublicInfoResponse accountPublicInfo = accountService.findAccountPublicInfo(requesterAccountId, transferResponse);
-
-        // 공개용 사용자 정보 GET
-        UserPublicInfoResponse userPublicInfo = userService.findUserPublicInfo(userId, requesterAccountId);
-
-        return PaymentResponse.of(payment, transferResponse, accountPublicInfo.accountNumber(), userPublicInfo.name());
     }
 }
