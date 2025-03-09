@@ -3,7 +3,10 @@ package banking.payment.entity;
 import banking.payment.enums.PaymentStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Subselect;
 
@@ -28,6 +31,9 @@ import java.time.LocalDateTime;
 		"LEFT JOIN account a ON t.withdrawal_account_id = a.id"
 )
 @Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PaymentView {
 
 	@Id
