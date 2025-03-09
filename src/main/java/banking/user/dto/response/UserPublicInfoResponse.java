@@ -6,13 +6,13 @@ import lombok.Builder;
 @Builder
 public record UserPublicInfoResponse (
 
-	Long id,
+	Long userId,
 	String name
 ) {
 
 	public static UserPublicInfoResponse of(User user) {
 		return UserPublicInfoResponse.builder()
-			.id(user.getId())
+			.userId(user.getId())
 			.name(user.getName())
 			.build();
 	}

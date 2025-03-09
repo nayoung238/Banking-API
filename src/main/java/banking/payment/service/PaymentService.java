@@ -38,7 +38,7 @@ public class PaymentService {
 
         Payment payment = Payment.builder()
             .payerId(userId)
-            .payeeId(payeeUserPublicInfo.id())
+            .payeeId(payeeUserPublicInfo.userId())
             .transferId(transferResponse.transferId())
             .paymentStatus(PaymentStatus.PAYMENT_PENDING)
             .build();
