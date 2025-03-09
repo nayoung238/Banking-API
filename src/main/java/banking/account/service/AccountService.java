@@ -66,9 +66,9 @@ public class AccountService {
     /**
      * /payment, /transfer 에서 사용
      * 계좌 소유자만 접근 가능
-     * @param accountId   요청 계좌 PK
-     * @param userId      요청 사용자 PK
-     * @param password    요청 계좌 비밀번호
+     * @param userId     사용자 PK
+     * @param accountId  계좌 PK
+     * @param password   계좌 비밀번호
      * @return 계좌 소유자인 경우 계좌 반환
      */
     @Transactional
@@ -92,9 +92,9 @@ public class AccountService {
     /**
      * /payment, /transfer 에서 사용 (refund)
      * 거래에 연관된 사용자만 상대 계좌 접근 가능
-     * @param accountId 상태 계좌 PK
-     * @param transfer 관련 거래
-     * @return 거래 권한 확인 후 상대 계좌 반환  // TODO: 비밀번호 제외
+     * @param accountId   상태 계좌 PK
+     * @param transfer    관련 거래
+     * @return 거래 권한 확인 후 상대 계좌 반환
      */
     @Transactional
     public Account findAccountWithLock(Long accountId, Transfer transfer) {
@@ -108,7 +108,7 @@ public class AccountService {
 
     /**
      * 거래 생성 시 상대 계좌의 일부 데이터 필요 (계좌 PK, 통화)
-     * @param accountNumber 거래 상대 계좌 번호
+     * @param accountNumber  거래 상대 계좌 번호
      * @return 상대 계좌 일부 반환
      */
     public AccountPublicInfoResponse findAccountPublicInfo(String accountNumber) {
@@ -119,9 +119,9 @@ public class AccountService {
     }
 
     /**
-     * 거래 취소, 이체 조회 시 상대 계좌 일부 데이터 필요 (계좌 PK, 통화, 계좌번호, 계좌 소유자명)
-     * @param accountId 거래 상대 계좌 PK
-     * @param transfer 관련 거래
+     * 거래, 이체 시 상대 계좌 일부 데이터 필요 (계좌 PK, 통화, 계좌번호, 계좌 소유자명)
+     * @param accountId   거래 상대 계좌 PK
+     * @param transfer    관련 거래
      * @return 거래 권한 확인 후 상대 계좌 일부 반환
      */
     public AccountPublicInfoResponse findAccountPublicInfo(Long accountId, Transfer transfer) {
@@ -136,9 +136,9 @@ public class AccountService {
     }
 
     /**
-     * 거래 취소, 이체 조회 시 상대 계좌 일부 데이터 필요 (계좌 PK, 통화, 계좌번호, 계좌 소유자명)
-     * @param accountId 거래 상대 계좌 PK
-     * @param transferResponse 관련 거래
+     * 거래, 이체 시 상대 계좌 일부 데이터 필요 (계좌 PK, 통화, 계좌번호, 계좌 소유자명)
+     * @param accountId         거래 상대 계좌 PK
+     * @param transferResponse  관련 거래 DTO
      * @return 거래 권한 확인 후 상대 계좌 일부 반환
      */
     public AccountPublicInfoResponse findAccountPublicInfo(Long accountId, PaymentTransferDetailResponse transferResponse) {
