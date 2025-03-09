@@ -1,6 +1,7 @@
 package banking.payment.entity;
 
 import banking.payment.enums.PaymentStatus;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.Immutable;
@@ -53,5 +54,6 @@ public class PaymentView {
 	String currency;
 
 	@Column(name = "paid_at")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd HH:mm")
 	LocalDateTime paidAt;
 }
