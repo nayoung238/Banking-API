@@ -6,7 +6,7 @@ import banking.account.service.AccountService;
 import banking.fixture.testEntity.AccountFixture;
 import banking.fixture.testEntity.UserFixture;
 import banking.payment.dto.request.PaymentRequest;
-import banking.payment.entity.PaymentView;
+import banking.payment.dto.response.PaymentView;
 import banking.payment.enums.PaymentStatus;
 import banking.payment.repository.PaymentRepository;
 import banking.payment.repository.PaymentViewRepository;

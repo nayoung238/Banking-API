@@ -174,7 +174,7 @@ public class TransferService {
     public Transfer saveWithdrawalTransferDetail(Account withdrawalAccount, AccountPublicInfoResponse depositAccountPublicInfo, BigDecimal exchangeRate, BigDecimal amount) {
         Transfer transfer = Transfer.builder()
             .transferGroupId(createTransferGroupId(withdrawalAccount.getAccountNumber(), depositAccountPublicInfo.accountNumber()))
-            .transferOwnerId(withdrawalAccount.getId())
+            .transferOwnerId(withdrawalAccount.getUser().getId())
             .transferType(TransferType.WITHDRAWAL)
             .withdrawalAccountId(withdrawalAccount.getId())
             .depositAccountId(depositAccountPublicInfo.accountId())

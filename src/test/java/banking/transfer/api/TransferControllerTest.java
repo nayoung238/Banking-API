@@ -142,7 +142,7 @@ class TransferControllerTest {
     }
 
     @Test
-    @DisplayName("[조회 성공 테스트] 이체 내역 단건 조회")
+    @DisplayName("[이체 조회 성공 테스트] 이체 내역 단건 조회")
     void findTransaction() throws Exception {
         // given1 - 출금 계좌에 입금
         User withdrawalAccountUser = createUser("login-id-357", "user-1");
@@ -192,7 +192,7 @@ class TransferControllerTest {
     }
 
     @Test
-    @DisplayName("[조회 성공 테스트] 모든 이체 내역 조회")
+    @DisplayName("[이체 조회 성공 테스트] 모든 이체 내역 조회")
     void findAllTransaction() throws Exception {
         // given1 - 출금 계좌에 입금
         User withdrawalAccountUser = createUser("login-id-468", "user-1");
