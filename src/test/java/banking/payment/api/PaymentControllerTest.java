@@ -10,7 +10,7 @@ import banking.common.data.EncryptionFacade;
 import banking.common.jwt.TestJwtUtil;
 import banking.payment.dto.request.PaymentRefundRequest;
 import banking.payment.dto.request.PaymentRequest;
-import banking.payment.entity.PaymentView;
+import banking.payment.dto.response.PaymentView;
 import banking.payment.enums.PaymentStatus;
 import banking.payment.service.PaymentService;
 import banking.user.entity.Role;
@@ -135,7 +135,7 @@ class PaymentControllerTest {
 
         // given4 - 결제 취소 요청 DTO 생성
         PaymentRefundRequest refundRequest = PaymentRefundRequest.builder()
-            .paymentId(paymentView.getPaymentId())
+            .paymentId(paymentView.paymentId())
             .withdrawalAccountPassword(withdrawalAccount.getPassword())
             .build();
 
@@ -182,7 +182,7 @@ class PaymentControllerTest {
 
         // When & Then
         mockMvc.perform(
-            get("/payment/{paymentId}", paymentView.getPaymentId())
+            get("/payment/{paymentId}", paymentView.paymentId())
                 .header("Authorization", "Bearer " + TestJwtUtil.generateTestAccessToken(withdrawalAccountUser.getId(), Role.USER))
                 .contentType(MediaType.APPLICATION_JSON)
             )
