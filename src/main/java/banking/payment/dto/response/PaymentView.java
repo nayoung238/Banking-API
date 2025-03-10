@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 @Schema(description = "결제 응답 DTO")
 @Builder
-public record PaymentResponse (
+public record PaymentView (
 
     @Schema(description = "결제 DB PK", example = "1")
     Long paymentId,
@@ -24,7 +24,7 @@ public record PaymentResponse (
     @Schema(description = "결제하는 계좌 번호", example = "5792214-80232581")
     String withdrawalAccountNumber,
 
-    @Schema(description = "수취인 이름", example = "홍길동")
+    @Schema(description = "수취인 이름", example = "jisoo")
     String payeeName,
 
     @Schema(description = "결제 금액", example = "50000")
@@ -40,9 +40,9 @@ public record PaymentResponse (
     @Schema(description = "결제일", example = "2024.06.11 15:20")
     LocalDateTime paidAt
 ) {
-    public static PaymentResponse of(Payment payment, PaymentTransferDetailResponse transferResponse,
-									 String withdrawalAccountNumber, String payeeName) {
-        return PaymentResponse.builder()
+    public static PaymentView of(Payment payment, PaymentTransferDetailResponse transferResponse,
+                                 String withdrawalAccountNumber, String payeeName) {
+        return PaymentView.builder()
             .paymentId(payment.getId())
             .paymentStatus(payment.getPaymentStatus())
             .withdrawalAccountNumber(withdrawalAccountNumber)
