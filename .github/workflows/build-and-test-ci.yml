@@ -56,4 +56,4 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: imzero238/Banking-API
+          slug: nayoung238/Banking-API
