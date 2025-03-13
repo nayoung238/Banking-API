@@ -9,6 +9,9 @@ import lombok.*;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "Payment", indexes = {
+    @Index(name = "idx_payer_id", columnList = "payer_id")
+})
 public class Payment {
 
     @Id

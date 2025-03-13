@@ -12,6 +12,9 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "Transfer", indexes = {
+    @Index(name = "idx_transfer_group_id", columnList = "transferGroupId")
+})
 public class Transfer extends BaseTimeEntity {
 
     @Id
